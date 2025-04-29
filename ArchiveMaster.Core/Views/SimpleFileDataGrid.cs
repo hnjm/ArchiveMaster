@@ -141,6 +141,7 @@ public class SimpleFileDataGrid : DataGrid
             Header = ColumnLengthHeader,
             Binding = new Binding(".")
                 { Converter = FileDirLength2StringConverter, Mode = BindingMode.OneWay },
+            SortMemberPath = nameof(SimpleFileInfo.Length),
             IsReadOnly = true,
             MaxWidth = 120,
             CellStyleClasses = { "Right" }

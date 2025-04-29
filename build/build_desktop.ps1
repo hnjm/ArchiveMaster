@@ -68,8 +68,7 @@ try {
     }
 
     New-Item -Path $publishDirectory -ItemType Directory | Out-Null
-    Clear-Host
-
+    
     $platforms = @()
     if ($w -or $all) { $platforms += "win-x64" }
     if ($l -or $all) { $platforms += "linux-x64" }
@@ -79,11 +78,24 @@ try {
         $selfContained = if ($s) { "--self-contained" } else { "--no-self-contained" }
 
         Write-Output "正在发布$platform"
-        dotnet publish ArchiveMaster.UI.Desktop -r $platform -c Release -o "$publishDirectory/$platform" $selfContained /p:PublishSingleFile=true
+        $outputDir = if ($s) { 
+            Join-Path $publishDirectory "${platform}_sc" 
+        }
+        else { 
+            Join-Path $publishDirectory $platform 
+        }
+        dotnet publish ArchiveMaster.UI.Desktop -r $platform -c Release -o $outputDir $selfContained /p:PublishSingleFile=true
 
         $outputFile = if ($platform -eq "win-x64") { "ArchiveMaster.exe" } else { "ArchiveMaster" }
-        $sourceFile = if ($platform -eq "win-x64") { "$publishDirectory/$platform/ArchiveMaster.UI.Desktop.exe" } else { "$publishDirectory/$platform/ArchiveMaster.UI.Desktop" }
-        Move-Item $sourceFile "$publishDirectory/$platform/$outputFile"
+        $sourceFile = if ($platform -eq "win-x64") { 
+            Join-Path $outputDir "ArchiveMaster.UI.Desktop.exe" 
+        }
+        else { 
+            Join-Path $outputDir "ArchiveMaster.UI.Desktop" 
+        }
+    
+        $destinationFile = Join-Path $outputDir $outputFile
+        Move-Item $sourceFile $destinationFile -Force
     }
 
     Write-Output "操作完成"
