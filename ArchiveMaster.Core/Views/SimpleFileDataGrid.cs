@@ -120,14 +120,18 @@ public class SimpleFileDataGrid : DataGrid
         var cellTemplate = new FuncDataTemplate<SimpleFileInfo>((value, namescope) =>
         {
             var rootPanel = this.GetLogicalAncestors().OfType<TwoStepPanelBase>().FirstOrDefault();
-
-            return new CheckBox()
+            return new ContentControl
             {
-                HorizontalAlignment = HorizontalAlignment.Center,
-                [!ToggleButton.IsCheckedProperty] = new Binding(nameof(SimpleFileInfo.IsChecked)),
-                [!IsEnabledProperty] = new Binding("DataContext.IsWorking") //执行命令时，这CheckBox不可以Enable
+                Content = new CheckBox()
+                {
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    [!ToggleButton.IsCheckedProperty] = new Binding(nameof(SimpleFileInfo.IsChecked)),
+                    [!IsEnabledProperty] = new Binding("DataContext.IsWorking") //执行命令时，这CheckBox不可以Enable
                     { Source = rootPanel, Converter = InverseBoolConverter },
+                },
+                [!IsEnabledProperty] = new Binding(nameof(SimpleFileInfo.CanCheck))//套两层控件，实现任一禁止选择则不允许选择
             };
+            
         });
 
         column.CellTemplate = cellTemplate;

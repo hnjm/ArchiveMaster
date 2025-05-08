@@ -1,5 +1,4 @@
-﻿using MetadataExtractor;
-using ArchiveMaster.Configs;
+﻿using ArchiveMaster.Configs;
 using System.Collections.Concurrent;
 using System;
 using System.Collections.Frozen;

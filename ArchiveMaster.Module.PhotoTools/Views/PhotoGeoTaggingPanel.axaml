@@ -1,0 +1,76 @@
+<v:TwoStepPanelBase
+    x:Class="ArchiveMaster.Views.PhotoGeoTaggingPanel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ct="using:FzLib.Avalonia.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:gb="using:GroupBox.Avalonia.Controls"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:v="using:ArchiveMaster.Views"
+    xmlns:vm="clr-namespace:ArchiveMaster.ViewModels"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    x:DataType="vm:RepairModifiedTimeViewModel"
+    mc:Ignorable="d">
+    <v:TwoStepPanelBase.ConfigsContent>
+        <ct:StackFormItemGroup>
+            <ct:FormItem Label="目录：">
+                <v:FilePickerTextBox
+                    FileNames="{Binding Config.Dir}"
+                    Type="OpenFolder" />
+            </ct:FormItem>
+            <ct:FormItem Label="GPX文件：">
+                <v:FilePickerTextBox
+                    FileNames="{Binding Config.GpxFile}"
+                    StringFileTypeFilter="GPS轨迹文件;*.gpx;;"
+                    Type="OpenFile" />
+            </ct:FormItem>
+            <ct:FormItem
+                Description="允许匹配的最大时间差。若照片时间与所有GPX点的时间差均超过此值，则跳过该照片"
+                Label="最长时间差异：">
+                <TimePicker
+                    SelectedTime="{Binding Config.MaxTolerance}"
+                    UseSeconds="True" />
+            </ct:FormItem>
+
+        </ct:StackFormItemGroup>
+    </v:TwoStepPanelBase.ConfigsContent>
+    <v:TwoStepPanelBase.ResultsContent>
+        <v:SimpleFileDataGrid
+            ColumnLengthIndex="1.2"
+            ColumnNameIndex="1.1"
+            ColumnPathIndex="-1"
+            ColumnTimeIndex="-1"
+            ItemsSource="{Binding Files}">
+            <DataGrid.Columns>
+                <DataGridTemplateColumn
+                    CanUserResize="False"
+                    Header="匹配">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Ellipse
+                                Width="8"
+                                Height="8"
+                                Fill="{DynamicResource Foreground0}"
+                                IsVisible="{Binding IsMatched}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn
+                    Binding="{Binding ExifTime}"
+                    Header="Exif时间"
+                    IsReadOnly="True" />
+                <DataGridTextColumn
+                    Binding="{Binding GpsTime}"
+                    Header="GPS时间"
+                    IsReadOnly="True" />
+                <DataGridTextColumn
+                    Binding="{Binding Longitude}"
+                    Header="经度" />
+                <DataGridTextColumn
+                    Binding="{Binding Latitude}"
+                    Header="纬度" />
+            </DataGrid.Columns>
+        </v:SimpleFileDataGrid>
+    </v:TwoStepPanelBase.ResultsContent>
+</v:TwoStepPanelBase>

@@ -16,7 +16,6 @@ using ArchiveMaster.ViewModels.FileSystem;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace ArchiveMaster.ViewModels;
-
 public partial class PhotoSlimmingViewModel(AppConfig appConfig)
     : TwoStepViewModelBase<PhotoSlimmingService, PhotoSlimmingConfig>(appConfig)
 {

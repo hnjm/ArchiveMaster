@@ -16,6 +16,9 @@
       <DependentUpon>PhotoSlimmingPanel.axaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Views\PhotoGeoTaggingPanel.axaml.cs">
+      <DependentUpon>PhotoGeoTaggingPanel.axaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\RepairModifiedTimePanel.axaml.cs">
       <DependentUpon>RepairModifiedTimePanel.axaml</DependentUpon>
       <SubType>Code</SubType>
@@ -28,6 +31,8 @@
 
   <ItemGroup>
     <PackageReference Include="Mapster" />
+    <PackageReference Include="SixLabors.ImageSharp" />
+    <PackageReference Include="MetadataExtractor" />
   </ItemGroup>
 
   <ItemGroup>

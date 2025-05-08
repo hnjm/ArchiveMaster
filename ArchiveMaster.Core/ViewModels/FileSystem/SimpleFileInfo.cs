@@ -12,6 +12,10 @@ namespace ArchiveMaster.ViewModels.FileSystem
         [ObservableProperty]
         private bool isChecked = true;
 
+        [property: JsonIgnore]
+        [ObservableProperty]
+        private bool canCheck = true;
+
         private string message;
 
         [ObservableProperty]
