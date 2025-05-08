@@ -43,6 +43,7 @@ public static class Initializer
         new TestModuleInfo(),
 #endif
         new FileToolsModuleInfo(),
+        new PhotoToolsModuleInfo(),
         new OfflineSyncModuleInfo(),
         new DiscArchiveModuleInfo(),
         new FileBackupperModuleInfo(),
