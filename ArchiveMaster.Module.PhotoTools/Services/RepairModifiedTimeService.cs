@@ -37,7 +37,7 @@ namespace ArchiveMaster.Services
 
         public override async Task InitializeAsync(CancellationToken token)
         {
-            rRepairTime = new Regex(@$"\.({string.Join('|', appConfig.PhotoExtensions)})$",
+            rRepairTime = new Regex(@$"\.({string.Join('|', Config.PhotoExtensions)})$",
                 RegexOptions.IgnoreCase | RegexOptions.Compiled);
             NotifyProgressIndeterminate();
             NotifyMessage("正在查找文件");

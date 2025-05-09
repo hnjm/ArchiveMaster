@@ -10,6 +10,7 @@
     <PackageVersion Include="Avalonia.Xaml.Behaviors" Version="11.1.0" />
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.2.2" />
     <PackageVersion Include="DiscUtils.Iso9660" Version="0.16.13" />
+    <PackageVersion Include="ExifLibNet.Updated" Version="2.1.5" />
     <PackageVersion Include="ExifLibrary" Version="1.0.13" />
     <PackageVersion Include="FzLib.Avalonia" Version="2.2.5" Condition="'$(Configuration)' == 'Release'" />
     <PackageVersion Include="Irihi.Ursa" Version="1.6.0" />

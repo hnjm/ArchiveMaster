@@ -14,7 +14,12 @@ namespace ArchiveMaster.Services
             return TryForFilesAsync(files,
                 (file, state) =>
                 {
+                    if (!file.Latitude.HasValue || !file.Longitude.HasValue || !file.ExifTime.HasValue)
+                    {
+                        throw new Exception("数据存在问题，经纬度或时间为空");
+                    }
                     ExifHelper.WriteGpsToImage(file.Path, file.Latitude.Value, file.Longitude.Value);
+                    File.SetLastWriteTime(file.Path,file.ExifTime.Value);
                 },
                 token, FilesLoopOptions.Builder().AutoApplyFileLengthProgress().AutoApplyStatus().Build());
         }
@@ -24,7 +29,7 @@ namespace ArchiveMaster.Services
         public override async Task InitializeAsync(CancellationToken token = default)
         {
             // 1. 准备照片扩展名正则表达式
-            var rPhotos = new Regex($"\\.({string.Join('|', appConfig.PhotoExtensions)})$",
+            var rPhotos = new Regex($"\\.({string.Join('|', Config.PhotoExtensions)})$",
                 RegexOptions.IgnoreCase);
 
             NotifyProgressIndeterminate();
@@ -44,11 +49,21 @@ namespace ArchiveMaster.Services
             // 3. 读取并解析GPX文件
             NotifyMessage("正在解析GPX轨迹");
             List<(double lat, double lon, DateTime time)> gpxPoints = new List<(double, double, DateTime)>();
-            if (!string.IsNullOrEmpty(Config.GpxFile) && File.Exists(Config.GpxFile))
+            if (string.IsNullOrWhiteSpace(Config.GpxFile))
             {
+                throw new Exception($"GPX文件不存在");
+            }
+
+            foreach (var gpxFile in Config.GpxFile.Split('|', StringSplitOptions.RemoveEmptyEntries))
+            {
+                if (!File.Exists(gpxFile))
+                {
+                    throw new Exception($"GPX文件{gpxFile}不存在");
+                }
+
                 try
                 {
-                    gpxPoints = ParseGpx(Config.GpxFile);
+                    gpxPoints.AddRange(ParseGpx(gpxFile));
                     if (gpxPoints.Count == 0)
                     {
                         throw new Exception("GPX文件未包含有效轨迹点");
@@ -58,10 +73,6 @@ namespace ArchiveMaster.Services
                 {
                     throw new Exception($"GPX文件 {Path.GetFileName(Config.GpxFile)}解析失败：（{ex.Message}）", ex);
                 }
-            }
-            else
-            {
-                throw new Exception("未指定有效的GPX文件路径");
             }
 
             // 4. 按时间排序GPX点
@@ -86,12 +97,14 @@ namespace ArchiveMaster.Services
                 }
 
                 file.ExifTime = exifTime.Value;
+                DateTime offsetTime = file.ExifTime.Value +
+                                      (Config.InverseTimeOffset ? Config.TimeOffset : -Config.TimeOffset);
 
                 // 5.2 匹配最近的GPX点
-                var (matched, lat, lon, gpsTime) = FindClosestGpxPoint(gpxPoints, exifTime.Value);
+                var (matched, lat, lon, gpsTime) = FindClosestGpxPoint(gpxPoints, offsetTime);
 
                 // 5.3 检查时间容差
-                if (matched && Math.Abs((gpsTime - exifTime.Value).TotalSeconds) <=
+                if (matched && Math.Abs((gpsTime - offsetTime).TotalSeconds) <=
                     Config.MaxTolerance.TotalSeconds)
                 {
                     file.Latitude = lat;
@@ -109,6 +122,7 @@ namespace ArchiveMaster.Services
             {
                 file.IsChecked = file.CanCheck = file.IsMatched;
             }
+
             Files = files;
         }
 

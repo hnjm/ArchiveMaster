@@ -9,6 +9,9 @@ namespace ArchiveMaster.Configs
 
         [ObservableProperty]
         private string gpxFile;
+        
+        [ObservableProperty]
+        private List<string> photoExtensions = new() { "heic", "heif", "jpg", "jpeg" };
 
         partial void OnMaxToleranceChanged(TimeSpan value)
         {
@@ -25,11 +28,16 @@ namespace ArchiveMaster.Configs
 
         [ObservableProperty]
         private TimeSpan maxTolerance = TimeSpan.FromMinutes(1);
+        
+        [ObservableProperty]
+        private TimeSpan timeOffset = TimeSpan.Zero;
+
+        [ObservableProperty]
+        private bool inverseTimeOffset = false;
 
         public override void Check()
         {
             CheckDir(Dir, "目录");
-            CheckFile(GpxFile, "GPX文件");
         }
     }
 }

@@ -21,9 +21,14 @@
             </ct:FormItem>
             <ct:FormItem Label="GPX文件：">
                 <v:FilePickerTextBox
+                    AllowMultiple="True"
                     FileNames="{Binding Config.GpxFile}"
+                    MultipleFilesSeparator="|"
                     StringFileTypeFilter="GPS轨迹文件;*.gpx;;"
                     Type="OpenFile" />
+            </ct:FormItem>
+            <ct:FormItem Label="需处理文件后缀名：">
+                <TextBox Text="{Binding Config.PhotoExtensions, Converter={StaticResource StringListConverter}}" />
             </ct:FormItem>
             <ct:FormItem
                 Description="允许匹配的最大时间差。若照片时间与所有GPX点的时间差均超过此值，则跳过该照片"
@@ -31,6 +36,20 @@
                 <TimePicker
                     SelectedTime="{Binding Config.MaxTolerance}"
                     UseSeconds="True" />
+            </ct:FormItem>
+            <ct:FormItem
+                Description="相机时间与GPX时间的差值"
+                Label="相机时间偏移：">
+                <StackPanel Orientation="Horizontal">
+                    <TimePicker
+                        SelectedTime="{Binding Config.TimeOffset}"
+                        UseSeconds="True" />
+                    <ToggleSwitch
+                        IsChecked="{Binding Config.InverseTimeOffset}"
+                        OffContent="相机时间更快"
+                        OnContent="GPX时间更快" />
+                </StackPanel>
+
             </ct:FormItem>
 
         </ct:StackFormItemGroup>

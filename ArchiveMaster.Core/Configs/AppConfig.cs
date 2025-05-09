@@ -62,8 +62,6 @@ namespace ArchiveMaster.Configs
 
         public bool DebugMode { get; set; }
 
-        public string[] PhotoExtensions = ["jpg", "jpeg", "heif", "heic", "dng", "arw"];
-
         public int DebugModeLoopDelay { get; set; } = 30;
 
         public Exception LoadError { get; private set; }
