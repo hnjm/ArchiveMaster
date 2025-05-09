@@ -102,12 +102,12 @@ public class SmoothScrollBehavior : AvaloniaObject
     /// <summary>
     /// 控制每次鼠标滚轮刻度带来的“初始速度”大小
     /// </summary>
-    public static double ScrollStep { get; set; } = 5;
+    public static double ScrollStep { get; set; } = 8;
 
     /// <summary>
     /// 控制惯性衰减的速度
     /// </summary>
-    public static double Friction { get; set; } = 0.008;
+    public static double Friction { get; set; } = 0.015;
 
     /// <summary>
     /// 最小速度阈值
