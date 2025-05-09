@@ -23,6 +23,7 @@
 
             <ScrollViewer
                 MaxHeight="{DynamicResource ConfigMaxHeight}"
+                local:SmoothScrollBehavior.IsEnabled="True"
                 HorizontalScrollBarVisibility="Disabled"
                 IsEnabled="{Binding CanInitialize}"
                 VerticalScrollBarVisibility="Auto">

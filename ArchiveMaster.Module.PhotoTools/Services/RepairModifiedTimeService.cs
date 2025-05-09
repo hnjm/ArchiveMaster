@@ -1,5 +1,4 @@
 ﻿using FzLib;
-using MetadataExtractor;
 using ArchiveMaster.Configs;
 using System;
 using System.Collections.Concurrent;
@@ -18,8 +17,6 @@ namespace ArchiveMaster.Services
     public class RepairModifiedTimeService(AppConfig appConfig)
         : TwoStepServiceBase<RepairModifiedTimeConfig>(appConfig)
     {
-        public string[] Extensions = { "jpg", "jpeg", "heif", "heic", "dng" };
-
         public ConcurrentBag<ExifTimeFileInfo> Files { get; } = new ConcurrentBag<ExifTimeFileInfo>();
 
         private Regex rRepairTime;
@@ -40,7 +37,7 @@ namespace ArchiveMaster.Services
 
         public override async Task InitializeAsync(CancellationToken token)
         {
-            rRepairTime = new Regex(@$"\.({string.Join('|', Extensions)})$",
+            rRepairTime = new Regex(@$"\.({string.Join('|', Config.PhotoExtensions)})$",
                 RegexOptions.IgnoreCase | RegexOptions.Compiled);
             NotifyProgressIndeterminate();
             NotifyMessage("正在查找文件");
@@ -58,7 +55,7 @@ namespace ArchiveMaster.Services
                     NotifyMessage($"正在扫描照片日期{s.GetFileNumberMessage()}");
                     if (rRepairTime.IsMatch(file.Name))
                     {
-                        DateTime? exifTime = FindExifTime(file.Path);
+                        DateTime? exifTime = ExifHelper.FindExifTime(file.Path);
 
                         if (exifTime.HasValue)
                         {
@@ -76,35 +73,6 @@ namespace ArchiveMaster.Services
                     .AutoApplyFileNumberProgress()
                     .WithMultiThreads(Config.ThreadCount)
                     .Catch((file, ex) => { Files.Add(file as ExifTimeFileInfo); }).Build());
-        }
-
-        private DateTime? FindExifTime(string file)
-        {
-            IReadOnlyList<MetadataExtractor.Directory> directories = ImageMetadataReader.ReadMetadata(file);
-
-            foreach (var dir in directories.Where(p => p.Name == "Exif SubIFD"))
-            {
-                if (dir.TryGetDateTime(36867, out DateTime time1))
-                {
-                    return time1;
-                }
-
-                if (dir.TryGetDateTime(36868, out DateTime time2))
-                {
-                    return time2;
-                }
-            }
-
-            MetadataExtractor.Directory dir2 = null;
-            if ((dir2 = directories.FirstOrDefault(p => p.Name == "Exif IFD0")) != null)
-            {
-                if (dir2.TryGetDateTime(306, out DateTime time))
-                {
-                    return time;
-                }
-            }
-
-            return null;
         }
     }
 }

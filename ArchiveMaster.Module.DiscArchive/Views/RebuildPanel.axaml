@@ -19,7 +19,6 @@
                 <ctrl:FilePickerTextBox
                     AllowMultiple="True"
                     FileNames="{Binding Config.DiscDirs}"
-                    MultipleFilesSeparator="|"
                     Type="OpenFolder" />
             </ctrl:FormItem>
             <ctrl:FormItem Label="重建目录：">

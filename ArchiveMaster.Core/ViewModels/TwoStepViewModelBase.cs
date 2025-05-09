@@ -234,23 +234,17 @@ public abstract partial class TwoStepViewModelBase<TService, TConfig> : MultiPre
     [RelayCommand(IncludeCancelCommand = true, CanExecute = nameof(CanInitialize))]
     private async Task InitializeAsync(CancellationToken token)
     {
-        Stopwatch sw = Stopwatch.StartNew();
         AppConfig.Save(false);
-        var a = sw.ElapsedMilliseconds;
         CanInitialize = false;
         InitializeCommand.NotifyCanExecuteChanged();
-        var b = sw.ElapsedMilliseconds;
         CanReset = false;
         ResetCommand.NotifyCanExecuteChanged();
         CanCancel = true;
         CancelCommand.NotifyCanExecuteChanged();
-        var c = sw.ElapsedMilliseconds;
 
         if (await TryRunAsync(async () =>
             {
-                var d = sw.ElapsedMilliseconds;
                 CreateService();
-                var e = sw.ElapsedMilliseconds;
                 await OnInitializingAsync();
                 Config.Check();
                 await Service.InitializeAsync(token);

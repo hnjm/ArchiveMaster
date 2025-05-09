@@ -18,6 +18,7 @@ using ArchiveMaster.Models;
 using ArchiveMaster.Platforms;
 using ArchiveMaster.Services;
 using Avalonia;
+using Avalonia.Input;
 using FzLib.Program.Startup;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -35,6 +36,9 @@ public partial class MainViewModel : ObservableObject
 
     [ObservableProperty]
     private object mainContent;
+    
+    [ObservableProperty]
+    private bool scrollViewBringIntoViewOnFocusChange;
 
     [ObservableProperty]
     private ObservableCollection<ToolPanelGroupInfo> panelGroups = new ObservableCollection<ToolPanelGroupInfo>();
@@ -64,6 +68,13 @@ public partial class MainViewModel : ObservableObject
     }
 
     public IBackCommandService BackCommandService { get; }
+
+    [RelayCommand]
+    private void ScrollViewKeyDown()
+    {
+        //按Tab时，需要按钮自动进入视野；平常的话，会导致鼠标多点一下
+        ScrollViewBringIntoViewOnFocusChange = true;
+    }
 
     [RelayCommand]
     private void EnterTool(ToolPanelInfo panelInfo)

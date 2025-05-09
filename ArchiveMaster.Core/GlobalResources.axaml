@@ -9,4 +9,5 @@
     </ResourceDictionary.MergedDictionaries>
     <c:BitmapAssetValueConverter x:Key="BitmapAssetValueConverter" />
     <c:DateTimeConverter x:Key="DateTimeConverter" />
+    <c:BoolTextWrapConverter x:Key="BoolTextWrapConverter" />
 </ResourceDictionary>

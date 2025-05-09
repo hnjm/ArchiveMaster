@@ -14,6 +14,9 @@ namespace ArchiveMaster.Configs
         [ObservableProperty]
         private TimeSpan maxDurationTolerance = TimeSpan.FromSeconds(1);
 
+        [ObservableProperty]
+        private List<string> photoExtensions = ["jpg", "jpeg", "heif", "heic", "dng"];
+
         public override void Check()
         {
             CheckDir(Dir,"目录");

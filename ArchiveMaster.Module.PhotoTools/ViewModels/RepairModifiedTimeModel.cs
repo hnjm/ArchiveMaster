@@ -17,7 +17,7 @@ public partial class RepairModifiedTimeViewModel(AppConfig appConfig)
 {
     [ObservableProperty]
     private List<ExifTimeFileInfo> files = new List<ExifTimeFileInfo>();
-
+    
     protected override Task OnInitializedAsync()
     {
         Files = Service.Files.ToList();
