@@ -1,9 +1,6 @@
 ﻿using ExifLibrary;
 using MetadataExtractor;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Metadata.Profiles.Exif;
 using ExifTag = ExifLibrary.ExifTag;
-using Rational = SixLabors.ImageSharp.Rational;
 
 namespace ArchiveMaster.Helpers;
 

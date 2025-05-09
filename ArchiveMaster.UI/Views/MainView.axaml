@@ -29,11 +29,21 @@
     </UserControl.Resources>
 
     <Grid Margin="8">
+
         <ScrollViewer
+            x:Name="scr"
             v:SmoothScrollBehavior.IsEnabled="True"
+            BringIntoViewOnFocusChange="{Binding ScrollViewBringIntoViewOnFocusChange}"
             Classes.hidden="{Binding IsToolOpened}"
             HorizontalScrollBarVisibility="Disabled"
             VerticalScrollBarVisibility="Auto">
+            <Interaction.Behaviors>
+                <EventTriggerBehavior
+                    EventName="KeyDown"
+                    SourceObject="scr">
+                    <InvokeCommandAction Command="{Binding ScrollViewKeyDownCommand}" />
+                </EventTriggerBehavior>
+            </Interaction.Behaviors>
             <ScrollViewer.Styles>
                 <Style Selector="ScrollViewer">
                     <Setter Property="Opacity" Value="1" />
