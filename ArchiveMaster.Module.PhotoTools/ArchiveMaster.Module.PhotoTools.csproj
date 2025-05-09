@@ -34,9 +34,4 @@
     <PackageReference Include="Mapster" />
     <PackageReference Include="MetadataExtractor" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Converters\" />
-    <Folder Include="Enums\" />
-  </ItemGroup>
 </Project>

@@ -54,7 +54,7 @@ namespace ArchiveMaster.Services
                 throw new Exception($"GPX文件不存在");
             }
 
-            foreach (var gpxFile in Config.GpxFile.Split('|', StringSplitOptions.RemoveEmptyEntries))
+            foreach (var gpxFile in FileNameHelper.GetFileNames(Config.GpxFile))
             {
                 if (!File.Exists(gpxFile))
                 {

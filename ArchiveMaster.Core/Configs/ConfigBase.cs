@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using ArchiveMaster.Helpers;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace ArchiveMaster.Configs
 {
@@ -17,17 +18,23 @@ namespace ArchiveMaster.Configs
         protected static void CheckFile(string filePath, string name)
         {
             CheckEmpty(filePath, name);
-            if (!File.Exists(filePath))
+            foreach (var f in FileNameHelper.GetFileNames(filePath,false))
             {
-                throw new Exception($"{name}不存在");
+                if (!File.Exists(f))
+                {
+                    throw new Exception($"{name}不存在");
+                }
             }
         }
         protected static void CheckDir(string dirPath, string name)
         {
             CheckEmpty(dirPath, name);
-            if (!Directory.Exists(dirPath))
+            foreach (var f in FileNameHelper.GetDirNames(dirPath,false))
             {
-                throw new Exception($"{name}不存在");
+                if (!Directory.Exists(f))
+                {
+                    throw new Exception($"{name}不存在");
+                }
             }
         }
     }

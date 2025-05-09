@@ -1,5 +1,6 @@
 ﻿using System.Security.Cryptography;
 using ArchiveMaster.Configs;
+using ArchiveMaster.Helpers;
 using ArchiveMaster.ViewModels;
 using DiscFile = ArchiveMaster.ViewModels.FileSystem.DiscFile;
 
@@ -83,7 +84,7 @@ namespace ArchiveMaster.Services
         protected Dictionary<string, List<DiscFile>> ReadFileList(string dirs)
         {
             Dictionary<string, List<DiscFile>> files = new Dictionary<string, List<DiscFile>>();
-            foreach (var dir in dirs.Split('|'))
+            foreach (var dir in FileNameHelper.GetFileNames(dirs))
             {
                 string filelistName = Directory
                     .EnumerateFiles(dir, "filelist-*.txt")

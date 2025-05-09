@@ -38,6 +38,7 @@ namespace ArchiveMaster.Configs
         public override void Check()
         {
             CheckDir(Dir, "目录");
+            CheckFile(GpxFile, "GPX文件");
         }
     }
 }

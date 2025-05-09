@@ -23,7 +23,6 @@
                 <v:FilePickerTextBox
                     AllowMultiple="True"
                     FileNames="{Binding Config.GpxFile}"
-                    MultipleFilesSeparator="|"
                     StringFileTypeFilter="GPS轨迹文件;*.gpx;;"
                     Type="OpenFile" />
             </ct:FormItem>
