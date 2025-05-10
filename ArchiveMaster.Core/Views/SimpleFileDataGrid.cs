@@ -326,6 +326,43 @@ public class SimpleFileDataGrid : DataGrid
                     this.ShowWarningDialogAsync("搜索", $"没有搜索到任何记录");
                 }
             }
+            
+            //筛选
+            var filterGrid = (buttons[5].Flyout as Flyout)?.Content as Grid;
+            Debug.Assert(filterGrid != null);
+            var filterPanel = filterGrid.Children[0] as FileFilterPanel;
+            Debug.Assert(filterPanel != null);
+            filterPanel.Filter = new FileFilterConfig();
+            var filterButton = filterGrid.Children[1] as Button;
+            Debug.Assert(filterButton != null);
+            filterButton.Click += (_, _) => Filter();
+
+            void Filter()
+            {
+                var helper = new FileFilterHelper(filterPanel.Filter);
+                int count = 0;
+                foreach (var file in ItemsSource.OfType<SimpleFileInfo>())
+                {
+                    if (helper.IsMatched(file))
+                    {
+                        file.IsChecked = true;
+                        count++;
+                    }
+                    else
+                    {
+                        file.IsChecked = false;
+                    }
+                }
+                
+                if (count> 0)
+                {
+                    this.ShowOkDialogAsync("筛选", $"筛选到{count}条记录，已全部勾选");
+                }
+                else
+                {
+                    this.ShowWarningDialogAsync("筛选", $"没有筛选到任何记录");
+                }
+            }
         }
         else
         {

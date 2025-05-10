@@ -204,7 +204,19 @@
                                 Classes="Icon"
                                 Content="{StaticResource Filter}"
                                 FontFamily="{StaticResource IconFont}"
-                                ToolTip.Tip="筛选" />
+                                ToolTip.Tip="筛选">
+                                <Button.Flyout>
+                                    <Flyout>
+                                        <Grid RowDefinitions="Auto,8,Auto">
+                                            <v:FileFilterPanel />
+                                            <Button
+                                                Grid.Row="2"
+                                                HorizontalAlignment="Right"
+                                                Content="筛选" />
+                                        </Grid>
+                                    </Flyout>
+                                </Button.Flyout>
+                            </Button>
                         </StackPanel>
                         <ContentControl
                             Grid.Column="2"

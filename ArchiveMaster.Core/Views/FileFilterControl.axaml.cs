@@ -11,8 +11,7 @@ namespace ArchiveMaster.Views;
 public partial class FileFilterControl : UserControl
 {
     public static readonly StyledProperty<FileFilterConfig> FilterProperty =
-        AvaloniaProperty.Register<FileFilterControl, FileFilterConfig>(
-            nameof(Filter), defaultBindingMode: BindingMode.TwoWay);
+        FileFilterPanel.FilterProperty.AddOwner<FileFilterControl>();
 
     public static readonly StyledProperty<object> ButtonContentProperty = AvaloniaProperty.Register<FileFilterControl, object>(
         nameof(ButtonContent),"设置..");
@@ -43,12 +42,5 @@ public partial class FileFilterControl : UserControl
     {
         get => GetValue(FilterProperty);
         set => SetValue(FilterProperty, value);
-    }
-
-    private void ResetButton_OnClick(object sender, RoutedEventArgs e)
-    {
-        var newObj = new FileFilterConfig();
-        newObj.UseRegex = Filter.UseRegex;
-        newObj.Adapt(Filter);
     }
 }
