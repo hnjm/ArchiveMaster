@@ -1,6 +1,8 @@
 using System.Collections;
+using System.Diagnostics;
 using ArchiveMaster.Configs;
 using ArchiveMaster.Converters;
+using ArchiveMaster.Helpers;
 using ArchiveMaster.Services;
 using ArchiveMaster.ViewModels;
 using Avalonia;
@@ -9,12 +11,14 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Markup.Xaml.Templates;
 using Avalonia.Media;
 using Avalonia.VisualTree;
 using FzLib.Avalonia.Converters;
+using FzLib.Avalonia.Dialogs;
 using SimpleFileInfo = ArchiveMaster.ViewModels.FileSystem.SimpleFileInfo;
 
 namespace ArchiveMaster.Views;
@@ -127,11 +131,10 @@ public class SimpleFileDataGrid : DataGrid
                     HorizontalAlignment = HorizontalAlignment.Center,
                     [!ToggleButton.IsCheckedProperty] = new Binding(nameof(SimpleFileInfo.IsChecked)),
                     [!IsEnabledProperty] = new Binding("DataContext.IsWorking") //执行命令时，这CheckBox不可以Enable
-                    { Source = rootPanel, Converter = InverseBoolConverter },
+                        { Source = rootPanel, Converter = InverseBoolConverter },
                 },
-                [!IsEnabledProperty] = new Binding(nameof(SimpleFileInfo.CanCheck))//套两层控件，实现任一禁止选择则不允许选择
+                [!IsEnabledProperty] = new Binding(nameof(SimpleFileInfo.CanCheck)) //套两层控件，实现任一禁止选择则不允许选择
             };
-            
         });
 
         column.CellTemplate = cellTemplate;
@@ -231,7 +234,7 @@ public class SimpleFileDataGrid : DataGrid
             var buttons = this.GetVisualDescendants()
                 .OfType<Button>()
                 .ToList();
-            if (buttons.Count != 4)
+            if (buttons.Count != 6)
             {
                 return;
             }
@@ -246,37 +249,94 @@ public class SimpleFileDataGrid : DataGrid
             }
 
             var tbtn = (ToggleButton)buttons[3];
+
+            IEnumerable<SimpleFileInfo> GetItems()
+            {
+                return (tbtn.IsChecked == true ? SelectedItems : ItemsSource)?.OfType<SimpleFileInfo>() ?? [];
+            }
+
+            //全选
             buttons[0].Click += (_, _) =>
             {
-                foreach (SimpleFileInfo file in tbtn.IsChecked == true ? SelectedItems : ItemsSource)
+                foreach (var file in GetItems())
                 {
                     file.IsChecked = true;
                 }
             };
+
+            //全不选
             buttons[1].Click += (_, _) =>
             {
-                foreach (SimpleFileInfo file in tbtn.IsChecked == true ? SelectedItems : ItemsSource)
+                foreach (var file in GetItems())
                 {
                     file.IsChecked = !file.IsChecked;
                 }
             };
+
+            //反选
             buttons[2].Click += (_, _) =>
             {
-                foreach (SimpleFileInfo file in tbtn.IsChecked == true ? SelectedItems : ItemsSource)
+                foreach (var file in GetItems())
                 {
                     file.IsChecked = false;
                 }
             };
+
+            //搜索
+            var searchGrid = (buttons[4].Flyout as Flyout)?.Content as Grid;
+            Debug.Assert(searchGrid != null);
+            var searchTextBox = searchGrid.Children[0] as TextBox;
+            Debug.Assert(searchTextBox != null);
+            var searchButton = searchGrid.Children[1] as Button;
+            Debug.Assert(searchButton != null);
+            searchButton.Click += (_, _) => Search();
+            searchTextBox.KeyDown += (_, e2) =>
+            {
+                if (e2.Key is Key.Enter or Key.Return)
+                {
+                    Search();
+                }
+            };
+
+            void Search()
+            {
+                var text = searchTextBox.Text;
+                if (string.IsNullOrWhiteSpace(text))
+                {
+                    return;
+                }
+
+                var helper = new FileFilterHelper(new FileFilterConfig
+                {
+                    IncludeFiles = $"*{text}*"
+                });
+                SelectedItems.Clear();
+                foreach (var file in ItemsSource.OfType<SimpleFileInfo>().Where(p => helper.IsMatched(p)))
+                {
+                    SelectedItems.Add(file);
+                }
+
+                if (SelectedItems.Count > 0)
+                {
+                    ScrollIntoView(SelectedItems[0], Columns[0]);
+                    this.ShowOkDialogAsync("搜索", $"搜索到{SelectedItems.Count}条记录，已全部选中");
+                }
+                else
+                {
+                    this.ShowWarningDialogAsync("搜索", $"没有搜索到任何记录");
+                }
+            }
         }
         else
         {
+            //删除占位
             var stk = this
                 .GetVisualDescendants()
                 .OfType<StackPanel>()
                 .FirstOrDefault(p => p.Name == "stkSelectionButtons");
             if (stk != null)
             {
-                ((Grid)stk.Parent).Children.Remove(stk);
+                ((Grid)stk.Parent)?.Children.Remove(stk);
             }
         }
     }
