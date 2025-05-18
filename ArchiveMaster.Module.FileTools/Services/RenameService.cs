@@ -75,7 +75,7 @@ public class RenameService(AppConfig appConfig)
 
         await Task.Run(() =>
         {
-            FilePlaceholderReplacer placeholderReplacer = new FilePlaceholderReplacer(Config.ReplacePattern);
+            FilePlaceholderReplacer placeholderReplacer = new FilePlaceholderReplacer(Config.ReplacePattern ?? "");
 
             // 获取所有待处理文件
             IEnumerable<FileSystemInfo> files;
