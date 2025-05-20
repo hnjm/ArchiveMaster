@@ -1,5 +1,7 @@
 using System.Collections;
 using System.Diagnostics;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.RegularExpressions;
 using ArchiveMaster.Configs;
 using ArchiveMaster.Enums;
@@ -9,6 +11,8 @@ using ArchiveMaster.ViewModels.FileSystem;
 using Avalonia.Media;
 using FzLib.Avalonia.Converters;
 using FzLib.Program;
+using Microsoft.CodeAnalysis.CSharp.Scripting;
+using Microsoft.CodeAnalysis.Scripting;
 using RenameFileInfo = ArchiveMaster.ViewModels.FileSystem.RenameFileInfo;
 
 namespace ArchiveMaster.Services;
@@ -17,6 +21,9 @@ public class RenameService(AppConfig appConfig)
     : TwoStepServiceBase<RenameConfig>(appConfig)
 {
     private static readonly Dictionary<string, Regex> regexes = new Dictionary<string, Regex>();
+    private static Dictionary<string, Script<string>> csScripts = new Dictionary<string, Script<string>>();
+    private RegexOptions regexOptions;
+    private StringComparison stringComparison;
     public IReadOnlyList<RenameFileInfo> Files { get; private set; }
 
     public override async Task ExecuteAsync(CancellationToken token = default)
@@ -73,7 +80,7 @@ public class RenameService(AppConfig appConfig)
         NotifyMessage("正在查找文件");
 
 
-        await Task.Run(() =>
+        await Task.Run(async () =>
         {
             FilePlaceholderReplacer placeholderReplacer = new FilePlaceholderReplacer(Config.ReplacePattern ?? "");
 
@@ -101,7 +108,7 @@ public class RenameService(AppConfig appConfig)
 
                 if (renameFile.IsMatched)
                 {
-                    string originalNewName = Rename(placeholderReplacer, renameFile);
+                    string originalNewName = await RenameAsync(placeholderReplacer, renameFile);
                     renameFile.NewName = originalNewName; // 临时存储原始目标名称
                 }
                 else
@@ -146,9 +153,6 @@ public class RenameService(AppConfig appConfig)
         regexes.Add(pattern, r);
         return r;
     }
-
-    private RegexOptions regexOptions;
-
     private bool IsMatched(RenameFileInfo file)
     {
         string name = Config.SearchPath ? file.Path : file.Name;
@@ -164,11 +168,7 @@ public class RenameService(AppConfig appConfig)
             _ => throw new ArgumentOutOfRangeException()
         };
     }
-
-
-    private StringComparison stringComparison;
-
-    private string Rename(FilePlaceholderReplacer replacer, RenameFileInfo file)
+    private async Task<string> RenameAsync(FilePlaceholderReplacer replacer, RenameFileInfo file)
     {
         string name = file.Name;
         string matched = null;
@@ -188,7 +188,63 @@ public class RenameService(AppConfig appConfig)
             RenameMode.ReplaceAll => replacer.GetTargetName(file),
             RenameMode.RetainMatched => matched,
             RenameMode.RetainMatchedExtension => $"{matched}{Path.GetExtension(name)}",
+            RenameMode.CustomCsharp => await ReplaceCsharp(matched, name, file, replacer.Template),
             _ => throw new ArgumentOutOfRangeException(),
         };
+    }
+    private async Task<string> ReplaceCsharp(string matched, string name, RenameFileInfo file, string code)
+    {
+        try
+        {
+            var globals = new CustomCsharpRenameData
+            {
+                Matched = matched,
+                File = file,
+            };
+
+            if (!csScripts.TryGetValue(code, out var cs))
+            {
+                var options = ScriptOptions.Default
+                    .AddReferences(
+                        typeof(object).Assembly, 
+                        typeof(Enumerable).Assembly, 
+                        typeof(Regex).Assembly, 
+                        typeof(MD5).Assembly,
+                        typeof(RenameFileInfo).Assembly 
+                    )
+                    .AddImports(
+                        nameof(System),
+                        typeof(Encoding).Namespace,
+                        typeof(Enumerable).Namespace,
+                        typeof(Regex).Namespace,
+                        typeof(Math).Namespace,
+                        typeof(MD5).Namespace,
+                        typeof(RenameFileInfo).Namespace
+                    );
+                
+                // 关键修改：添加 globalsType 参数
+                cs = CSharpScript.Create<string>(
+                    code,
+                    options,
+                    globalsType: typeof(CustomCsharpRenameData)); // 指定全局变量类型
+                csScripts.Add(code, cs);
+            }
+
+            return (await cs.RunAsync(globals)).ReturnValue;
+        }
+        catch (CompilationErrorException ex)
+        {
+            throw new Exception($"C# 脚本编译错误: {string.Join("\n", ex.Diagnostics)}");
+        }
+        catch (Exception ex)
+        {
+            throw new Exception($"执行 C# 脚本时出错: {ex.Message}");
+        }
+    }
+
+    public class CustomCsharpRenameData
+    {
+        public RenameFileInfo File { get; set; }
+        public string Matched { get; set; }
     }
 }

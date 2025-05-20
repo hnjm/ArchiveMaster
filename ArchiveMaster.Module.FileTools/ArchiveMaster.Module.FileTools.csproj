@@ -45,5 +45,6 @@
 
   <ItemGroup>
     <PackageReference Include="Mapster" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" />
   </ItemGroup>
 </Project>
