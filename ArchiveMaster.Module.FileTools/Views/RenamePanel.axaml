@@ -18,18 +18,46 @@
     x:DataType="vm:EncryptorViewModel"
     mc:Ignorable="d">
     <v:TwoStepPanelBase.ConfigsContent>
-        <ct:StackFormItemGroup>
-            <ct:FormItem Label="目录：">
+        <ct:StackFormItemGroup
+            Grid.Row="2"
+            LabelWidth="96.0">
+            <ct:FormItem Label="重命名方式：">
+                <ToggleSwitch
+                    IsChecked="{Binding Config.Manual}"
+                    OffContent="自动模式（按规则批量处理）"
+                    OnContent="手动模式（逐行指定映射）" />
+            </ct:FormItem>
+            <ct:FormItem
+                IsVisible="{Binding Config.Manual}"
+                Label="映射表：">
+                <TextBox
+                    Grid.Row="2"
+                    AcceptsReturn="True"
+                    AcceptsTab="True"
+                    MaxLines="10"
+                    MinLines="5"
+                    Text="{Binding Config.ManualMaps}"
+                    TextWrapping="Wrap"
+                    UseFloatingWatermark="True"
+                    Watermark="每行一个文件，格式为：原文件路径[制表符]新文件名。例如：C:\file.txt&#x0009;newFile.txt" />
+            </ct:FormItem>
+            <ct:FormItem
+                IsVisible="{Binding !Config.Manual}"
+                Label="目录：">
                 <v:FilePickerTextBox
                     FileNames="{Binding Config.Dir}"
                     Type="OpenFolder" />
             </ct:FormItem>
 
-            <ct:FormItem Label="搜索关键词：">
+            <ct:FormItem
+                IsVisible="{Binding !Config.Manual}"
+                Label="搜索关键词：">
                 <TextBox Text="{Binding Config.SearchPattern}" />
             </ct:FormItem>
 
-            <ct:FormItem Label="替换关键词：">
+            <ct:FormItem
+                IsVisible="{Binding !Config.Manual}"
+                Label="替换关键词：">
                 <TextBox
                     AcceptsReturn="True"
                     MaxLines="5"
@@ -37,7 +65,9 @@
                     TextWrapping="Wrap" />
             </ct:FormItem>
 
-            <ct:FormItem Label="搜索选项：">
+            <ct:FormItem
+                IsVisible="{Binding !Config.Manual}"
+                Label="搜索选项：">
                 <ct:WrapFormItemGroup>
                     <ct:FormItem Label="类型：">
                         <ComboBox
@@ -64,7 +94,9 @@
                 </ct:WrapFormItemGroup>
             </ct:FormItem>
 
-            <ct:FormItem Label="重命名选项：">
+            <ct:FormItem
+                IsVisible="{Binding !Config.Manual}"
+                Label="重命名选项：">
                 <ct:FormItem Label="重命名模式：">
                     <ComboBox
                         Width="192"

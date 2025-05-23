@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using ArchiveMaster.Enums;
 using CommunityToolkit.Mvvm.ComponentModel;
 
@@ -5,6 +6,12 @@ namespace ArchiveMaster.Configs;
 
 public partial class RenameConfig : ConfigBase
 {
+    [ObservableProperty]
+    private bool manual;
+
+    [ObservableProperty]
+    private string manualMaps = "";
+
     [ObservableProperty]
     private string dir;
 
@@ -29,10 +36,13 @@ public partial class RenameConfig : ConfigBase
     [ObservableProperty]
     private bool ignoreCase = true;
     
+    [ObservableProperty]
+    private bool includeSubDirs = true;
+
     public override void Check()
     {
-        CheckDir(Dir,"操作目录");
-        CheckEmpty(SearchPattern,"搜索关键词");
+        CheckDir(Dir, "操作目录");
+        CheckEmpty(SearchPattern, "搜索关键词");
         if (RenameTarget == RenameTargetType.Folder)
         {
             if (RenameMode is RenameMode.ReplaceExtension or RenameMode.ReplaceName)
