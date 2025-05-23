@@ -188,7 +188,7 @@ public class RenameService(AppConfig appConfig)
             RenameMode.ReplaceAll => replacer.GetTargetName(file),
             RenameMode.RetainMatched => matched,
             RenameMode.RetainMatchedExtension => $"{matched}{Path.GetExtension(name)}",
-            RenameMode.CustomCsharp => await ReplaceCsharp(matched, name, file, replacer.Template),
+            RenameMode.Csharp => await ReplaceCsharp(matched, name, file, replacer.Template),
             _ => throw new ArgumentOutOfRangeException(),
         };
     }
@@ -198,8 +198,8 @@ public class RenameService(AppConfig appConfig)
         {
             var globals = new CustomCsharpRenameData
             {
-                Matched = matched,
-                File = file,
+                matched = matched,
+                file = file,
             };
 
             if (!csScripts.TryGetValue(code, out var cs))
@@ -214,6 +214,7 @@ public class RenameService(AppConfig appConfig)
                     )
                     .AddImports(
                         nameof(System),
+                        typeof(Path).Namespace,
                         typeof(Encoding).Namespace,
                         typeof(Enumerable).Namespace,
                         typeof(Regex).Namespace,
@@ -244,7 +245,7 @@ public class RenameService(AppConfig appConfig)
 
     public class CustomCsharpRenameData
     {
-        public RenameFileInfo File { get; set; }
-        public string Matched { get; set; }
+        public RenameFileInfo file { get; set; }
+        public string matched { get; set; }
     }
 }

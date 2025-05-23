@@ -22,6 +22,6 @@ public enum RenameMode
     [Description("保留匹配值和扩展名")]
     RetainMatchedExtension,
     
-    [Description("自定义（使用C#代码）")]
-    CustomCsharp
+    [Description("高级（使用C#代码）")]
+    Csharp
 }

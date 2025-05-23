@@ -30,7 +30,11 @@
             </ct:FormItem>
 
             <ct:FormItem Label="替换关键词：">
-                <TextBox Text="{Binding Config.ReplacePattern}" />
+                <TextBox
+                    AcceptsReturn="True"
+                    MaxLines="5"
+                    Text="{Binding Config.ReplacePattern}"
+                    TextWrapping="Wrap" />
             </ct:FormItem>
 
             <ct:FormItem Label="搜索选项：">
