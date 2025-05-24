@@ -30,20 +30,25 @@ namespace ArchiveMaster
         public IList<Type> BackgroundServices { get; }
         public IList<ConfigMetadata> Configs =>
         [
+            new ConfigMetadata(typeof(FileCopyTestConfig))
         ];
 
         public string ModuleName => "测试";
         public int Order => -100;
         public IList<Type> SingletonServices { get; }
 
-        public IList<Type> TransientServices { get; }
-
+        public IList<Type> TransientServices { get; } =
+        [
+            typeof(FileCopyTestService),
+        ];
         public ToolPanelGroupInfo Views => new ToolPanelGroupInfo()
         {
             Panels =
             {
                 new ToolPanelInfo(typeof(FileFilterTestPanel), typeof(FileFilterTestViewModel), "文件筛选测试",
                     "测试FileFilter功能", baseUrl + "test.svg"),
+                new ToolPanelInfo(typeof(FileCopyTestPanel), typeof(FileCopyTestViewModel), "文件复制测试",
+                    "测试自写文件复制功能", baseUrl + "test.svg"),
             },
             GroupName = ModuleName,
         };

@@ -30,6 +30,12 @@ namespace ArchiveMaster.Configs
         private string offsiteSnapshot;
 
         [ObservableProperty]
+        private bool enableEncryption;
+
+        [ObservableProperty]
+        private string encryptionPassword;
+
+        [ObservableProperty]
         [property: JsonIgnore]
         private ObservableCollection<LocalAndOffsiteDir> matchingDirs;
 
@@ -42,6 +48,15 @@ namespace ArchiveMaster.Configs
         {
             CheckFile(OffsiteSnapshot, "异地快照文件");
             CheckEmpty(LocalDir, "本地搜索目录");
+            if (EnableEncryption && string.IsNullOrWhiteSpace(EncryptionPassword))
+            {
+                throw new Exception("已启动备份文件加密，但密码为空");
+            }
+
+            if (ExportMode != ExportMode.Copy && EnableEncryption)
+            {
+                throw new Exception("只有导出模式设置为“复制”时，才支持备份文件加密");
+            }
         }
     }
 }

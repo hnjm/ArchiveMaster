@@ -12,6 +12,10 @@
     <Compile Remove="obj\**" />
     <EmbeddedResource Remove="obj\**" />
     <None Remove="obj\**" />
+    <Compile Update="Views\FileCopyTestPanel.axaml.cs">
+      <DependentUpon>FileCopyTestPanel.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
 
 

@@ -11,9 +11,9 @@ namespace ArchiveMaster.Helpers
         {
             return fileLength switch
             {
-                < 1 * 1024 * 1024 => 16 * 1024,       // 小文件（<1MB）：16KB
+                < 1 * 1024 * 1024 => 16 * 1024, // 小文件（<1MB）：16KB
                 < 32 * 1024 * 1024 => 1 * 1024 * 1024, // 中等文件（1MB~32MB）：1MB
-                _ => 4 * 1024 * 1024                   // 大文件（>32MB）：4MB
+                _ => 4 * 1024 * 1024 // 大文件（>32MB）：4MB
             };
         }
 
@@ -23,8 +23,9 @@ namespace ArchiveMaster.Helpers
         public static async Task CopyFileAsync(
             string sourceFilePath,
             string destinationFilePath,
-            CancellationToken cancellationToken = default,
-            int bufferSize = 0)
+            int bufferSize = 0,
+            IProgress<FileCopyProgress> progress = null,
+            CancellationToken cancellationToken = default)
         {
             if (!File.Exists(sourceFilePath))
                 throw new FileNotFoundException("源文件不存在", sourceFilePath);
@@ -69,17 +70,26 @@ namespace ArchiveMaster.Helpers
                     FileShare.None,
                     bufferSize,
                     FileOptions.Asynchronous | FileOptions.WriteThrough);
+                long totalBytes = sourceStream.Length;
 
                 // 启动并行任务
                 var readTask = ReadDataAsync(sourceStream, bufferChannel.Writer, bufferSize, cancellationToken);
-                var writeTask = WriteDataAsync(destinationStream, bufferChannel.Reader, cancellationToken);
+                var writeTask = WriteDataAsync(destinationStream, bufferChannel.Reader, progress, sourceFilePath,
+                    destinationFilePath, totalBytes, cancellationToken);
 
                 await Task.WhenAll(readTask, writeTask);
 
                 // 复制文件属性
                 var sourceInfo = new FileInfo(sourceFilePath);
                 File.SetLastWriteTimeUtc(destinationFilePath, sourceInfo.LastWriteTimeUtc);
-                File.SetCreationTimeUtc(destinationFilePath, sourceInfo.CreationTimeUtc);
+                try
+                {
+                    File.SetCreationTimeUtc(destinationFilePath, sourceInfo.CreationTimeUtc);
+                }
+                catch
+                {
+                    // ignored
+                }
             }
             catch (OperationCanceledException)
             {
@@ -95,37 +105,52 @@ namespace ArchiveMaster.Helpers
             int bufferSize,
             CancellationToken ct)
         {
+            byte[] readBuffer = ArrayPool<byte>.Shared.Rent(bufferSize);
             try
             {
-                byte[] readBuffer = ArrayPool<byte>.Shared.Rent(bufferSize);
-                try
+                while (true)
                 {
-                    int bytesRead;
-                    while ((bytesRead = await sourceStream.ReadAsync(readBuffer.AsMemory(0, bufferSize), ct)) > 0)
-                    {
-                        await writer.WriteAsync((readBuffer, bytesRead), ct);
-                        readBuffer = ArrayPool<byte>.Shared.Rent(bufferSize); // 获取新缓冲区
-                    }
-                }
-                finally
-                {
-                    ArrayPool<byte>.Shared.Return(readBuffer);
+                    int bytesRead = await sourceStream.ReadAsync(readBuffer.AsMemory(0, bufferSize), ct);
+                    if (bytesRead <= 0) break;
+        
+                    var bufferToSend = readBuffer;
+                    readBuffer = ArrayPool<byte>.Shared.Rent(bufferSize); // 提前租用下一个
+                    await writer.WriteAsync((bufferToSend, bytesRead), ct);
                 }
             }
             finally
             {
+                ArrayPool<byte>.Shared.Return(readBuffer); // 确保最后一个缓冲区被返还
                 writer.Complete();
             }
         }
 
+
         private static async Task WriteDataAsync(
             FileStream destinationStream,
             ChannelReader<(byte[] buffer, int bytesRead)> reader,
+            IProgress<FileCopyProgress> progress, // 新增 progress 参数
+            string sourceFilePath, // 新增 sourceFilePath
+            string destinationFilePath, // 新增 destinationFilePath
+            long totalBytes, // 新增 totalBytes
             CancellationToken ct)
         {
+            long totalBytesWritten = 0;
+
             await foreach (var (buffer, bytesRead) in reader.ReadAllAsync(ct))
             {
                 await destinationStream.WriteAsync(buffer.AsMemory(0, bytesRead), ct);
+                totalBytesWritten += bytesRead;
+
+                // 报告进度（基于已写入的字节数）
+                progress?.Report(new FileCopyProgress
+                {
+                    SourceFilePath = sourceFilePath,
+                    DestinationFilePath = destinationFilePath,
+                    TotalBytes = totalBytes,
+                    BytesCopied = totalBytesWritten
+                });
+
                 ArrayPool<byte>.Shared.Return(buffer);
             }
         }
@@ -172,6 +197,7 @@ namespace ArchiveMaster.Helpers
                 sha1.TransformBlock(buffer, 0, bytesRead, null, 0);
                 ArrayPool<byte>.Shared.Return(buffer);
             }
+
             sha1.TransformFinalBlock(Array.Empty<byte>(), 0, 0);
         }
     }

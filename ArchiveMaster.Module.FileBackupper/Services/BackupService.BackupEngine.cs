@@ -39,7 +39,8 @@ public partial class BackupService
 
                     db.Add(snapshot);
                     await db.SaveChangesAsync(cancellationToken);
-                    await LogAsync(db, LogLevel.Information, $"开始备份，模式：{DescriptionConverter.GetDescription(type)}", snapshot);
+                    await LogAsync(db, LogLevel.Information, $"开始备份，模式：{DescriptionConverter.GetDescription(type)}",
+                        snapshot);
                     await LogAsync(db, LogLevel.Information, $"正在枚举文件", snapshot);
                     var files = GetSourceFiles(cancellationToken);
                     await LogAsync(db, LogLevel.Information, $"完成枚举磁盘文件，共{files.Count}个", snapshot);
@@ -119,9 +120,9 @@ public partial class BackupService
                 }
                 else
                 {
-                    await FileIOHelper.CopyFileAsync(file.FullName, backupFilePath, cancellationToken);
+                    await FileIOHelper.CopyFileAsync(file.FullName, backupFilePath,
+                        cancellationToken: cancellationToken);
                 }
-
             }
 
             db.Add(dbFile);

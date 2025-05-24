@@ -71,8 +71,7 @@ namespace ArchiveMaster.Services
                 long length = 0;
                 StringBuilder batScript = new StringBuilder();
                 StringBuilder ps1Script = new StringBuilder();
-                batScript.AppendLine("@echo off");
-                ps1Script.AppendLine("Import-Module BitsTransfer");
+                BeginScript(batScript, ps1Script);
                 using var sha256 = SHA256.Create();
 
                 TryForFiles(files, (file, s) =>
@@ -133,7 +132,7 @@ namespace ArchiveMaster.Services
 
                                 try
                                 {
-                                    File.Copy(sourceFile, destFile);
+                                    CopyFile(sourceFile, destFile);
                                     tryCount = 0;
                                 }
                                 catch (IOException ex)
@@ -153,25 +152,7 @@ namespace ArchiveMaster.Services
                             HardLinkCreator.CreateHardLink(destFile, sourceFile);
                             break;
                         case ExportMode.Script:
-                            string sourceFileWithReplaceSpecialChars = sourceFile.Replace("%", "%%");
-                            batScript.AppendLine($"if exist \"{file.TempName}\" (");
-                            batScript.AppendLine($"echo \"文件 {sourceFileWithReplaceSpecialChars} 已存在\"");
-                            batScript.AppendLine($") else (");
-                            batScript.AppendLine($"echo 正在复制 \"{sourceFileWithReplaceSpecialChars}\"");
-                            batScript.AppendLine(
-                                $"copy \"{sourceFileWithReplaceSpecialChars}\" \"{file.TempName}\"");
-                            batScript.AppendLine($")");
-
-                            string ps1SourceName = sourceFile.Replace("'", "''");
-                            ps1Script.AppendLine($"if ([System.IO.File]::Exists(\"{file.TempName}\")){{");
-                            ps1Script.AppendLine($"'文件 {ps1SourceName} 已存在'");
-                            ps1Script.AppendLine($"}}else{{");
-                            ps1Script.AppendLine($"'正在复制 {sourceFile}'");
-                            string sourceFileWithNoWildcards = sourceFile.Replace("`", "``").Replace("[", "`[")
-                                .Replace("]", "`]").Replace("?", "`?").Replace("?", "`?");
-                            ps1Script.AppendLine(
-                                $"Start-BitsTransfer -Source '{sourceFileWithNoWildcards}' -Destination '{file.TempName}' -DisplayName '正在复制文件' -Description '{sourceFile} => {file.TempName}'");
-                            ps1Script.AppendLine($"}}");
+                            ExportWithScript(sourceFile, file, batScript, ps1Script);
                             break;
                         default:
                             throw new ArgumentOutOfRangeException();
@@ -190,15 +171,7 @@ namespace ArchiveMaster.Services
 
                 if (Config.ExportMode == ExportMode.Script)
                 {
-                    batScript.AppendLine("echo 复制完成");
-                    batScript.AppendLine("pause");
-                    var encoding = Encoding.GetEncoding(CultureInfo.CurrentCulture.TextInfo.OEMCodePage);
-                    File.WriteAllText(Path.Combine(Config.PatchDir, "CopyToHere.bat"), batScript.ToString(), encoding);
-
-                    ps1Script.AppendLine("\"复制完成\"");
-                    ps1Script.AppendLine("pause");
-                    File.WriteAllText(Path.Combine(Config.PatchDir, "CopyToHere.ps1"), ps1Script.ToString(),
-                        Encoding.UTF8);
+                    FinishScript(batScript, ps1Script);
                 }
 
                 Step2Model model = new Step2Model()
@@ -209,6 +182,62 @@ namespace ArchiveMaster.Services
 
                 ZipService.WriteToZip(model, Path.Combine(Config.PatchDir, "file.os2"));
             }, token);
+        }
+
+        private static void BeginScript(StringBuilder batScript, StringBuilder ps1Script)
+        {
+            batScript.AppendLine("@echo off");
+            ps1Script.AppendLine("Import-Module BitsTransfer");
+        }
+
+        private void FinishScript(StringBuilder batScript, StringBuilder ps1Script)
+        {
+            batScript.AppendLine("echo 复制完成");
+            batScript.AppendLine("pause");
+            var encoding = Encoding.GetEncoding(CultureInfo.CurrentCulture.TextInfo.OEMCodePage);
+            File.WriteAllText(Path.Combine(Config.PatchDir, "CopyToHere.bat"), batScript.ToString(), encoding);
+
+            ps1Script.AppendLine("\"复制完成\"");
+            ps1Script.AppendLine("pause");
+            File.WriteAllText(Path.Combine(Config.PatchDir, "CopyToHere.ps1"), ps1Script.ToString(),
+                Encoding.UTF8);
+        }
+
+        private static void ExportWithScript(string sourceFile, SyncFileInfo file, StringBuilder batScript,
+            StringBuilder ps1Script)
+        {
+            string sourceFileWithReplaceSpecialChars = sourceFile.Replace("%", "%%");
+            batScript.AppendLine($"if exist \"{file.TempName}\" (");
+            batScript.AppendLine($"echo \"文件 {sourceFileWithReplaceSpecialChars} 已存在\"");
+            batScript.AppendLine($") else (");
+            batScript.AppendLine($"echo 正在复制 \"{sourceFileWithReplaceSpecialChars}\"");
+            batScript.AppendLine(
+                $"copy \"{sourceFileWithReplaceSpecialChars}\" \"{file.TempName}\"");
+            batScript.AppendLine($")");
+
+            string ps1SourceName = sourceFile.Replace("'", "''");
+            ps1Script.AppendLine($"if ([System.IO.File]::Exists(\"{file.TempName}\")){{");
+            ps1Script.AppendLine($"'文件 {ps1SourceName} 已存在'");
+            ps1Script.AppendLine($"}}else{{");
+            ps1Script.AppendLine($"'正在复制 {sourceFile}'");
+            string sourceFileWithNoWildcards = sourceFile.Replace("`", "``").Replace("[", "`[")
+                .Replace("]", "`]").Replace("?", "`?").Replace("?", "`?");
+            ps1Script.AppendLine(
+                $"Start-BitsTransfer -Source '{sourceFileWithNoWildcards}' -Destination '{file.TempName}' -DisplayName '正在复制文件' -Description '{sourceFile} => {file.TempName}'");
+            ps1Script.AppendLine($"}}");
+        }
+
+        private void CopyFile(string source,string destination)
+        {
+            if (Config.EnableEncryption)
+            {
+                
+            }
+            else
+            {
+                //FileIOHelper.CopyFileAsync()
+                File.Copy(source,destination);
+            }
         }
 
         public override async Task InitializeAsync(CancellationToken token = default)
