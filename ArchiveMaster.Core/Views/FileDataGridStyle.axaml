@@ -181,15 +181,55 @@
                                 Content="{StaticResource MultiSelect}"
                                 FontFamily="{StaticResource IconFont}"
                                 ToolTip.Tip="仅处理选中的行" />
+                            <Button
+                                Classes="Icon"
+                                Content="{StaticResource Search}"
+                                FontFamily="{StaticResource IconFont}"
+                                ToolTip.Tip="搜索">
+                                <Button.Flyout>
+                                    <Flyout>
+                                        <Grid ColumnDefinitions="200,8,Auto">
+                                            <TextBox />
+                                            <Button
+                                                Grid.Column="2"
+                                                Classes="Icon"
+                                                Content="{StaticResource Search}"
+                                                FontFamily="{StaticResource IconFont}"
+                                                ToolTip.Tip="搜索" />
+                                        </Grid>
+                                    </Flyout>
+                                </Button.Flyout>
+                            </Button>
+                            <Button
+                                Classes="Icon"
+                                Content="{StaticResource Filter}"
+                                FontFamily="{StaticResource IconFont}"
+                                ToolTip.Tip="筛选">
+                                <Button.Flyout>
+                                    <Flyout>
+                                        <Grid RowDefinitions="Auto,8,Auto">
+                                            <v:FileFilterPanel />
+                                            <Button
+                                                Grid.Row="2"
+                                                HorizontalAlignment="Right"
+                                                Content="筛选" />
+                                        </Grid>
+                                    </Flyout>
+                                </Button.Flyout>
+                            </Button>
                         </StackPanel>
                         <ContentControl
                             Grid.Column="2"
                             Margin="0,0,8,0"
                             VerticalAlignment="Center"
                             IsVisible="{Binding $parent[DataGrid].ShowCount}">
-                            <TextBlock
-                                IsVisible="{Binding $parent[DataGrid].ItemsSource, Converter={StaticResource NotNullConverter}}"
-                                Text="{Binding $parent[DataGrid].ItemsSource.Count, StringFormat='共 {0} 项'}" />
+                            <StackPanel
+                                Orientation="Horizontal"
+                                Spacing="8">
+                                <TextBlock
+                                    IsVisible="{Binding $parent[DataGrid].ItemsSource, Converter={StaticResource NotNullConverter}}"
+                                    Text="{Binding $parent[DataGrid].ItemsSource.Count, StringFormat='共 {0} 项'}" />
+                            </StackPanel>
                         </ContentControl>
                         <ContentControl
                             Grid.Column="4"

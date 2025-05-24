@@ -178,31 +178,31 @@
 
 ## 文件信息占位符
 
-在一些工具中，需要将文件的信息转为字符串。本软件约定了一些占位符的格式，用于提取文件信息。占位符由`<`开始，`>`结束。
+在一些工具中（批量重命名、批量命令行执行），需要将文件的信息转为字符串。本软件约定了一些占位符的格式，用于提取文件信息。占位符由`<`开始，`>`结束。
 
-| 占位符格式                   | 说明                         | 参数说明                                                     | 示例                                               |
-| :--------------------------- | :--------------------------- | :----------------------------------------------------------- | :------------------------------------------------- |
-| **基础信息**                 |                              |                                                              | 假设文件为`C:\A\B\C\file.txt`，顶层目录为`C:\A`    |
-| `<NameExt>`                  | 完整文件名（包含扩展名）     | 无参数                                                       | `file.txt`                                         |
-| `<Name>`                     | 不含扩展名的文件名           | 无参数                                                       | `file`                                             |
-| `<Ext>`                      | 文件扩展名（不含点号）       | 无参数                                                       | `txt`                                              |
-| `<Path>`                     | 文件完整绝对路径             | 无参数                                                       | `C:\A\B\C\file.txt`                                |
-| `<RelPath>`                  | 文件相对路径                 | 无参数                                                       | `B\C\file.txt`                                     |
-| `<Len>`                      | 文件大小（字节数）           | 无参数                                                       | `1024`                                             |
-| **目录信息**                 |                              |                                                              |                                                    |
-| `<DirPath>`                  | 文件所在目录的绝对路径       | 无参数                                                       | `C:\A\B\C`                                         |
-| `<DirRelPath>`               | 文件所在目录的相对路径       | 无参数                                                       | `B\C`                                              |
-| `<DirName>`                  | 文件所在目录的名称           | 无参数                                                       | `C`                                                |
-| **动态截取**                 |                              |                                                              | 假设文件名为`FileName`                             |
-| `<Name-Left-From-Count>`     | 从左截取文件名（不含扩展名） | `From`: 起始位置(0-based)<br /> `Count`: 截取长度            | `<Name-Left-0-4>` → `File`                         |
-| `<Name-Right-From-Count>`    | 从右截取文件名（不含扩展名） | `From`: 从右数的起始位置<br /> `Count`: 截取长度             | `<Name-Right-3-4>` → `Name`                        |
-| **时间信息**                 |                              |                                                              |                                                    |
-| `<CreatTime-Format>`         | 文件创建时间                 | `Format`: [DateTime格式字符串](https://learn.microsoft.com/zh-cn/dotnet/standard/base-types/standard-date-and-time-format-strings) | `<CreatTime-yyyyMMdd>` → `20230825`                |
-| `<CreatTimeUtc-Format>`      | 文件创建时间（UTC时间）      | 同上                                                         | `<CreatTimeUtc-HHmmss>` → `142530`                 |
-| `<LastAccessTime-Format>`    | 文件最后访问时间             | 同上                                                         | `<LastAccessTime-yyyy-MM-dd>` → `2023-08-25`       |
-| `<LastAccessTimeUtc-Format>` | 文件最后访问时间（UTC时间）  | 同上                                                         | `<LastAccessTimeUtc-ddd>` → `Fri`                  |
-| `<LastWriteTime-Format>`     | 文件最后修改时间             | 同上                                                         | `<LastWriteTime-MMM dd>` → `Aug 25`                |
-| `<LastWriteTimeUtc-Format>`  | 文件最后修改时间（UTC时间）  | 同上                                                         | `<LastWriteTimeUtc-yyyyMMddHHmm>` → `202308251425` |
+| 占位符格式                   | 说明                         | 参数说明                                                     | 示例                                                 |
+| :--------------------------- | :--------------------------- | :----------------------------------------------------------- | :--------------------------------------------------- |
+| **基础信息**                 |                              |                                                              | 假设文件为`C:\A\B\C\file.txt`，顶层目录为`C:\A`      |
+| `<NameExt>`                  | 完整文件名（包含扩展名）     | 无参数                                                       | `file.txt`                                           |
+| `<Name>`                     | 不含扩展名的文件名           | 无参数                                                       | `file`                                               |
+| `<Ext>`                      | 文件扩展名（不含点号）       | 无参数                                                       | `txt`                                                |
+| `<Path>`                     | 文件完整绝对路径             | 无参数                                                       | `C:\A\B\C\file.txt`                                  |
+| `<RelPath>`                  | 文件相对路径                 | 无参数                                                       | `B\C\file.txt`                                       |
+| `<Len>`                      | 文件大小（字节数）           | 无参数                                                       | `1024`                                               |
+| **目录信息**                 |                              |                                                              |                                                      |
+| `<DirPath>`                  | 文件所在目录的绝对路径       | 无参数                                                       | `C:\A\B\C`                                           |
+| `<DirRelPath>`               | 文件所在目录的相对路径       | 无参数                                                       | `B\C`                                                |
+| `<DirName>`                  | 文件所在目录的名称           | 无参数                                                       | `C`                                                  |
+| **动态截取**                 |                              |                                                              | 假设文件名为`FileName`                               |
+| `<Name-Left-From-Count>`     | 从左截取文件名（不含扩展名） | `From`: 起始位置(0-based)<br /> `Count`: 截取长度            | `<Name-Left-0-4>` → `File`                           |
+| `<Name-Right-From-Count>`    | 从右截取文件名（不含扩展名） | `From`: 从右数的起始位置<br /> `Count`: 截取长度             | `<Name-Right-3-4>` → `Name`                          |
+| **时间信息**                 |                              |                                                              |                                                      |
+| `<CreatTime-Format>`         | 文件创建时间                 | `Format`: [DateTime格式字符串](https://learn.microsoft.com/zh-cn/dotnet/standard/base-types/standard-date-and-time-format-strings) | `<CreatTime-yyyyMMdd>` → `20230825`                  |
+| `<CreatTimeUtc-Format>`      | 文件创建时间（UTC时间）      | 同上                                                         | `<CreatTimeUtc-HHmmss>` → `142530`                   |
+| `<LastAccessTime-Format>`    | 文件最后访问时间             | 同上                                                         | `<LastAccessTime-yyyy-MM-dd>` → `2023-08-25`         |
+| `<LastAccessTimeUtc-Format>` | 文件最后访问时间（UTC时间）  | 同上                                                         | `<LastAccessTimeUtc-ddd>` → `Fri`                    |
+| `<LastWriteTime-Format>`     | 文件最后修改时间             | 同上                                                         | `<LastWriteTime-MMM dd>` → `Aug 25`                  |
+| `<LastWriteTimeUtc-Format>`  | 文件最后修改时间（UTC时间）  | 同上                                                         | `<LastWriteTimeUtc-yyyyMMddHHmmss>` → `202308251425` |
 
 # 开发
 
@@ -354,6 +354,139 @@
   - 支持根据时间，备份任意修改时刻后的文件，实现接续导出
 - 从光盘重建
   - 将光盘中的文件重新复制到源文件所在的相对位置，实现目录的重新建立
+
+## 批量重命名
+
+### 功能特性
+
+- 支持文件和文件夹两种目标类型的重命名
+- 提供多种搜索模式：包含、匹配扩展名、匹配文件名、匹配全名、正则表达式
+- 提供多种重命名模式：替换关键词、替换扩展名、替换文件名、替换全名、保留匹配值、保留匹配值和扩展名、C#脚本高级模式
+- 支持忽略大小写选项
+- 自动处理重命名冲突，确保不会覆盖现有文件
+- 提供C#脚本支持实现高级重命名逻辑
+
+### 配置
+
+1. **目录**：选择要进行重命名操作的根目录
+2. **搜索关键词**：输入用于匹配文件/文件夹名的关键词或正则表达式
+3. **替换关键词**：输入用于替换匹配部分的内容或C#脚本代码
+4. **搜索选项**：
+   - **类型**：选择要重命名的目标是文件还是文件夹
+   - **搜索模式**：选择搜索匹配方式（包含、匹配扩展名等）
+   - **包括子目录**：是否包含子目录中的文件/文件夹
+   - **忽略大小写**：是否忽略大小写进行匹配
+5. **重命名选项**：
+   - **重命名模式**：选择重命名方式（替换关键词、替换扩展名等）
+
+### 搜索模式
+
+| 名称       | 说明                                | 示例                                                         |
+| ---------- | ----------------------------------- | ------------------------------------------------------------ |
+| 包含       | 检查文件名/路径是否包含指定的关键词 | 搜索词：`report`<br>匹配：`report.pdf`, `annual_report.docx`<br>不匹配：`data.txt`, `notes.doc` |
+| 匹配扩展名 | 精确匹配文件扩展名（不含点）        | 搜索词：`pdf`<br>匹配：`doc.pdf`, `presentation.PDF`<br>不匹配：`image.png`, `data.xlsx` |
+| 匹配文件名 | 精确匹配文件名部分（不含扩展名）    | 搜索词：`invoice`<br>匹配：`invoice.pdf`, `INVOICE.xlsx`<br>不匹配：`invoice_2023.doc`, `old_invoice.txt` |
+| 匹配全名   | 精确匹配完整文件名（含扩展名）      | 搜索词：`readme.txt`<br>匹配：`readme.txt`, `README.TXT`<br>不匹配：`readme.md`, `readme.txt.bak` |
+| 正则表达式 | 使用正则表达式进行高级匹配          | 搜索词：`^img_\d{4}\.jpg$`<br>匹配：`img_2023.jpg`, `IMG_0001.JPG`<br>不匹配：`image.jpg`, `img123.png` |
+
+注：表格中所有示例均假设开启了"忽略大小写"选项
+
+### 重命名模式
+
+| 名称               | 说明                         | 示例                                                         |
+| ------------------ | ---------------------------- | ------------------------------------------------------------ |
+| 替换关键词         | 替换匹配到的部分             | 原文件：`photo_001.jpg`<br>替换为：`image_001.jpg`           |
+| 替换扩展名         | 仅替换文件扩展名             | 原文件：`document.doc`<br>替换为：`document.docx`            |
+| 替换文件名         | 替换文件名部分（保留扩展名） | 原文件：`old_report.pdf`<br>替换为：`new_report.pdf`         |
+| 替换全名           | 完全替换整个文件名           | 原文件：`temp.tmp`<br>替换为：`archive.zip`                  |
+| 保留匹配值         | 仅保留匹配部分作为新名称     | 原文件：`project_alpha_v1.zip`<br>匹配`[a-z]+(?=_v)`<br>结果：`alpha.zip` |
+| 保留匹配值和扩展名 | 保留匹配部分+原扩展名        | 原文件：`20231115_notes.doc`<br>匹配`\d{8}`<br>结果：`20231115.doc` |
+| 高级（C#脚本）     | 使用C#代码自定义重命名逻辑   | 脚本：`return "NEW_" + file.Name;`<br>原文件：`test.txt`<br>结果：`NEW_test.txt` |
+
+除高级（C#脚本），其余，模式均支持占位符，见[文件信息占位符](#文件信息占位符)
+
+注：表格中所有示例均假设开启了"忽略大小写"选项
+
+### 高级（C#脚本）重命名模式
+
+C#脚本模式允许用户使用C#代码自定义文件重命名逻辑，适用于复杂或动态的重命名需求。
+
+在 C# 脚本中，可以直接访问以下全局变量：
+
+|   变量    |       类型       |                  说明                  |
+| ------- | -------------- | ------------------------------------|
+|  `file`   | `RenameFileInfo` | 当前文件的信息（路径、名称、扩展名等） |
+| `matched` |     `string`     |    匹配到的字符串（取决于搜索模式）    |
+
+`RenameFileInfo` 对象提供以下常用属性：
+
+| 属性           | 类型       | 说明                         | 示例                     |
+| :------------- | :--------- | :--------------------------- | :----------------------- |
+| `Name`         | `string`   | 文件名（包含扩展名）         | `"report.pdf"`           |
+| `Path`         | `string`   | 文件的完整绝对路径           | `"C:\Files\report.pdf"`  |
+| `RelativePath` | `string`   | 相对于TopDirectory的相对路径 | `"subfolder\report.pdf"` |
+| `TopDirectory` | `string`   | 根目录路径                   | `"C:\Files"`             |
+| `IsDir`        | `bool`     | 标识是否是文件夹             | `true`（文件夹）         |
+| `Length`       | `long`     | 文件大小（字节），文件夹为0  | `1024`（1KB文件）        |
+| `Time`         | `DateTime` | 最后修改时间                 | `2023-11-15 14:30:00`    |
+
+代码在“替换关键词”中编写，允许一行或多行，最后一行应当返回一个字符串。例如：
+
+1. 使用哈希值作为文件名：
+
+````csharp
+return BitConverter.ToString(MD5.HashData(File.OpenRead(file.Path))).Replace("-", "") + Path.GetExtension(file.Path);
+````
+
+2. 移除文件名中的数字：
+
+```csharp
+var name = Path.GetFileNameWithoutExtension(file.Name);
+var ext = Path.GetExtension(file.Name);
+var cleanName = Regex.Replace(name, @"[0-9]", ""); // 移除非字母数字
+return cleanName + ext;
+```
+
+如：`a1234bcd.ps1`→`abcd.ps1`
+
+3. 根据文件大小分类重命名：
+
+```csharp
+var name = Path.GetFileNameWithoutExtension(file.Name);
+var ext = Path.GetExtension(file.Name);
+var suffix = file.Length < 1024 * 1024 ? "_small" : "_large";
+return name + suffix + ext;
+```
+
+4. 将形似`aa bb.ext`的文件重命名为`Aa_Bb.ext`：
+
+```csharp
+// 获取文件名和扩展名
+var nameWithoutExt = Path.GetFileNameWithoutExtension(file.Name);
+var extension = Path.GetExtension(file.Name);
+
+// 分割单词并处理每个单词
+var words = nameWithoutExt.Split(' ');
+var processedWords = words
+    .Where(word => !string.IsNullOrEmpty(word))  // 过滤空字符串
+    .Select(word => 
+        word.Length > 1 
+            ? char.ToUpper(word[0]) + word.Substring(1).ToLower()  // 首字母大写，其余小写
+            : word.ToUpper()  // 单字符直接大写
+    );
+
+// 用下划线连接并添加扩展名
+return string.Join("_", processedWords) + extension;
+```
+
+5. 为文件添加序号后缀：
+
+```csharp
+static int counter = 1;
+return $"file_{counter++:000}{Path.GetExtension(file.Name)}";
+```
+
+
 
 ## 批量命令行执行
 

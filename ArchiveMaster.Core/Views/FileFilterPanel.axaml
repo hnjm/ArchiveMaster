@@ -1,0 +1,112 @@
+<UserControl
+    x:Class="ArchiveMaster.Views.FileFilterPanel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:gb="using:GroupBox.Avalonia.Controls"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:v="using:ArchiveMaster.Views"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    mc:Ignorable="d">
+    <Grid
+        Width="400"
+        Height="600"
+        ColumnDefinitions="*,8,*"
+        RowDefinitions="*,8,Auto,16,Auto">
+        <Grid.Styles>
+            <Style Selector="TextBox">
+                <Setter Property="TextWrapping" Value="Wrap" />
+            </Style>
+        </Grid.Styles>
+        <gb:GroupBox Header="白名单">
+            <Grid RowDefinitions="Auto,8,*,16,Auto,8,*,16,Auto,8,*">
+                <TextBlock Text="包含的文件：" />
+                <TextBox
+                    Grid.Row="2"
+                    AcceptsReturn="{Binding !$parent[UserControl].Filter.UseRegex}"
+                    Text="{Binding $parent[UserControl].Filter.IncludeFiles}" />
+
+                <TextBlock
+                    Grid.Row="4"
+                    Text="包含的文件夹：" />
+                <TextBox
+                    Grid.Row="6"
+                    AcceptsReturn="{Binding !$parent[UserControl].Filter.UseRegex}"
+                    Text="{Binding $parent[UserControl].Filter.IncludeFolders}" />
+
+                <TextBlock
+                    Grid.Row="8"
+                    Text="包含的路径：" />
+                <TextBox
+                    Grid.Row="10"
+                    AcceptsReturn="{Binding !$parent[UserControl].Filter.UseRegex}"
+                    Text="{Binding $parent[UserControl].Filter.IncludePaths}" />
+            </Grid>
+        </gb:GroupBox>
+        <gb:GroupBox
+            Grid.Column="2"
+            Header="黑名单">
+            <Grid RowDefinitions="Auto,8,*,16,Auto,8,*,16,Auto,8,*">
+                <TextBlock Text="排除的文件：" />
+                <TextBox
+                    Grid.Row="2"
+                    AcceptsReturn="{Binding !$parent[UserControl].Filter.UseRegex}"
+                    Text="{Binding $parent[UserControl].Filter.ExcludeFiles}" />
+                <TextBlock
+                    Grid.Row="4"
+                    Text="排除的文件夹：" />
+                <TextBox
+                    Grid.Row="6"
+                    AcceptsReturn="{Binding !$parent[UserControl].Filter.UseRegex}"
+                    Text="{Binding $parent[UserControl].Filter.ExcludeFolders}" />
+
+                <TextBlock
+                    Grid.Row="8"
+                    Text="排除的路径：" />
+                <TextBox
+                    Grid.Row="10"
+                    AcceptsReturn="{Binding !$parent[UserControl].Filter.UseRegex}"
+                    Text="{Binding $parent[UserControl].Filter.ExcludePaths}" />
+            </Grid>
+        </gb:GroupBox>
+        <Grid
+            Grid.Row="2"
+            Grid.ColumnSpan="3"
+            ColumnDefinitions="Auto,*,Auto">
+            <Button
+                Classes="Icon"
+                Click="ResetButton_OnClick"
+                Content="{StaticResource Refresh}" />
+            <CheckBox
+                Grid.Column="2"
+                Content="使用正则表达式"
+                IsChecked="{Binding $parent[UserControl].Filter.UseRegex}" />
+        </Grid>
+        <StackPanel
+            Grid.Row="4"
+            Grid.ColumnSpan="99"
+            Orientation="Vertical"
+            Spacing="4">
+            <StackPanel.Styles>
+                <Style Selector="TextBlock">
+                    <Setter Property="TextWrapping" Value="Wrap" />
+                </Style>
+            </StackPanel.Styles>
+            <TextBlock
+                FontWeight="Bold"
+                Text="筛选规则说明：" />
+            <TextBlock
+                IsVisible="{Binding $parent[UserControl].Filter.UseRegex}"
+                Text="每一组个文本框中，可以输入一条正则表达式。" />
+            <TextBlock
+                IsVisible="{Binding !$parent[UserControl].Filter.UseRegex}"
+                Text="每一组个文本框中，可以输入多行匹配条件，任意一条匹配成功则认为该组（文本框内）匹配成功。匹配规则为完全匹配，可以通过匹配条件头尾增加“*”来改为包含匹配。" />
+            <TextBlock Text="所有白名单文本框匹配成功，同时所有黑名单文本框全部匹配不成功，则文件通过筛选。" />
+            <TextBlock
+                IsVisible="{Binding !$parent[UserControl].Filter.UseRegex}"
+                Text="“*”：匹配零个或多个任意字符；“?”：匹配单个任意字符。" />
+        </StackPanel>
+
+    </Grid>
+</UserControl>

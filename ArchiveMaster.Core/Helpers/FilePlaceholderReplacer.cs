@@ -5,9 +5,6 @@ namespace ArchiveMaster.Helpers;
 
 public partial class FilePlaceholderReplacer
 {
-    private const string DateTimeRegexString = @"(?<arg>[a-zA-Z\-]+)";
-    private const string SubStringRegexString = @"(?<Direction>Left|Right)-(?<From>[0-9]+)-(?<Count>[0-9]+)";
-
     private string[] replacePatterns;
 
     public FilePlaceholderReplacer(string template)
@@ -85,7 +82,7 @@ public partial class FilePlaceholderReplacer
             "<DirName>" => Path.GetFileName(Path.GetDirectoryName(item.RelativePath)),
             // 带参数的占位符（使用正则表达式匹配）
             _ when SubNameRegex().IsMatch(placeholder)
-                => HandleSubstringPattern(item, placeholder),
+                => HandleSubNamePattern(item, placeholder),
             _ when CreateTimeRegex().IsMatch(placeholder)
                 => HandleDateTimePattern(item, placeholder, File.GetCreationTime),
             _ when CreateTimeUtcRegex().IsMatch(placeholder)
@@ -95,9 +92,9 @@ public partial class FilePlaceholderReplacer
             _ when AccessTimeUtcRegex().IsMatch(placeholder)
                 => HandleDateTimePattern(item, placeholder, File.GetLastAccessTimeUtc),
             _ when WriteTimeRegex().IsMatch(placeholder)
-                => HandleCustomDateTime(item, placeholder, isUtc: false),
+                => HandleDateTimePattern(item, placeholder, File.GetLastWriteTime),
             _ when WriteTimeUtcRegex().IsMatch(placeholder)
-                => HandleCustomDateTime(item, placeholder, isUtc: true),
+                => HandleDateTimePattern(item, placeholder, File.GetLastWriteTimeUtc),
             // 默认情况
             _ => placeholder
         };
@@ -106,11 +103,11 @@ public partial class FilePlaceholderReplacer
     /// <summary>
     /// 处理子字符串截取模式
     /// </summary>
-    private static string HandleSubstringPattern(SimpleFileInfo item, string placeholder)
+    private static string HandleSubNamePattern(SimpleFileInfo item, string placeholder)
     {
         try
         {
-            var match = SubStringRegex().Match(placeholder);
+            var match = SubNameRegex().Match(placeholder);
             var direction = match.Groups["Direction"].Value;
             int from = int.Parse(match.Groups["From"].Value);
             int count = int.Parse(match.Groups["Count"].Value);
@@ -136,36 +133,31 @@ public partial class FilePlaceholderReplacer
     private static string HandleDateTimePattern(SimpleFileInfo item, string placeholder,
         Func<string, DateTime> dateGetter)
     {
-        var format = Regex.Match(placeholder, @"<.*-(?<arg>[a-zA-Z\-]+)>").Groups["arg"].Value;
+        var format = DateTimeFormatRegex().Match(placeholder).Groups["arg"].Value;
         return dateGetter(item.Path).ToString(format);
     }
 
-    /// <summary>
-    /// 处理自定义的LastWriteTime模式
-    /// </summary>
-    private static string HandleCustomDateTime(SimpleFileInfo item, string placeholder, bool isUtc)
-    {
-        var format = DateTimeRegex().Match(placeholder).Groups["arg"].Value;
-        return isUtc ? item.Time.ToUniversalTime().ToString(format) : item.Time.ToString(format);
-    }
-
     [GeneratedRegex(@"<Name-(?<Direction>Left|Right)-(?<From>\d+)-(?<Count>\d+)>")]
-    private static partial Regex SubStringRegex();
-
-    [GeneratedRegex(@"<.*-(?<arg>[a-zA-Z\-]+)>")]
-    private static partial Regex DateTimeRegex();
-    [GeneratedRegex(@"^<Name-Left|Right-\d+-\d+>$")]
     private static partial Regex SubNameRegex();
+
     [GeneratedRegex(@"^<CreatTime-([a-zA-Z\-]+)>$")]
     private static partial Regex CreateTimeRegex();
+
     [GeneratedRegex(@"^<CreatTimeUtc-([a-zA-Z\-]+)>$")]
     private static partial Regex CreateTimeUtcRegex();
+
     [GeneratedRegex(@"^<LastAccessTime-([a-zA-Z\-]+)>$")]
     private static partial Regex AccessTimeRegex();
+
     [GeneratedRegex(@"^<LastAccessTimeUtc-([a-zA-Z\-]+)>$")]
     private static partial Regex AccessTimeUtcRegex();
+
     [GeneratedRegex(@"^<LastWriteTime-([a-zA-Z\-]+)>$")]
     private static partial Regex WriteTimeRegex();
+
     [GeneratedRegex(@"^<LastWriteTimeUtc-([a-zA-Z\-]+)>$")]
     private static partial Regex WriteTimeUtcRegex();
+
+    [GeneratedRegex(@"<.*-(?<arg>[a-zA-Z\-]+)>")]
+    private static partial Regex DateTimeFormatRegex();
 }
