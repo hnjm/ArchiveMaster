@@ -14,6 +14,9 @@ namespace ArchiveMaster.Configs
         [ObservableProperty]
         private string patchDir;
 
+        [ObservableProperty]
+        private string password;
+
         public override void Check()
         {
             CheckDir(PatchDir,"补丁目录");

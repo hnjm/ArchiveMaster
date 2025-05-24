@@ -22,6 +22,7 @@ namespace ArchiveMaster.Services
                         progress: new Progress<FileCopyProgress>(
                             p => { NotifyProgress(1.0 * (currentLength + p.BytesCopied) / totalLength); }),
                         cancellationToken: token);
+                    File.SetLastWriteTimeUtc(file.DestinationPath, file.Time);
                     currentLength += file.Length;
                 },
                 token, FilesLoopOptions.Builder().AutoApplyFileLengthProgress().AutoApplyStatus().Build());

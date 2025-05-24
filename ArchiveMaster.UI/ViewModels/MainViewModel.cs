@@ -36,16 +36,20 @@ public partial class MainViewModel : ObservableObject
 
     [ObservableProperty]
     private object mainContent;
-    
+
     [ObservableProperty]
     private bool scrollViewBringIntoViewOnFocusChange;
 
     [ObservableProperty]
     private ObservableCollection<ToolPanelGroupInfo> panelGroups = new ObservableCollection<ToolPanelGroupInfo>();
 
+    [ObservableProperty]
+    private AppConfig appConfig;
+
     public MainViewModel(AppConfig appConfig, IStartupManager startupManager = null,
         IBackCommandService backCommandService = null)
     {
+        AppConfig = appConfig;
         this.startupManager = startupManager;
         foreach (var view in Initializer.Views)
         {
@@ -116,6 +120,7 @@ public partial class MainViewModel : ObservableObject
         {
             return;
         }
+
         if (autoStart)
         {
             startupManager.EnableStartup("s");

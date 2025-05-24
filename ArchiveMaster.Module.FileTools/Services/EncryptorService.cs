@@ -41,12 +41,12 @@ namespace ArchiveMaster.Services
                 var files = ProcessingFiles.CheckedOnly().ToList();
                 int count = files.Count;
 
-                var progressReport = new AesExtension.RefreshFileProgress(
-                    (source, target, max, value) =>
+                var progressReport = new Progress<FileCopyProgress>(
+                    p =>
                     {
                         string baseMessage = isEncrypting ? "正在加密文件" : "正在解密文件";
                         NotifyMessage(baseMessage +
-                                      $"（{index}/{count}），当前文件：{Path.GetFileName(source)}（{1.0 * value / 1024 / 1024:0}MB/{1.0 * max / 1024 / 1024:0}MB）");
+                                      $"（{index}/{count}），当前文件：{Path.GetFileName(p.SourceFilePath)}（{1.0 * p.BytesCopied / 1024 / 1024:0}MB/{1.0 * p.TotalBytes / 1024 / 1024:0}MB）");
                     });
 
                 TryForFiles(files, (file, s) =>
@@ -62,12 +62,12 @@ namespace ArchiveMaster.Services
                     if (isEncrypting)
                     {
                         aes.GenerateIV();
-                        aes.EncryptFile(file.Path, file.TargetPath, token, BufferSize, progressReport);
+                        aes.EncryptFile(file.Path, file.TargetPath, BufferSize, progressReport, token);
                         file.IsFileNameEncrypted = Config.EncryptFileNames;
                     }
                     else
                     {
-                        aes.DecryptFile(file.Path, file.TargetPath, token, BufferSize, progressReport);
+                        aes.DecryptFile(file.Path, file.TargetPath, BufferSize, progressReport, token);
                         file.IsFileNameEncrypted = false;
                     }
 

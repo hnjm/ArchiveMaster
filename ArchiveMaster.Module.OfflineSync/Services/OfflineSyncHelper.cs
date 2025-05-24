@@ -4,7 +4,7 @@ namespace ArchiveMaster.Services;
 
 internal class OfflineSyncHelper
 {
-    private Aes GetAes(string password)
+    public static Aes GetAes(string password)
     {
         Aes aes = Aes.Create();
         aes.Mode = CipherMode.CBC;

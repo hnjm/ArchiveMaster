@@ -27,6 +27,13 @@
                     FileNames="{Binding Config.PatchDir}"
                     Type="OpenFolder" />
             </ctrl:FormItem>
+
+            <ctrl:FormItem Label="密码（若备份文件被加密）：">
+                <TextBox
+                    PasswordChar="*"
+                    Text="{Binding Config.Password}" />
+            </ctrl:FormItem>
+
             <ctrl:FormItem Label="被删除文件：">
                 <ComboBox
                     ItemsSource="{Binding DeleteModes}"

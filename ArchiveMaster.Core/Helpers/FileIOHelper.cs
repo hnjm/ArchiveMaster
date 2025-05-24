@@ -7,7 +7,7 @@ namespace ArchiveMaster.Helpers
 {
     public static class FileIOHelper
     {
-        private static int GetOptimalBufferSize(long fileLength)
+        public static int GetOptimalBufferSize(long fileLength)
         {
             return fileLength switch
             {

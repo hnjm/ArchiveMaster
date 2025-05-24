@@ -59,6 +59,24 @@
                         Type="OpenFolder" />
                 </ctrl:FormItem>
 
+                <ctrl:FormItem Label="加密：">
+                    <Grid ColumnDefinitions="Auto,16,Auto,8,*">
+                        <CheckBox
+                            Content="加密备份文件"
+                            IsChecked="{Binding Config.EnableEncryption}" />
+                        <TextBlock
+                            Grid.Column="2"
+                            IsVisible="{Binding Config.EnableEncryption}"
+                            Text="密码：" />
+                        <TextBox
+                            Grid.Column="4"
+                            IsVisible="{Binding Config.EnableEncryption}"
+                            PasswordChar="*"
+                            Text="{Binding Config.EncryptionPassword}" />
+                    </Grid>
+
+                </ctrl:FormItem>
+
 
                 <ctrl:FormItem Label="选项：">
                     <ctrl:WrapFormItemGroup>

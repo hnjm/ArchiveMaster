@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Diagnostics;
 using ArchiveMaster.Configs;
 using ArchiveMaster.Enums;
 using ArchiveMaster.ViewModels;
@@ -18,17 +19,20 @@ namespace ArchiveMaster.Services
         protected void NotifyMessage(string message)
         {
             MessageUpdate?.Invoke(this, new MessageUpdateEventArgs(message));
+            Debug.WriteLine(message);
         }
 
         protected void NotifyProgress(double percent)
         {
             ProgressUpdate?.Invoke(this, new ProgressUpdateEventArgs(percent));
+            Debug.WriteLine($"{percent * 100:0.00}%");
         }
 
         protected void NotifyProgressIndeterminate()
         {
             NotifyProgress(double.NaN);
         }
+
         protected FilesLoopStates TryForFiles<T>(IEnumerable<T> files, Action<T, FilesLoopStates> body,
             CancellationToken cancellationToken,
             FilesLoopOptions options = null)
@@ -55,7 +59,7 @@ namespace ArchiveMaster.Services
         }
 
         protected async Task<FilesLoopStates> TryForFilesAsync<T>(IEnumerable<T> files, Action<T, FilesLoopStates> body,
-                    CancellationToken cancellationToken, FilesLoopOptions options = null)
+            CancellationToken cancellationToken, FilesLoopOptions options = null)
             where T : SimpleFileInfo
         {
             FilesLoopStates states = null;
@@ -87,6 +91,7 @@ namespace ArchiveMaster.Services
 
             return states;
         }
+
         private static void PreProcessStatistic<T>(IEnumerable<T> files, FilesLoopOptions options,
             FilesLoopStates states)
             where T : SimpleFileInfo
@@ -177,7 +182,7 @@ namespace ArchiveMaster.Services
         }
 
         private void ParallelForEachFileCore<T>(IEnumerable<T> files, Action<T, FilesLoopStates> body,
-                                                    CancellationToken cancellationToken,
+            CancellationToken cancellationToken,
             FilesLoopOptions options, FilesLoopStates states) where T : SimpleFileInfo
         {
             Parallel.ForEach(files, new ParallelOptions()
@@ -206,6 +211,7 @@ namespace ArchiveMaster.Services
                 CancellationToken = cancellationToken
             }, async (file, c) => { await TryForFilesSingleAsync(asyncBody, c, options, file, states); });
         }
+
         private void ProcessFinally<T>(FilesLoopOptions options, T file, FilesLoopStates states)
             where T : SimpleFileInfo
         {
@@ -230,7 +236,7 @@ namespace ArchiveMaster.Services
         }
 
         private void TryForFilesSingle<T>(Action<T, FilesLoopStates> body, CancellationToken cancellationToken,
-                    FilesLoopOptions options, T file,
+            FilesLoopOptions options, T file,
             FilesLoopStates states) where T : SimpleFileInfo
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -258,6 +264,7 @@ namespace ArchiveMaster.Services
                 Thread.Sleep(appConfig.DebugModeLoopDelay);
             }
         }
+
         private async Task TryForFilesSingleAsync<T>(Func<T, FilesLoopStates, Task> asyncBody,
             CancellationToken cancellationToken,
             FilesLoopOptions options, T file,

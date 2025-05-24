@@ -7,6 +7,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using ArchiveMaster.Helpers;
 
 namespace ArchiveMaster.Services
 {
@@ -136,13 +137,19 @@ namespace ArchiveMaster.Services
         }
 
         public static void EncryptFile(this Aes manager, string sourcePath, string targetPath,
-            CancellationToken cancellationToken,
-            int bufferLength = 1024 * 1024,
-            RefreshFileProgress refreshFileProgress = null)
+            int bufferLength = 0,
+            IProgress<FileCopyProgress> progress = null,
+            CancellationToken cancellationToken = default)
         {
             if (File.Exists(targetPath))
             {
                 throw new IOException($"目标文件{targetPath}已存在");
+            }
+
+            if (bufferLength <= 0)
+            {
+                var fileInfo = new FileInfo(sourcePath);
+                bufferLength = FileIOHelper.GetOptimalBufferSize(fileInfo.Length);
             }
 
             try
@@ -175,7 +182,14 @@ namespace ArchiveMaster.Services
                         currentSize += output.Length;
                         streamTarget.Write(output, 0, output.Length);
                         streamTarget.Flush();
-                        refreshFileProgress?.Invoke(sourcePath, targetPath, fileLength, currentSize); //更新进度
+
+                        progress?.Report(new FileCopyProgress
+                        {
+                            SourceFilePath = sourcePath,
+                            DestinationFilePath = targetPath,
+                            TotalBytes = fileLength,
+                            BytesCopied = currentSize
+                        });
                     }
                 }
 
@@ -189,15 +203,21 @@ namespace ArchiveMaster.Services
         }
 
         public static void DecryptFile(this Aes manager, string sourcePath, string targetPath,
-            CancellationToken cancellationToken,
-            int bufferLength = 1024 * 1024,
-            RefreshFileProgress refreshFileProgress = null)
+            int bufferLength = 0,
+            IProgress<FileCopyProgress> progress = null,
+            CancellationToken cancellationToken = default)
         {
             if (File.Exists(targetPath))
             {
                 throw new IOException($"目标文件{targetPath}已存在");
             }
 
+            if (bufferLength <= 0)
+            {
+                var fileInfo = new FileInfo(sourcePath);
+                bufferLength = FileIOHelper.GetOptimalBufferSize(fileInfo.Length);
+            }
+            
             try
             {
                 using (FileStream streamSource = new FileStream(sourcePath, FileMode.Open, FileAccess.Read))
@@ -211,8 +231,14 @@ namespace ArchiveMaster.Services
                     int size;
                     byte[] input = new byte[bufferLength];
                     long fileLength = streamSource.Length;
-                    refreshFileProgress?.Invoke(sourcePath, targetPath, fileLength, currentSize); //更新进度
 
+                    progress?.Report(new FileCopyProgress
+                    {
+                        SourceFilePath = sourcePath,
+                        DestinationFilePath = targetPath,
+                        TotalBytes = fileLength,
+                        BytesCopied = currentSize
+                    });
                     while ((size = streamSource.Read(input, 0, bufferLength)) > 0)
                     {
                         cancellationToken.ThrowIfCancellationRequested();
@@ -233,7 +259,14 @@ namespace ArchiveMaster.Services
                         currentSize += outputSize;
                         streamTarget.Write(output, 0, outputSize);
                         streamTarget.Flush();
-                        refreshFileProgress?.Invoke(sourcePath, targetPath, fileLength, currentSize); //更新进度
+
+                        progress?.Report(new FileCopyProgress
+                        {
+                            SourceFilePath = sourcePath,
+                            DestinationFilePath = targetPath,
+                            TotalBytes = fileLength,
+                            BytesCopied = currentSize
+                        });
                     }
                 }
 
@@ -258,10 +291,5 @@ namespace ArchiveMaster.Services
 
             throw ex;
         }
-
-        /// <summary>
-        /// 更新文件加密进度
-        /// </summary>
-        public delegate void RefreshFileProgress(string source, string target, long max, long value);
     }
 }
