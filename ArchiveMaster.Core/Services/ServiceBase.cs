@@ -8,24 +8,72 @@ using SimpleFileInfo = ArchiveMaster.ViewModels.FileSystem.SimpleFileInfo;
 
 namespace ArchiveMaster.Services
 {
-    public abstract class ServiceBase<TConfig>(AppConfig appConfig)
-        where TConfig : ConfigBase
+    public abstract class ServiceBase<TConfig> : IDisposable where TConfig : ConfigBase
     {
+        /// <summary>
+        /// 消息最短通知间隔（毫秒）
+        /// </summary>
+        private const int DebounceIntervalMs = 50;
+
+        private readonly AppConfig appConfig;
+
+        private readonly object syncLock = new object();
+
+        private Timer debounceTimer;
+
+        private bool isDisposed = false;
+        private DateTime lastMessageTime = DateTime.MinValue;
+
+        private string pendingMessage;
+        public ServiceBase(AppConfig appConfig)
+        {
+            this.appConfig = appConfig;
+            InitializeDebounceTimer();
+        }
+
         public event EventHandler<MessageUpdateEventArgs> MessageUpdate;
 
         public event EventHandler<ProgressUpdateEventArgs> ProgressUpdate;
         public TConfig Config { get; set; }
 
+        public void Dispose()
+        {
+            if (isDisposed)
+            {
+                return;
+            }
+            isDisposed = true;
+            debounceTimer?.Dispose();
+            GC.SuppressFinalize(this);
+        }
+
         protected void NotifyMessage(string message)
         {
-            MessageUpdate?.Invoke(this, new MessageUpdateEventArgs(message));
-            Debug.WriteLine(message);
+            if (isDisposed)
+            {
+                return;
+            }
+            lock (syncLock)
+            {
+                pendingMessage = message;
+
+                // 如果距离上次发送不足50ms，则重置计时器
+                var elapsedMs = (DateTime.Now - lastMessageTime).TotalMilliseconds;
+                if (elapsedMs < DebounceIntervalMs)
+                {
+                    debounceTimer?.Change(DebounceIntervalMs, Timeout.Infinite);
+                    return;
+                }
+
+                // 立即发送消息并记录时间
+                SendPendingMessage();
+            }
         }
 
         protected void NotifyProgress(double percent)
         {
             ProgressUpdate?.Invoke(this, new ProgressUpdateEventArgs(percent));
-            Debug.WriteLine($"{percent * 100:0.00}%");
+            //Debug.WriteLine($"{percent * 100:0.00}%");
         }
 
         protected void NotifyProgressIndeterminate()
@@ -181,6 +229,20 @@ namespace ArchiveMaster.Services
             }
         }
 
+        private void InitializeDebounceTimer()
+        {
+            debounceTimer = new Timer(_ =>
+            {
+                lock (syncLock)
+                {
+                    if (pendingMessage != null)
+                    {
+                        SendPendingMessage();
+                    }
+                }
+            }, null, Timeout.Infinite, Timeout.Infinite);
+        }
+
         private void ParallelForEachFileCore<T>(IEnumerable<T> files, Action<T, FilesLoopStates> body,
             CancellationToken cancellationToken,
             FilesLoopOptions options, FilesLoopStates states) where T : SimpleFileInfo
@@ -198,7 +260,6 @@ namespace ArchiveMaster.Services
                 }
             });
         }
-
 
         private Task ParallelForEachFileCoreAsync<T>(IEnumerable<T> files,
             Func<T, FilesLoopStates, Task> asyncBody,
@@ -233,6 +294,22 @@ namespace ArchiveMaster.Services
             }
 
             options.FinallyAction?.Invoke(file);
+        }
+
+        private void SendPendingMessage()
+        {
+            if (isDisposed)
+            {
+                return;
+            }
+            if (pendingMessage == null)
+            {
+                return;
+            }
+
+            MessageUpdate?.Invoke(this, new MessageUpdateEventArgs(pendingMessage));
+            lastMessageTime = DateTime.Now;
+            pendingMessage = null;
         }
 
         private void TryForFilesSingle<T>(Action<T, FilesLoopStates> body, CancellationToken cancellationToken,
@@ -280,6 +357,10 @@ namespace ArchiveMaster.Services
             {
                 throw;
             }
+            catch (System.Security.Cryptography.CryptographicException ex)
+            {
+                throw new Exception($"密码学失败，可能是密钥或配置不正确", ex);
+            }
             catch (Exception ex)
             {
                 ProcessException(options, file, ex);
@@ -292,7 +373,7 @@ namespace ArchiveMaster.Services
 
             if (appConfig.DebugMode && appConfig.DebugModeLoopDelay > 0)
             {
-                await Task.Delay(appConfig.DebugModeLoopDelay);
+                await Task.Delay(appConfig.DebugModeLoopDelay, cancellationToken);
             }
         }
     }

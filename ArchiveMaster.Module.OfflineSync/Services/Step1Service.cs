@@ -12,11 +12,6 @@ namespace ArchiveMaster.Services
 {
     public class Step1Service(AppConfig appConfig) : TwoStepServiceBase<OfflineSyncStep1Config>(appConfig)
     {
-        public override Task InitializeAsync(CancellationToken token = default)
-        {
-            throw new NotImplementedException();
-        }
-
         public override async Task ExecuteAsync(CancellationToken token = default)
         {
             Config.Check();
@@ -56,6 +51,11 @@ namespace ArchiveMaster.Services
                 };
                 ZipService.WriteToZip(model, Config.OutputFile);
             }, token);
+        }
+
+        public override Task InitializeAsync(CancellationToken token = default)
+        {
+            throw new NotImplementedException();
         }
     }
 }

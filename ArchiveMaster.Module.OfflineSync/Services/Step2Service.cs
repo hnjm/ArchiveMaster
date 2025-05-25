@@ -23,9 +23,9 @@ namespace ArchiveMaster.Services
     public class Step2Service(AppConfig appConfig) : TwoStepServiceBase<OfflineSyncStep2Config>(appConfig)
     {
         public const string EncryptionFileSuffix = "_enc";
+        private Aes aes;
         public Dictionary<string, List<string>> LocalDirectories { get; } = new Dictionary<string, List<string>>();
         public List<SyncFileInfo> UpdateFiles { get; } = new List<SyncFileInfo>();
-        private Aes aes;
 
         public static async Task<IList<LocalAndOffsiteDir>> MatchLocalAndOffsiteDirsAsync(string snapshotPath,
             string[] localSearchingDirs)
@@ -77,106 +77,98 @@ namespace ArchiveMaster.Services
             StringBuilder ps1Script = new StringBuilder();
             BeginScript(batScript, ps1Script);
             using var sha256 = SHA256.Create();
-
-            await TryForFilesAsync(files, async (file, s) =>
+            await Task.Run(async () =>
             {
-                if (file.UpdateType is FileUpdateType.Delete or FileUpdateType.Move)
+                await TryForFilesAsync(files, async (file, s) =>
                 {
-                    return;
-                }
-
-                file.TempName = GetTempFileName(file, sha256) +
-                                (Config.EnableEncryption ? EncryptionFileSuffix : string.Empty);
-                NotifyMessage($"正在处理{s.GetFileNumberMessage()}：{file.RelativePath}");
-                string sourceFile = Path.Combine(offsiteTopDir2LocalDir[file.TopDirectory], file.RelativePath);
-                string destFile = Path.Combine(Config.PatchDir, file.TempName);
-                if (File.Exists(destFile))
-                {
-                    FileInfo existingFile = new FileInfo(destFile);
-                    if (existingFile.Length == file.Length
-                        && existingFile.LastWriteTime == file.Time
-                        && Config.ExportMode != ExportMode.Script)
+                    if (file.UpdateType is FileUpdateType.Delete or FileUpdateType.Move)
                     {
                         return;
                     }
 
-                    try
+                    file.TempName = GetTempFileName(file, sha256) +
+                                    (Config.EnableEncryption ? EncryptionFileSuffix : string.Empty);
+
+                    int index = s.FileIndex;
+                    int count = s.FileCount;
+                    NotifyMessage($"正在处理（{index}/{count}）：{file.RelativePath}");
+                    string sourceFile = Path.Combine(offsiteTopDir2LocalDir[file.TopDirectory], file.RelativePath);
+                    string destFile = Path.Combine(Config.PatchDir, file.TempName);
+                    if (File.Exists(destFile) && Config.ExportMode != ExportMode.Script)
                     {
-                        File.Delete(destFile);
+                        return;
                     }
-                    catch (IOException ex)
+
+                    switch (Config.ExportMode)
                     {
-                        throw new IOException(
-                            $"修改时间或长度与待写入文件{file.RelativePath}不同的目标补丁文件{destFile}已存在，但无法删除：{ex.Message}", ex);
-                    }
-                }
-
-                switch (Config.ExportMode)
-                {
-                    case ExportMode.PreferHardLink:
-                        try
-                        {
-                            HardLinkCreator.CreateHardLink(destFile, sourceFile);
-                        }
-                        catch (IOException)
-                        {
-                            goto copy;
-                        }
-
-                        break;
-                    case ExportMode.Copy:
-                        copy:
-                        int tryCount = 10;
-
-                        while (--tryCount > 0)
-                        {
-                            if (tryCount < 9 && File.Exists(destFile))
-                            {
-                                File.Delete(destFile);
-                            }
-
+                        case ExportMode.PreferHardLink:
                             try
                             {
-                                await CopyFileAsync(file, sourceFile, destFile, s, token);
-                                tryCount = 0;
+                                HardLinkCreator.CreateHardLink(destFile, sourceFile);
                             }
-                            catch (IOException ex)
+                            catch (IOException)
                             {
-                                Debug.WriteLine($"复制文件{sourceFile}到{destFile}失败：{ex.Message}，剩余{tryCount}次重试");
-                                if (tryCount == 0)
+                                goto copy;
+                            }
+
+                            break;
+                        case ExportMode.Copy:
+                            copy:
+                            int tryCount = 10;
+
+                            Progress<FileCopyProgress> progress = new Progress<FileCopyProgress>(p =>
+                            {
+                                NotifyProgress(1.0 * (length + p.BytesCopied) / totalLength);
+                                NotifyMessage(
+                                    $"正在复制（{index}/{count}，本文件{1.0 * p.BytesCopied / 1024 / 1024:0}MB/{1.0 * p.TotalBytes / 1024 / 1024:0}MB）：{file.RelativePath}");
+                            });
+                            while (--tryCount > 0)
+                            {
+                                if (tryCount < 9 && File.Exists(destFile))
                                 {
-                                    throw new IOException($"复制文件{sourceFile}到{destFile}失败：已重试10次", ex);
+                                    File.Delete(destFile);
                                 }
 
-                                Thread.Sleep(1000);
+                                try
+                                {
+                                    await CopyFileAsync(sourceFile, destFile, progress, token);
+                                    tryCount = 0;
+                                }
+                                catch (IOException ex)
+                                {
+                                    Debug.WriteLine($"复制文件{sourceFile}到{destFile}失败：{ex.Message}，剩余{tryCount}次重试");
+                                    if (tryCount == 0)
+                                    {
+                                        throw new IOException($"复制文件{sourceFile}到{destFile}失败：已重试10次", ex);
+                                    }
+
+                                    Thread.Sleep(1000);
+                                }
                             }
-                        }
 
-                        break;
-                    case ExportMode.HardLink:
-                        HardLinkCreator.CreateHardLink(destFile, sourceFile);
-                        break;
-                    case ExportMode.Script:
-                        ExportWithScript(sourceFile, file, batScript, ps1Script);
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-            }, token, FilesLoopOptions.Builder().AutoApplyStatus().Finally(file =>
-            {
-                var f = file as SyncFileInfo;
-                if (f.UpdateType is FileUpdateType.Delete or FileUpdateType.Move)
+                            break;
+                        case ExportMode.HardLink:
+                            HardLinkCreator.CreateHardLink(destFile, sourceFile);
+                            break;
+                        case ExportMode.Script:
+                            ExportWithScript(sourceFile, file, batScript, ps1Script);
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
+                }, token, FilesLoopOptions.Builder().AutoApplyStatus().Finally(file =>
                 {
-                    return;
-                }
+                    var f = file as SyncFileInfo;
+                    if (f.UpdateType is FileUpdateType.Delete or FileUpdateType.Move)
+                    {
+                        return;
+                    }
 
-                length += f.Length;
-                NotifyProgress(1.0 * length / totalLength);
-            }).Build());
+                    length += f.Length;
+                    NotifyProgress(1.0 * length / totalLength);
+                }).Build());
 
 
-            await Task.Run(() =>
-            {
                 if (Config.ExportMode == ExportMode.Script)
                 {
                     FinishScript(batScript, ps1Script);
@@ -191,78 +183,10 @@ namespace ArchiveMaster.Services
             }, token);
         }
 
-        private static void BeginScript(StringBuilder batScript, StringBuilder ps1Script)
-        {
-            batScript.AppendLine("@echo off");
-            ps1Script.AppendLine("Import-Module BitsTransfer");
-        }
-
-        private void FinishScript(StringBuilder batScript, StringBuilder ps1Script)
-        {
-            batScript.AppendLine("echo 复制完成");
-            batScript.AppendLine("pause");
-            var encoding = Encoding.GetEncoding(CultureInfo.CurrentCulture.TextInfo.OEMCodePage);
-            File.WriteAllText(Path.Combine(Config.PatchDir, "CopyToHere.bat"), batScript.ToString(), encoding);
-
-            ps1Script.AppendLine("\"复制完成\"");
-            ps1Script.AppendLine("pause");
-            File.WriteAllText(Path.Combine(Config.PatchDir, "CopyToHere.ps1"), ps1Script.ToString(),
-                Encoding.UTF8);
-        }
-
-        private static void ExportWithScript(string sourceFile, SyncFileInfo file, StringBuilder batScript,
-            StringBuilder ps1Script)
-        {
-            string sourceFileWithReplaceSpecialChars = sourceFile.Replace("%", "%%");
-            batScript.AppendLine($"if exist \"{file.TempName}\" (");
-            batScript.AppendLine($"echo \"文件 {sourceFileWithReplaceSpecialChars} 已存在\"");
-            batScript.AppendLine($") else (");
-            batScript.AppendLine($"echo 正在复制 \"{sourceFileWithReplaceSpecialChars}\"");
-            batScript.AppendLine(
-                $"copy \"{sourceFileWithReplaceSpecialChars}\" \"{file.TempName}\"");
-            batScript.AppendLine($")");
-
-            string ps1SourceName = sourceFile.Replace("'", "''");
-            ps1Script.AppendLine($"if ([System.IO.File]::Exists(\"{file.TempName}\")){{");
-            ps1Script.AppendLine($"'文件 {ps1SourceName} 已存在'");
-            ps1Script.AppendLine($"}}else{{");
-            ps1Script.AppendLine($"'正在复制 {sourceFile}'");
-            string sourceFileWithNoWildcards = sourceFile.Replace("`", "``").Replace("[", "`[")
-                .Replace("]", "`]").Replace("?", "`?").Replace("?", "`?");
-            ps1Script.AppendLine(
-                $"Start-BitsTransfer -Source '{sourceFileWithNoWildcards}' -Destination '{file.TempName}' -DisplayName '正在复制文件' -Description '{sourceFile} => {file.TempName}'");
-            ps1Script.AppendLine($"}}");
-        }
-
-
-        private async Task CopyFileAsync(SimpleFileInfo virtualFile, string source, string destination,
-            FilesLoopStates states,
-            CancellationToken cancellationToken)
-        {
-            int index = states.FileIndex;
-            int count = states.FileCount;
-            Progress<FileCopyProgress> progress = new Progress<FileCopyProgress>(p =>
-            {
-                NotifyMessage(
-                    $"正在复制（{index}/{count}）：{virtualFile.RelativePath}（{1.0 * p.BytesCopied / 1024 / 1024:0}MB/{1.0 * p.TotalBytes / 1024 / 1024:0}MB）");
-            });
-            if (Config.EnableEncryption)
-            {
-                aes.GenerateIV();
-                aes.EncryptFile(source, destination, progress: progress, cancellationToken: cancellationToken);
-            }
-            else
-            {
-                await FileIOHelper.CopyFileAsync(source, destination, progress: progress,
-                    cancellationToken: cancellationToken);
-            }
-        }
-
         public override async Task InitializeAsync(CancellationToken token = default)
         {
             UpdateFiles.Clear();
             LocalDirectories.Clear();
-            int index = 0;
             NotifyProgressIndeterminate();
             NotifyMessage($"正在初始化");
             var filter = new FileFilterHelper(Config.Filter);
@@ -358,6 +282,7 @@ namespace ArchiveMaster.Services
                             .GroupBy(p => p.Time).ToDictionary(p => p.Key, p => p.ToList());
                     }
 
+                    int index = 0;
                     //开始对比文件
                     foreach (var file in localFileList)
                     {
@@ -414,9 +339,6 @@ namespace ArchiveMaster.Services
                                 .Intersect(offsiteLength2File.GetOrDefault(file.Length) ??
                                            Enumerable.Empty<SyncFileInfo>());
                             bool move = false;
-                            if (file.Name.Contains("qwen"))
-                            {
-                            }
 
                             if (sameFiles.Count() == 1)
                             {
@@ -468,7 +390,7 @@ namespace ArchiveMaster.Services
                     token.ThrowIfCancellationRequested();
 
 
-                    NotifyMessage($"正在查找删除的文件");
+                    NotifyMessage($"正在查找删除的文件:{offsiteDir}→{localDir}");
                     List<string> localSubDirs = new List<string>();
                     foreach (var subDir in localDir.EnumerateDirectories("*", SearchOption.AllDirectories))
                     {
@@ -490,7 +412,8 @@ namespace ArchiveMaster.Services
                             continue;
                         }
 
-                        NotifyMessage($"正在查找删除的文件（{++index} / {offsiteTopDir2Files[offsiteTopDirectory].Count}）");
+                        NotifyMessage(
+                            $"正在查找删除的文件（{++index} / {offsiteTopDir2Files[offsiteTopDirectory].Count}）:{offsiteDir}→{localDir}");
                         if (!localFiles.ContainsKey(offsitePathWithTopDir))
                         {
                             file.UpdateType = FileUpdateType.Delete;
@@ -501,6 +424,36 @@ namespace ArchiveMaster.Services
             }, token);
         }
 
+        private static void BeginScript(StringBuilder batScript, StringBuilder ps1Script)
+        {
+            batScript.AppendLine("@echo off");
+            ps1Script.AppendLine("Import-Module BitsTransfer");
+        }
+
+        private static void ExportWithScript(string sourceFile, SyncFileInfo file, StringBuilder batScript,
+            StringBuilder ps1Script)
+        {
+            string sourceFileWithReplaceSpecialChars = sourceFile.Replace("%", "%%");
+            batScript.AppendLine($"if exist \"{file.TempName}\" (");
+            batScript.AppendLine($"echo \"文件 {sourceFileWithReplaceSpecialChars} 已存在\"");
+            batScript.AppendLine($") else (");
+            batScript.AppendLine($"echo 正在复制 \"{sourceFileWithReplaceSpecialChars}\"");
+            batScript.AppendLine(
+                $"copy \"{sourceFileWithReplaceSpecialChars}\" \"{file.TempName}\"");
+            batScript.AppendLine($")");
+
+            string ps1SourceName = sourceFile.Replace("'", "''");
+            ps1Script.AppendLine($"if ([System.IO.File]::Exists(\"{file.TempName}\")){{");
+            ps1Script.AppendLine($"'文件 {ps1SourceName} 已存在'");
+            ps1Script.AppendLine($"}}else{{");
+            ps1Script.AppendLine($"'正在复制 {sourceFile}'");
+            string sourceFileWithNoWildcards = sourceFile.Replace("`", "``").Replace("[", "`[")
+                .Replace("]", "`]").Replace("?", "`?").Replace("?", "`?");
+            ps1Script.AppendLine(
+                $"Start-BitsTransfer -Source '{sourceFileWithNoWildcards}' -Destination '{file.TempName}' -DisplayName '正在复制文件' -Description '{sourceFile} => {file.TempName}'");
+            ps1Script.AppendLine($"}}");
+        }
+
         private static string GetTempFileName(SyncFileInfo file, SHA256 sha256)
         {
             string featureCode = $"{file.TopDirectory}{file.RelativePath}{file.Time}{file.Length}";
@@ -508,6 +461,35 @@ namespace ArchiveMaster.Services
             var bytes = Encoding.UTF8.GetBytes(featureCode);
             var code = sha256.ComputeHash(bytes);
             return Convert.ToHexString(code);
+        }
+
+        private async Task CopyFileAsync(string source, string destination,
+            Progress<FileCopyProgress> progress,
+            CancellationToken cancellationToken)
+        {
+            if (Config.EnableEncryption)
+            {
+                aes.GenerateIV();
+                aes.EncryptFile(source, destination, progress: progress, cancellationToken: cancellationToken);
+            }
+            else
+            {
+                await FileIOHelper.CopyFileAsync(source, destination, progress: progress,
+                    cancellationToken: cancellationToken);
+            }
+        }
+
+        private void FinishScript(StringBuilder batScript, StringBuilder ps1Script)
+        {
+            batScript.AppendLine("echo 复制完成");
+            batScript.AppendLine("pause");
+            var encoding = Encoding.GetEncoding(CultureInfo.CurrentCulture.TextInfo.OEMCodePage);
+            File.WriteAllText(Path.Combine(Config.PatchDir, "CopyToHere.bat"), batScript.ToString(), encoding);
+
+            ps1Script.AppendLine("\"复制完成\"");
+            ps1Script.AppendLine("pause");
+            File.WriteAllText(Path.Combine(Config.PatchDir, "CopyToHere.ps1"), ps1Script.ToString(),
+                Encoding.UTF8);
         }
     }
 }

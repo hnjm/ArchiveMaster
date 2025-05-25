@@ -53,11 +53,13 @@ public abstract partial class TwoStepViewModelBase<TService, TConfig> : MultiPre
     [NotifyPropertyChangedFor(nameof(ProgressIndeterminate))]
     private double progress;
 
-    protected TwoStepViewModelBase(AppConfig appConfig, string configGroupName):base(appConfig,configGroupName)
+    private bool canReceiveServiceMessage = false;
+
+    protected TwoStepViewModelBase(AppConfig appConfig, string configGroupName) : base(appConfig, configGroupName)
     {
     }
-    
-    protected TwoStepViewModelBase(AppConfig appConfig):this(appConfig,typeof(TConfig).Name)
+
+    protected TwoStepViewModelBase(AppConfig appConfig) : this(appConfig, typeof(TConfig).Name)
     {
     }
 
@@ -108,6 +110,7 @@ public abstract partial class TwoStepViewModelBase<TService, TConfig> : MultiPre
     {
         ResetCommand.Execute(null);
     }
+
     /// <summary>
     /// 执行完成后的任务
     /// </summary>
@@ -188,6 +191,7 @@ public abstract partial class TwoStepViewModelBase<TService, TConfig> : MultiPre
         Service.MessageUpdate -= Service_MessageUpdate;
         Service = null;
     }
+
     /// <summary>
     /// 执行任务
     /// </summary>
@@ -213,11 +217,12 @@ public abstract partial class TwoStepViewModelBase<TService, TConfig> : MultiPre
         CanCancel = true;
         CancelCommand.NotifyCanExecuteChanged();
 
-        await TryRunAsync(async () =>
+        await TryRunServiceMethodAsync(async () =>
         {
             await OnExecutingAsync(token);
             Config.Check();
             await Service.ExecuteAsync(token);
+            Service.Dispose();
             await OnExecutedAsync(token);
         }, "执行失败");
 
@@ -242,7 +247,7 @@ public abstract partial class TwoStepViewModelBase<TService, TConfig> : MultiPre
         CanCancel = true;
         CancelCommand.NotifyCanExecuteChanged();
 
-        if (await TryRunAsync(async () =>
+        if (await TryRunServiceMethodAsync(async () =>
             {
                 CreateService();
                 await OnInitializingAsync();
@@ -289,6 +294,10 @@ public abstract partial class TwoStepViewModelBase<TService, TConfig> : MultiPre
 
     private void Service_MessageUpdate(object sender, MessageUpdateEventArgs e)
     {
+        if (!canReceiveServiceMessage)
+        {
+            return;
+        }
         Message = e.Message;
     }
 
@@ -297,13 +306,14 @@ public abstract partial class TwoStepViewModelBase<TService, TConfig> : MultiPre
         Progress = e.Progress;
     }
 
-    private async Task<bool> TryRunAsync(Func<Task> action, string errorTitle)
+    private async Task<bool> TryRunServiceMethodAsync(Func<Task> action, string errorTitle)
     {
         Progress = double.NaN;
         Message = "正在处理";
         IsWorking = true;
         try
         {
+            canReceiveServiceMessage = true;
             await action();
             return true;
         }
@@ -333,6 +343,7 @@ public abstract partial class TwoStepViewModelBase<TService, TConfig> : MultiPre
         {
             Progress = 0;
             IsWorking = false;
+            canReceiveServiceMessage = false;
             Message = "完成";
             WeakReferenceMessenger.Default.Send(new LoadingMessage(false));
         }

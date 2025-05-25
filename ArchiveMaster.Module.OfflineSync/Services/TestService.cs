@@ -172,11 +172,19 @@ namespace ArchiveMaster.Services
 
         private static void CreateRandomFile(string path)
         {
-            using FileStream file = File.Create(path);
-            byte[] buffer = new byte[random.Next(4096) + 1024];
-            random.NextBytes(buffer);
-            file.Write(buffer, 0, buffer.Length);
-            file.Dispose();
+            using (FileStream file = File.Create(path))
+            {
+                byte[] buffer = new byte[1024 * 1024];
+                for (int i = 0; i < buffer.Length; i++)
+                {
+                    // 生成32-126范围内的随机ASCII可见字符
+                    buffer[i] = (byte)random.Next(32, 127);
+                }
+
+                file.Write(buffer, 0, buffer.Length);
+            }
+
+            File.SetLastWriteTime(path, DateTime.Now.AddSeconds(-random.Next(0, 86400)));
         }
 
         private static void CreateTestFiles(DirectoryInfo local, DirectoryInfo remote)
@@ -221,7 +229,6 @@ namespace ArchiveMaster.Services
 
                 fileName = Path.Combine(localMovedDir.FullName, $"移动的文件{i}");
                 CreateRandomFile(fileName);
-                File.SetLastWriteTime(fileName, now);
 
                 fileName2 = Path.Combine(remoteDir.FullName, $"移动的文件{i}");
                 File.Copy(fileName, fileName2);

@@ -13,47 +13,6 @@ namespace ArchiveMaster.Services
 {
     public static class AesExtension
     {
-        public static Aes SetStringKey(this Aes manager, string key, char fill = (char)0, Encoding encoding = null)
-        {
-            manager.Key = GetBytesFromString(manager, key, fill, encoding);
-            return manager;
-        }
-
-        public static Aes SetStringIV(this Aes manager, string iv, char fill = (char)0, Encoding encoding = null)
-        {
-            manager.IV = GetBytesFromString(manager, iv, fill, encoding);
-            return manager;
-        }
-
-        private static byte[] GetBytesFromString(Aes manager, string input, char fill, Encoding encoding)
-        {
-            input ??= "";
-            int length = manager.BlockSize / 8;
-            if (input.Length < length)
-            {
-                input += new string(fill, length - input.Length);
-            }
-            else if (input.Length > length)
-            {
-                input = input[..length];
-            }
-
-            return (encoding ?? Encoding.UTF8).GetBytes(input);
-        }
-
-
-        /// <summary>
-        /// 加密
-        /// </summary>
-        /// <param name="array">要加密的 byte[] 数组</param>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        public static byte[] Encrypt(this Aes manager, byte[] array)
-        {
-            var encryptor = manager.CreateEncryptor();
-            return encryptor.TransformFinalBlock(array, 0, array.Length);
-        }
-
         /// <summary>
         /// 解密
         /// </summary>
@@ -66,74 +25,93 @@ namespace ArchiveMaster.Services
             return decryptor.TransformFinalBlock(array, 0, array.Length);
         }
 
-        public static void EncryptStreamToStream(this Aes manager, Stream streamInput, Stream streamOutput,
-            int bufferLength = 1024 * 1024)
+        public static void DecryptFile(this Aes manager, string sourcePath, string targetPath,
+            int bufferLength = 0,
+            IProgress<FileCopyProgress> progress = null,
+            CancellationToken cancellationToken = default)
         {
-            if (!streamInput.CanRead)
+            if (File.Exists(targetPath))
             {
-                throw new Exception("输入流不可读");
+                throw new IOException($"目标文件{targetPath}已存在");
             }
 
-            if (!streamOutput.CanWrite)
+            if (bufferLength <= 0)
             {
-                throw new Exception("输出流不可写");
+                var fileInfo = new FileInfo(sourcePath);
+                bufferLength = FileIOHelper.GetOptimalBufferSize(fileInfo.Length);
             }
 
-            using var encryptor = manager.CreateEncryptor();
-            byte[] input = new byte[bufferLength];
-            byte[] output = new byte[bufferLength];
-            int size;
-            long length = streamInput.Length;
-            while ((size = streamInput.Read(input, 0, bufferLength)) != 0)
+            try
             {
-                if (streamInput.Position == length)
+                using (FileStream streamSource = new FileStream(sourcePath, FileMode.Open, FileAccess.Read))
+                using (FileStream streamTarget = new FileStream(targetPath, FileMode.OpenOrCreate, FileAccess.Write))
                 {
-                    output = encryptor.TransformFinalBlock(input, 0, size);
-                }
-                else
-                {
-                    encryptor.TransformBlock(input, 0, size, output, 0);
+                    byte[] iv = new byte[16];
+                    streamSource.Read(iv, 0, iv.Length);
+                    manager.IV = iv;
+                    using var decryptor = manager.CreateDecryptor();
+                    long currentSize = 0;
+                    int size;
+                    byte[] input = new byte[bufferLength];
+                    long fileLength = streamSource.Length;
+
+                    progress?.Report(new FileCopyProgress
+                    {
+                        SourceFilePath = sourcePath,
+                        DestinationFilePath = targetPath,
+                        TotalBytes = fileLength,
+                        BytesCopied = currentSize
+                    });
+                    while ((size = streamSource.Read(input, 0, bufferLength)) > 0)
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+                        byte[] output;
+                        int outputSize;
+
+                        if (streamSource.Position == fileLength)
+                        {
+                            output = decryptor.TransformFinalBlock(input, 0, size);
+                            outputSize = output.Length;
+                        }
+                        else
+                        {
+                            output = new byte[size];
+                            outputSize = decryptor.TransformBlock(input, 0, size, output, 0);
+                        }
+
+                        currentSize += outputSize;
+                        streamTarget.Write(output, 0, outputSize);
+                        streamTarget.Flush();
+
+                        progress?.Report(new FileCopyProgress
+                        {
+                            SourceFilePath = sourcePath,
+                            DestinationFilePath = targetPath,
+                            TotalBytes = fileLength,
+                            BytesCopied = currentSize
+                        });
+                    }
                 }
 
-                streamOutput.Write(output, 0, output.Length);
-                streamOutput.Flush();
+                new FileInfo(targetPath).Attributes = File.GetAttributes(sourcePath);
+            }
+            catch (Exception ex)
+            {
+                HandleException(targetPath, ex);
+                throw;
             }
         }
 
-        public static void DecryptStreamToStream(this Aes manager, Stream streamInput, Stream streamOutput,
-            int bufferLength = 1024 * 1024)
+        /// <summary>
+        /// 加密
+        /// </summary>
+        /// <param name="array">要加密的 byte[] 数组</param>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public static byte[] Encrypt(this Aes manager, byte[] array)
         {
-            if (!streamInput.CanRead)
-            {
-                throw new Exception("输入流不可读");
-            }
-
-            if (!streamOutput.CanWrite)
-            {
-                throw new Exception("输出流不可写");
-            }
-
-            using var encryptor = manager.CreateDecryptor();
-            byte[] input = new byte[bufferLength];
-            byte[] output = new byte[bufferLength];
-            int size;
-            int outputSize = 0;
-            long length = streamInput.Length;
-            while ((size = streamInput.Read(input, 0, bufferLength)) != 0)
-            {
-                if (streamInput.Position == length)
-                {
-                    output = encryptor.TransformFinalBlock(input, 0, size);
-                    outputSize = output.Length;
-                }
-                else
-                {
-                    outputSize = encryptor.TransformBlock(input, 0, size, output, 0);
-                }
-
-                streamOutput.Write(output, 0, outputSize);
-                streamOutput.Flush();
-            }
+            var encryptor = manager.CreateEncryptor();
+            return encryptor.TransformFinalBlock(array, 0, array.Length);
         }
 
         public static void EncryptFile(this Aes manager, string sourcePath, string targetPath,
@@ -202,83 +180,32 @@ namespace ArchiveMaster.Services
             }
         }
 
-        public static void DecryptFile(this Aes manager, string sourcePath, string targetPath,
-            int bufferLength = 0,
-            IProgress<FileCopyProgress> progress = null,
-            CancellationToken cancellationToken = default)
+        public static Aes SetStringIV(this Aes manager, string iv, char fill = (char)0, Encoding encoding = null)
         {
-            if (File.Exists(targetPath))
-            {
-                throw new IOException($"目标文件{targetPath}已存在");
-            }
-
-            if (bufferLength <= 0)
-            {
-                var fileInfo = new FileInfo(sourcePath);
-                bufferLength = FileIOHelper.GetOptimalBufferSize(fileInfo.Length);
-            }
-            
-            try
-            {
-                using (FileStream streamSource = new FileStream(sourcePath, FileMode.Open, FileAccess.Read))
-                using (FileStream streamTarget = new FileStream(targetPath, FileMode.OpenOrCreate, FileAccess.Write))
-                {
-                    byte[] iv = new byte[16];
-                    streamSource.Read(iv, 0, iv.Length);
-                    manager.IV = iv;
-                    using var decryptor = manager.CreateDecryptor();
-                    long currentSize = 0;
-                    int size;
-                    byte[] input = new byte[bufferLength];
-                    long fileLength = streamSource.Length;
-
-                    progress?.Report(new FileCopyProgress
-                    {
-                        SourceFilePath = sourcePath,
-                        DestinationFilePath = targetPath,
-                        TotalBytes = fileLength,
-                        BytesCopied = currentSize
-                    });
-                    while ((size = streamSource.Read(input, 0, bufferLength)) > 0)
-                    {
-                        cancellationToken.ThrowIfCancellationRequested();
-                        byte[] output;
-                        int outputSize;
-
-                        if (streamSource.Position == fileLength)
-                        {
-                            output = decryptor.TransformFinalBlock(input, 0, size);
-                            outputSize = output.Length;
-                        }
-                        else
-                        {
-                            output = new byte[size];
-                            outputSize = decryptor.TransformBlock(input, 0, size, output, 0);
-                        }
-
-                        currentSize += outputSize;
-                        streamTarget.Write(output, 0, outputSize);
-                        streamTarget.Flush();
-
-                        progress?.Report(new FileCopyProgress
-                        {
-                            SourceFilePath = sourcePath,
-                            DestinationFilePath = targetPath,
-                            TotalBytes = fileLength,
-                            BytesCopied = currentSize
-                        });
-                    }
-                }
-
-                new FileInfo(targetPath).Attributes = File.GetAttributes(sourcePath);
-            }
-            catch (Exception ex)
-            {
-                HandleException(targetPath, ex);
-                throw;
-            }
+            manager.IV = GetBytesFromString(manager, iv, fill, encoding);
+            return manager;
         }
 
+        public static Aes SetStringKey(this Aes manager, string key, char fill = (char)0, Encoding encoding = null)
+        {
+            manager.Key = GetBytesFromString(manager, key, fill, encoding);
+            return manager;
+        }
+        private static byte[] GetBytesFromString(Aes manager, string input, char fill, Encoding encoding)
+        {
+            input ??= "";
+            int length = manager.BlockSize / 8;
+            if (input.Length < length)
+            {
+                input += new string(fill, length - input.Length);
+            }
+            else if (input.Length > length)
+            {
+                input = input[..length];
+            }
+
+            return (encoding ?? Encoding.UTF8).GetBytes(input);
+        }
         private static void HandleException(string target, Exception ex)
         {
             try

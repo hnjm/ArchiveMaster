@@ -3,16 +3,26 @@ using System.Numerics;
 
 namespace ArchiveMaster.Services
 {
-    public class ProgressUpdateEventArgs : EventArgs 
+    public class ProgressUpdateEventArgs : EventArgs
     {
         public double Progress { get; }
 
         public ProgressUpdateEventArgs(double progress)
         {
-            if (!double.IsNaN(progress) && progress is < 0 or > 1)
+            if (double.IsInfinity(progress))
             {
-                throw new ArgumentException("百分比应在0和1之间，或用NaN表示不确定", nameof(progress));
+                throw new ArgumentException("进度应当为0-1的实数或使用NaN表示不确定", nameof(progress));
             }
+
+            if (progress < 0)
+            {
+                progress = 0;
+            }
+            else if (progress > 1)
+            {
+                progress = 1;
+            }
+
             Progress = progress;
         }
     }
