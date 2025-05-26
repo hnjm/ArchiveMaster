@@ -41,6 +41,11 @@ public partial class App : Application
         }
         else
         {
+            if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime && OperatingSystem.IsWindows())
+            {
+                SplashWindow.CreateAndShow();
+            }
+
             Initializer.Initialize();
             if (OperatingSystem.IsWindows())
             {
@@ -115,6 +120,7 @@ public partial class App : Application
                 desktop.Shutdown();
             }
         };
+        desktop.MainWindow.Activated += (s, e) => { SplashWindow.CloseCurrent(); };
         return desktop.MainWindow as MainWindow;
     }
 
@@ -131,6 +137,7 @@ public partial class App : Application
             desktop.Shutdown();
         }
     }
+
     private void TrayIcon_Clicked(object sender, EventArgs e)
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)

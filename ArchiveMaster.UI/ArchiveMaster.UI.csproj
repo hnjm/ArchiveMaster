@@ -12,6 +12,10 @@
         <Compile Remove="obj\**"/>
         <EmbeddedResource Remove="obj\**"/>
         <None Remove="obj\**"/>
+        <Compile Update="Views\SplashWindow.axaml.cs">
+          <DependentUpon>SplashWindow.axaml</DependentUpon>
+          <SubType>Code</SubType>
+        </Compile>
     </ItemGroup>
 
     <ItemGroup>

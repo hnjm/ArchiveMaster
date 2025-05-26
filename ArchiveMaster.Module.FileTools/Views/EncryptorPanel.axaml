@@ -38,6 +38,7 @@
             <ct:FormItem Label="密码：">
                 <Grid ColumnDefinitions="*,8,Auto">
                     <TextBox
+                        Classes="revealPasswordButton"
                         PasswordChar="*"
                         Text="{Binding Config.Password}" />
                     <CheckBox
