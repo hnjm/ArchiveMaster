@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using System.Threading.Tasks;
 using ArchiveMaster.ViewModels;
 using Avalonia;
 using Avalonia.Controls;
@@ -34,22 +35,12 @@ public partial class SplashWindow : Window
         splashWindow.Show();
     }
 
-    public static void CloseCurrent()
+    public static async void CloseCurrent()
     {
-        if (splashWindow == null)
-        {
-            return;
-            //throw new Exception("还未创建Splash Window");
-        }
-
-        try
-        {
-            splashWindow.Close();
-        }
-        catch
-        {
-        }
-
+        if (splashWindow == null ) return;
+        var temp = splashWindow;
         splashWindow = null;
+        await Task.Delay(500);
+        temp.Close();
     }
 }
