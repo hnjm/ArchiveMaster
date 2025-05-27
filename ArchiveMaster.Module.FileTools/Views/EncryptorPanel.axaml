@@ -120,19 +120,19 @@
             ColumnTimeIndex="-1"
             ItemsSource="{Binding ProcessingFiles}">
             <DataGrid.Columns>
-                <DataGridTemplateColumn
-                    CanUserResize="False"
-                    Header="已加密">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <Ellipse
-                                Width="8"
-                                Height="8"
-                                Fill="{DynamicResource Foreground0}"
-                                IsVisible="{Binding IsEncrypted}" />
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
+                <!--  <DataGridTemplateColumn  -->
+                <!--  CanUserResize="False"  -->
+                <!--  Header="已加密">  -->
+                <!--     <DataGridTemplateColumn.CellTemplate> -->
+                <!--         <DataTemplate> -->
+                <!--  <Ellipse  -->
+                <!--  Width="8"  -->
+                <!--  Height="8"  -->
+                <!--  Fill="{DynamicResource Foreground0}"  -->
+                <!--  IsVisible="{Binding IsEncrypted}" />  -->
+                <!--         </DataTemplate> -->
+                <!--     </DataGridTemplateColumn.CellTemplate> -->
+                <!-- </DataGridTemplateColumn> -->
 
                 <DataGridTextColumn
                     Width="180"

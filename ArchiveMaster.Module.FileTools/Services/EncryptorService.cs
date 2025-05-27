@@ -22,6 +22,7 @@ namespace ArchiveMaster.Services
         public const string DirectoryStructureFile = "$files$.txt";
         public List<EncryptorFileInfo> ProcessingFiles { get; set; }
         public int BufferSize { get; set; } = 1024 * 1024;
+        private Aes aes;
 
         public override async Task ExecuteAsync(CancellationToken token)
         {
@@ -30,7 +31,7 @@ namespace ArchiveMaster.Services
             await Task.Run(() =>
             {
                 int index = 0;
-                Aes aes = GetAes();
+                aes = GetAes();
 
                 bool isEncrypting = IsEncrypting();
 
@@ -46,7 +47,7 @@ namespace ArchiveMaster.Services
                     {
                         string baseMessage = isEncrypting ? "正在加密文件" : "正在解密文件";
                         NotifyMessage(baseMessage +
-                                      $"（{index}/{count}），当前文件：{Path.GetFileName(p.SourceFilePath)}（{1.0 * p.BytesCopied / 1024 / 1024:0}MB/{1.0 * p.TotalBytes / 1024 / 1024:0}MB）");
+                                      $"（{index}/{count}，当前文件{1.0 * p.BytesCopied / 1024 / 1024:0}MB/{1.0 * p.TotalBytes / 1024 / 1024:0}MB），当前文件：{Path.GetFileName(p.SourceFilePath)}");
                     });
 
                 TryForFiles(files, (file, s) =>
@@ -61,7 +62,6 @@ namespace ArchiveMaster.Services
 
                     if (isEncrypting)
                     {
-                        aes.GenerateIV();
                         aes.EncryptFile(file.Path, file.TargetPath, BufferSize, progressReport, token);
                         file.IsFileNameEncrypted = Config.EncryptFileNames;
                     }
@@ -172,12 +172,11 @@ namespace ArchiveMaster.Services
             if (Config.EncryptDirectoryStructure)
             {
                 ArgumentNullException.ThrowIfNull(longNames);
-                Aes aes = GetAes();
                 if (isEncrypting)
                 {
                     string relativePath = Path.GetRelativePath(GetSourceDir(), file.Path);
                     string encryptedFileName =
-                        Convert.ToBase64String(aes.Encrypt(Encoding.Default.GetBytes(relativePath)));
+                        Convert.ToBase64String(aes.Encrypt(Encoding.UTF8.GetBytes(relativePath)));
                     string hash = Hash(encryptedFileName);
                     longNames.Add(hash, encryptedFileName);
                     file.TargetName = hash;
@@ -191,7 +190,7 @@ namespace ArchiveMaster.Services
                     }
 
                     string rawRelativePath =
-                        Encoding.Default.GetString(aes.Decrypt(Convert.FromBase64String(encryptedFileName)));
+                        Encoding.UTF8.GetString(aes.Decrypt(Convert.FromBase64String(encryptedFileName)));
                     file.TargetName = Path.GetFileName(rawRelativePath);
                     file.TargetPath = Path.Combine(GetDistDir(), rawRelativePath);
                 }
@@ -326,7 +325,6 @@ namespace ArchiveMaster.Services
             {
                 string base64 = FileNameSafeStringToBase64(fileName);
                 var bytes = Convert.FromBase64String(base64);
-                Aes aes = GetAes();
                 bytes = aes.Decrypt(bytes);
                 return Encoding.Default.GetString(bytes);
             }
@@ -350,7 +348,6 @@ namespace ArchiveMaster.Services
             }
 
             byte[] bytes = Encoding.Default.GetBytes(fileName);
-            Aes aes = GetAes();
             bytes = aes.Encrypt(bytes);
             string base64 = Convert.ToBase64String(bytes);
             string safeFileName = Base64ToFileNameSafeString(base64);
