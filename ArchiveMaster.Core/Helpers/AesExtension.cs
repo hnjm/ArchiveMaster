@@ -121,10 +121,17 @@ namespace ArchiveMaster.Services
         /// <param name="array">要加密的 byte[] 数组</param>
         /// <param name="key"></param>
         /// <returns></returns>
-        public static byte[] Encrypt(this Aes aes, byte[] plaintext)
+        public static byte[] Encrypt(this Aes aes, byte[] plaintext,byte[] iv=null)
         {
-            aes.GenerateIV();
-            byte[] iv = aes.IV;
+            if (iv == null)
+            {
+                aes.GenerateIV();
+                iv = aes.IV;
+            }
+            else if (iv.Length != 16)
+            {
+                throw new Exception("iv应当为空表示自动生成，或提供一个长度为16的字符数组");
+            }
 
             using (ICryptoTransform encryptor = aes.CreateEncryptor())
             {
