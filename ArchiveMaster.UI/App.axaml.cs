@@ -7,6 +7,7 @@ using ArchiveMaster.Configs;
 using ArchiveMaster.ViewModels;
 using ArchiveMaster.Views;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -28,14 +29,11 @@ public partial class App : Application
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
-        var currentProcess = Process.GetCurrentProcess();
-        var processes = Process
-            .GetProcessesByName(currentProcess.ProcessName)
-            .Where(p => p.MainModule?.FileName == currentProcess.MainModule?.FileName)
-            .Where(p => p.Id != currentProcess.Id);
+        ShowSplashScreenIfNeeded();
 
-        if (processes.Any())
+        if (HasAnotherInstance())
         {
+            SplashWindow.CloseCurrent();
             dontOpen = true;
             ShowMultiInstanceDialog();
         }
@@ -44,7 +42,31 @@ public partial class App : Application
             Initializer.Initialize();
             if (OperatingSystem.IsWindows())
             {
-                Resources.Add("ContentControlThemeFontFamily", new FontFamily("Microsoft YaHei"));
+                Resources.Add("ContentControlThemeFontFamily", new FontFamily("Microsoft YaHei UI"));
+            }
+        }
+    }
+
+    private static bool HasAnotherInstance()
+    {
+        var currentProcess = Process.GetCurrentProcess();
+        var processes = Process
+            .GetProcessesByName(currentProcess.ProcessName)
+            .Where(p => p.MainModule?.FileName == currentProcess.MainModule?.FileName)
+            .Where(p => p.Id != currentProcess.Id);
+        return processes.Any();
+    }
+
+    private void ShowSplashScreenIfNeeded()
+    {
+        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        {
+            if (!(desktop.Args is { Length: > 0 } && desktop.Args[0] == "s"))
+            {
+                if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime && OperatingSystem.IsWindows())
+                {
+                    SplashWindow.CreateAndShow();
+                }
             }
         }
     }
@@ -115,6 +137,7 @@ public partial class App : Application
                 desktop.Shutdown();
             }
         };
+        desktop.MainWindow.Activated += (s, e) => { SplashWindow.CloseCurrent(); };
         return desktop.MainWindow as MainWindow;
     }
 
@@ -131,6 +154,7 @@ public partial class App : Application
             desktop.Shutdown();
         }
     }
+
     private void TrayIcon_Clicked(object sender, EventArgs e)
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)

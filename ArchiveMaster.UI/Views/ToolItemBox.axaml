@@ -4,14 +4,34 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:views="clr-namespace:ArchiveMaster.Views"
     x:Name="root"
     d:DesignHeight="450"
     d:DesignWidth="800"
+    PointerExited="InputElement_OnPointerExited"
+    PointerPressed="InputElement_OnPointerPressed"
+    PointerReleased="InputElement_OnPointerReleased"
     mc:Ignorable="d">
+    <UserControl.Styles>
+        <Style Selector="views|ToolItemBox">
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition
+                        Easing="CubicEaseInOut"
+                        Property="BorderBrush"
+                        Duration="0:0:0.2" />
+                </Transitions>
+            </Setter>
+            <Style Selector="^:pressed Border">
+                <Setter Property="Background" Value="{DynamicResource Background2}" />
+            </Style>
+        </Style>
+    </UserControl.Styles>
     <Grid Margin="8">
         <Grid.Styles>
             <Style Selector="Border">
                 <Setter Property="BorderBrush" Value="{DynamicResource Background0}" />
+                <Setter Property="Background" Value="{DynamicResource Background0}" />
                 <Setter Property="RenderTransform" Value="scale(1)" />
                 <Setter Property="Transitions">
                     <Transitions>
@@ -41,7 +61,6 @@
             </Style>
         </Grid.Styles>
         <Border
-            Background="{DynamicResource Background0}"
             BorderThickness="2"
             CornerRadius="8"
             Cursor="Hand">

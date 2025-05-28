@@ -35,7 +35,7 @@ public partial class BackupManageCenterViewModel
     [RelayCommand]
     private async Task LoadTasksAsync()
     {
-        Snapshots = null;
+        FullSnapshots = null;
         SelectedTask = null;
         Tasks = new ObservableCollection<BackupTask>(Config.Tasks);
         await Tasks.UpdateStatusAsync();
@@ -57,7 +57,7 @@ public partial class BackupManageCenterViewModel
 
     async partial void OnSelectedTaskChanged(BackupTask oldValue, BackupTask newValue)
     {
-        Snapshots = null;
+        FullSnapshots = null;
         LastLog = null;
 
         if (oldValue != null)

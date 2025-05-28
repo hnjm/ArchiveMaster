@@ -469,7 +469,6 @@ namespace ArchiveMaster.Services
         {
             if (Config.EnableEncryption)
             {
-                aes.GenerateIV();
                 aes.EncryptFile(source, destination, progress: progress, cancellationToken: cancellationToken);
             }
             else

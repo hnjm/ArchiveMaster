@@ -7,12 +7,6 @@ namespace ArchiveMaster.Configs
 {
     public partial class EncryptorConfig : ConfigBase
     {
-        public enum EncryptorTaskType
-        {
-            Encrypt,
-            Decrypt,
-        }
-
         [ObservableProperty]
         private CipherMode cipherMode = CipherMode.CBC;
 
@@ -20,16 +14,16 @@ namespace ArchiveMaster.Configs
         private bool deleteSourceFiles;
 
         [ObservableProperty]
-        private string encryptedDir;
-
-        [ObservableProperty]
         private bool encryptDirectoryStructure;
 
         [ObservableProperty]
-        private bool encryptFileNames;
+        private string encryptedDir;
 
         [ObservableProperty]
-        private bool encryptFolderNames;
+        private FilenameDuplicationPolicy filenameDuplicationPolicy;
+
+        [ObservableProperty]
+        private int keySize = 256;
 
         [ObservableProperty]
         private PaddingMode paddingMode = PaddingMode.PKCS7;
@@ -42,13 +36,15 @@ namespace ArchiveMaster.Configs
 
         [ObservableProperty]
         private bool rememberPassword;
-        
-        [ObservableProperty]
-        private FilenameDuplicationPolicy filenameDuplicationPolicy;
 
         [ObservableProperty]
         private EncryptorTaskType type = EncryptorTaskType.Encrypt;
 
+        public enum EncryptorTaskType
+        {
+            Encrypt,
+            Decrypt,
+        }
         public override void Check()
         {
             switch (Type)
@@ -63,6 +59,10 @@ namespace ArchiveMaster.Configs
                     throw new ArgumentOutOfRangeException();
             }
             CheckEmpty(Password,"密码");
+            if (KeySize is not (128 or 192 or 256))
+            {
+                throw new Exception("密钥长度应当为128、192或256");
+            }
         }
     }
 }

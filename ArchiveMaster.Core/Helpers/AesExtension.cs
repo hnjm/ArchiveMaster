@@ -19,10 +19,23 @@ namespace ArchiveMaster.Services
         /// <param name="array">要解密的 byte[] 数组</param>
         /// <param name="key"></param>
         /// <returns></returns>
-        public static byte[] Decrypt(this Aes manager, byte[] array)
+        public static byte[] Decrypt(this Aes aes, byte[] encryptedDataWithIv)
         {
-            var decryptor = manager.CreateDecryptor();
-            return decryptor.TransformFinalBlock(array, 0, array.Length);
+            int ivSize = aes.BlockSize / 8; // AES IV 固定为 16 字节
+            if (encryptedDataWithIv.Length < ivSize)
+            {
+                throw new ArgumentException("无效的加密数据：缺少 IV");
+            }
+
+            byte[] iv = new byte[ivSize];
+            byte[] ciphertext = new byte[encryptedDataWithIv.Length - ivSize];
+    
+            Buffer.BlockCopy(encryptedDataWithIv, 0, iv, 0, ivSize);
+            Buffer.BlockCopy(encryptedDataWithIv, ivSize, ciphertext, 0, ciphertext.Length);
+
+            aes.IV = iv;
+            using ICryptoTransform decryptor = aes.CreateDecryptor();
+            return decryptor.TransformFinalBlock(ciphertext, 0, ciphertext.Length);
         }
 
         public static void DecryptFile(this Aes manager, string sourcePath, string targetPath,
@@ -108,12 +121,28 @@ namespace ArchiveMaster.Services
         /// <param name="array">要加密的 byte[] 数组</param>
         /// <param name="key"></param>
         /// <returns></returns>
-        public static byte[] Encrypt(this Aes manager, byte[] array)
+        public static byte[] Encrypt(this Aes aes, byte[] plaintext,byte[] iv=null)
         {
-            var encryptor = manager.CreateEncryptor();
-            return encryptor.TransformFinalBlock(array, 0, array.Length);
-        }
+            if (iv == null)
+            {
+                aes.GenerateIV();
+                iv = aes.IV;
+            }
+            else if (iv.Length != 16)
+            {
+                throw new Exception("iv应当为空表示自动生成，或提供一个长度为16的字符数组");
+            }
 
+            using (ICryptoTransform encryptor = aes.CreateEncryptor())
+            {
+                byte[] ciphertext = encryptor.TransformFinalBlock(plaintext, 0, plaintext.Length);
+        
+                byte[] result = new byte[iv.Length + ciphertext.Length];
+                Buffer.BlockCopy(iv, 0, result, 0, iv.Length);
+                Buffer.BlockCopy(ciphertext, 0, result, iv.Length, ciphertext.Length);
+                return result;
+            }
+        }
         public static void EncryptFile(this Aes manager, string sourcePath, string targetPath,
             int bufferLength = 0,
             IProgress<FileCopyProgress> progress = null,
@@ -123,7 +152,7 @@ namespace ArchiveMaster.Services
             {
                 throw new IOException($"目标文件{targetPath}已存在");
             }
-
+            manager.GenerateIV();
             if (bufferLength <= 0)
             {
                 var fileInfo = new FileInfo(sourcePath);
@@ -180,32 +209,13 @@ namespace ArchiveMaster.Services
             }
         }
 
-        public static Aes SetStringIV(this Aes manager, string iv, char fill = (char)0, Encoding encoding = null)
+        public static Aes SetStringKey(this Aes manager, string key)
         {
-            manager.IV = GetBytesFromString(manager, iv, fill, encoding);
+            using var deriveBytes = new Rfc2898DeriveBytes(key, Encoding.UTF8.GetBytes(nameof(ArchiveMaster)), 100000,HashAlgorithmName.SHA256);
+            manager.Key = deriveBytes.GetBytes(manager.KeySize / 8);
             return manager;
         }
 
-        public static Aes SetStringKey(this Aes manager, string key, char fill = (char)0, Encoding encoding = null)
-        {
-            manager.Key = GetBytesFromString(manager, key, fill, encoding);
-            return manager;
-        }
-        private static byte[] GetBytesFromString(Aes manager, string input, char fill, Encoding encoding)
-        {
-            input ??= "";
-            int length = manager.BlockSize / 8;
-            if (input.Length < length)
-            {
-                input += new string(fill, length - input.Length);
-            }
-            else if (input.Length > length)
-            {
-                input = input[..length];
-            }
-
-            return (encoding ?? Encoding.UTF8).GetBytes(input);
-        }
         private static void HandleException(string target, Exception ex)
         {
             try

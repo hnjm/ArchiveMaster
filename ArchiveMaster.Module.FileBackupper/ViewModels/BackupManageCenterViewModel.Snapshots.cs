@@ -17,7 +17,10 @@ public partial class BackupManageCenterViewModel
     private BackupSnapshotEntity selectedSnapshot;
 
     [ObservableProperty]
-    private ObservableCollection<BackupSnapshotEntity> snapshots;
+    private FullSnapshotItem selectedFullSnapshot;
+
+    [ObservableProperty]
+    private ObservableCollection<FullSnapshotItem> fullSnapshots;
 
     [ObservableProperty]
     private int totalSnapshotCount;
@@ -56,7 +59,35 @@ public partial class BackupManageCenterViewModel
         try
         {
             DbService db = new DbService(SelectedTask);
-            Snapshots = new ObservableCollection<BackupSnapshotEntity>(await db.GetSnapshotsAsync());
+            var snapshots = await db.GetSnapshotsAsync();
+            FullSnapshotItem fullSnapshot = null;
+            FullSnapshots = new ObservableCollection<FullSnapshotItem>();
+            foreach (var snapshot in snapshots)
+            {
+                switch (snapshot.Type)
+                {
+                    case SnapshotType.Full:
+                    case SnapshotType.VirtualFull:
+                        fullSnapshot = new FullSnapshotItem(snapshot);
+                        FullSnapshots.Add(fullSnapshot);
+                        break;
+                    case SnapshotType.Increment:
+                        if (fullSnapshot == null)
+                        {
+                            throw new Exception($"增量快照{snapshot.BeginTime}前没有全量快照");
+                        }
+
+                        fullSnapshot.Snapshots.Add(snapshot);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+
+            if (FullSnapshots.Count > 0)
+            {
+                SelectedFullSnapshot = FullSnapshots[^1];
+            }
         }
         catch (Exception ex)
         {
@@ -68,22 +99,20 @@ public partial class BackupManageCenterViewModel
     [RelayCommand]
     private async Task DeleteSnapshotAsync(BackupSnapshotEntity snapshot)
     {
+        if (backupService.IsBackingUp)
+        {
+            await this.ShowErrorAsync("删除快照",$"目前有任务正在备份，无法删除快照");
+            return;
+        }
         string message = null;
-        int index = Snapshots.IndexOf(snapshot);
-        if (index == Snapshots.Count - 1) //最后一个，可以直接删
+        int index = SelectedFullSnapshot.Snapshots.IndexOf(snapshot);
+        if (SelectedFullSnapshot.Snapshots.Count <= 1 || index == SelectedFullSnapshot.Snapshots.Count - 1) //最后一个，可以直接删
         {
             message = "是否删除此快照？";
         }
         else
         {
-            if (Snapshots[index + 1].Type is SnapshotType.Increment) //后面跟着增量备份，会把后面的也一起删了
-            {
-                message = "删除此快照，将同步删除后续的增量快照，是否删除此快照？";
-            }
-            else //后面跟着全量备份，无影响
-            {
-                message = "是否删除此快照？";
-            }
+            message = "删除此快照，将同步删除后续的增量快照，是否删除此快照？";
         }
 
         bool confirm = true.Equals(await this.SendMessage(new CommonDialogMessage()
