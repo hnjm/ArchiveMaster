@@ -85,18 +85,20 @@ namespace ArchiveMaster.Services
             return text;
         }
 
-        public void AnalyzeEmptyDirectories(CancellationToken token)
+        private void AnalyzeEmptyDirectories(CancellationToken token)
         {
-            NotifyMessage($"正在查找空目录");
             DeletingDirectories = new List<SyncFileInfo>();
+
             foreach (var topDir in LocalDirectories.Keys)
             {
                 if (!Directory.Exists(topDir))
                 {
                     continue;
                 }
+
                 HashSet<string> deletingDirsInThisTopDir = new HashSet<string>();
-                foreach (var offsiteSubDir in Directory.EnumerateDirectories(topDir, "*", SearchOption.AllDirectories)
+                foreach (var offsiteSubDir in Directory
+                             .EnumerateDirectories(topDir, "*", SearchOption.AllDirectories)
                              .ToList())
                 {
                     token.ThrowIfCancellationRequested();
@@ -141,12 +143,15 @@ namespace ArchiveMaster.Services
             }
         }
 
-        public void DeleteEmptyDirectories(DeleteMode deleteMode, string deleteDirName)
+        public Task DeleteEmptyDirectoriesAsync()
         {
-            foreach (var dir in DeletingDirectories)
+            return Task.Run(() =>
             {
-                Delete(dir.TopDirectory, dir.Path);
-            }
+                foreach (var dir in DeletingDirectories)
+                {
+                    Delete(dir.TopDirectory, dir.Path);
+                }
+            });
         }
 
         public override async Task ExecuteAsync(CancellationToken token = default)
@@ -254,6 +259,9 @@ namespace ArchiveMaster.Services
 
                     NotifyProgress(1.0 * length / totalLength);
                 }).Build());
+
+                NotifyMessage($"正在查找空目录");
+                AnalyzeEmptyDirectories(token);
             }, token);
         }
 

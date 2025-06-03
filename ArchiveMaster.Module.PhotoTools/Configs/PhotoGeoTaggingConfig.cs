@@ -6,6 +6,9 @@ namespace ArchiveMaster.Configs
     {
         [ObservableProperty]
         private string dir;
+        
+        [ObservableProperty]
+        private FileFilterConfig filter=new FileFilterConfig();
 
         [ObservableProperty]
         private string gpxFile;

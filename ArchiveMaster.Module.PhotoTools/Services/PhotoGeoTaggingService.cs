@@ -18,8 +18,9 @@ namespace ArchiveMaster.Services
                     {
                         throw new Exception("数据存在问题，经纬度或时间为空");
                     }
+
                     ExifHelper.WriteGpsToImage(file.Path, file.Latitude.Value, file.Longitude.Value);
-                    File.SetLastWriteTime(file.Path,file.ExifTime.Value);
+                    File.SetLastWriteTime(file.Path, file.ExifTime.Value);
                 },
                 token, FilesLoopOptions.Builder().AutoApplyFileLengthProgress().AutoApplyStatus().Build());
         }
@@ -28,25 +29,16 @@ namespace ArchiveMaster.Services
 
         public override async Task InitializeAsync(CancellationToken token = default)
         {
-            // 1. 准备照片扩展名正则表达式
+            // 准备照片扩展名正则表达式
             var rPhotos = new Regex($"\\.({string.Join('|', Config.PhotoExtensions)})$",
                 RegexOptions.IgnoreCase);
 
             NotifyProgressIndeterminate();
-            NotifyMessage("正在查找文件");
 
-            // 2. 扫描目录中的所有文件
             List<GpsFileInfo> files = null;
-            await Task.Run(() =>
-            {
-                files = new DirectoryInfo(Config.Dir)
-                    .EnumerateFiles("*", FileEnumerateExtension.GetEnumerationOptions())
-                    .ApplyFilter(token)
-                    .Select(f => new GpsFileInfo(f, Config.Dir))
-                    .ToList();
-            }, token);
+            List<GpsFileInfo> results = new List<GpsFileInfo>();
 
-            // 3. 读取并解析GPX文件
+            // 读取并解析GPX文件
             NotifyMessage("正在解析GPX轨迹");
             List<(double lat, double lon, DateTime time)> gpxPoints = new List<(double, double, DateTime)>();
             if (string.IsNullOrWhiteSpace(Config.GpxFile))
@@ -54,31 +46,54 @@ namespace ArchiveMaster.Services
                 throw new Exception($"GPX文件不存在");
             }
 
-            foreach (var gpxFile in FileNameHelper.GetFileNames(Config.GpxFile))
+            await Task.Run(() =>
             {
-                if (!File.Exists(gpxFile))
+                var gpxFiles = FileNameHelper.GetFileNames(Config.GpxFile);
+                int index = 0;
+                foreach (var gpxFile in gpxFiles)
                 {
-                    throw new Exception($"GPX文件{gpxFile}不存在");
-                }
-
-                try
-                {
-                    gpxPoints.AddRange(ParseGpx(gpxFile));
-                    if (gpxPoints.Count == 0)
+                    NotifyProgress(1.0 * (index++) / gpxFiles.Length);
+                    NotifyMessage($"正在解析GPX轨迹（{index}/{gpxFiles.Length}）：{Path.GetFileName(gpxFile)}");
+                    if (!File.Exists(gpxFile))
                     {
-                        throw new Exception("GPX文件未包含有效轨迹点");
+                        throw new Exception($"GPX文件{gpxFile}不存在");
+                    }
+
+                    try
+                    {
+                        var gpx = ParseGpx(gpxFile);
+                        if (gpx.Count == 0)
+                        {
+                            continue;
+                            //throw new Exception("GPX文件未包含有效轨迹点");
+                        }
+
+                        gpxPoints.AddRange(gpx);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception($"GPX文件 {gpxFile}解析失败：（{ex.Message}）", ex);
                     }
                 }
-                catch (Exception ex)
-                {
-                    throw new Exception($"GPX文件 {Path.GetFileName(Config.GpxFile)}解析失败：（{ex.Message}）", ex);
-                }
-            }
 
-            // 4. 按时间排序GPX点
-            gpxPoints = [.. gpxPoints.OrderBy(p => p.time)];
+                // 按时间排序GPX点
+                gpxPoints = [.. gpxPoints.OrderBy(p => p.time)];
+            }, token);
 
             // 5. 处理照片文件
+            NotifyMessage("正在查找文件");
+            NotifyProgressIndeterminate();
+            await Task.Run(() =>
+            {
+                files = new DirectoryInfo(Config.Dir)
+                    .EnumerateFiles("*", FileEnumerateExtension.GetEnumerationOptions())
+                    .ApplyFilter(token, Config.Filter)
+                    .Select(f => new GpsFileInfo(f, Config.Dir))
+                    .ToList();
+            }, token);
+
+            NotifyMessage($"正在处理照片");
+
             await TryForFilesAsync(files, (file, state) =>
             {
                 NotifyMessage($"正在处理照片 {state.GetFileNumberMessage()}");
@@ -87,6 +102,8 @@ namespace ArchiveMaster.Services
                 {
                     return;
                 }
+
+                results.Add(file);
 
                 // 5.1 获取照片Exif时间
                 DateTime? exifTime = ExifHelper.FindExifTime(file.Path);
@@ -97,6 +114,8 @@ namespace ArchiveMaster.Services
                 }
 
                 file.ExifTime = exifTime.Value;
+                file.AlreadyHasGps = ExifHelper.FindGps(file.Path) != null;
+
                 DateTime offsetTime = file.ExifTime.Value +
                                       (Config.InverseTimeOffset ? Config.TimeOffset : -Config.TimeOffset);
 
@@ -110,7 +129,7 @@ namespace ArchiveMaster.Services
                     file.Latitude = lat;
                     file.Longitude = lon;
                     file.GpsTime = gpsTime;
-                    file.IsMatched = true;
+                    file.IsMatched = !file.AlreadyHasGps;
                 }
                 else
                 {
@@ -134,18 +153,38 @@ namespace ArchiveMaster.Services
         public static List<(double lat, double lon, DateTime time)> ParseGpx(string filePath)
         {
             var doc = XDocument.Load(filePath);
-            var trk = doc.Root.Element("trk"); // 直接找<trk>（忽略命名空间）
+    
+            // 尝试带命名空间查找 <trk>
+            XNamespace ns = "http://www.topografix.com/GPX/1/0";
+            var trk = doc.Root.Element(ns + "trk") ?? doc.Root.Element("trk"); // 如果带命名空间找不到，再尝试不带命名空间
 
             if (trk == null) return new List<(double, double, DateTime)>();
 
-            return trk.Elements("trkseg") // 严格按层级查找
-                .SelectMany(seg => seg.Elements("trkpt")
-                    .Select(pt => (
-                        lat: (double)pt.Attribute("lat"),
-                        lon: (double)pt.Attribute("lon"),
-                        time: (DateTime)pt.Element("time")
-                    ))
-                )
+            // 查找 <trkseg>（带/不带命名空间）
+            var trksegElements = trk.Elements(ns + "trkseg").Any() 
+                ? trk.Elements(ns + "trkseg") 
+                : trk.Elements("trkseg");
+
+            return trksegElements
+                .SelectMany(seg => 
+                {
+                    // 查找 <trkpt>（带/不带命名空间）
+                    var trkptElements = seg.Elements(ns + "trkpt").Any() 
+                        ? seg.Elements(ns + "trkpt") 
+                        : seg.Elements("trkpt");
+
+                    return trkptElements.Select(pt => 
+                    {
+                        // 查找 <time>（带/不带命名空间）
+                        var timeElement = pt.Element(ns + "time") ?? pt.Element("time");
+                
+                        return (
+                            lat: (double)pt.Attribute("lat"),
+                            lon: (double)pt.Attribute("lon"),
+                            time: (DateTime)timeElement
+                        );
+                    });
+                })
                 .OrderBy(p => p.time) // 按时间排序
                 .ToList();
         }

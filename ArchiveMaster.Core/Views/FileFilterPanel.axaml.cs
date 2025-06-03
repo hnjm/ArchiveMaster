@@ -29,6 +29,12 @@ public partial class FileFilterPanel : UserControl
 
     private void ResetButton_OnClick(object sender, RoutedEventArgs e)
     {
+        if (Filter == null)
+        {
+            Filter = new FileFilterConfig();
+            return;
+        }
+        
         var newObj = new FileFilterConfig();
         newObj.UseRegex = Filter.UseRegex;
         newObj.Adapt(Filter);

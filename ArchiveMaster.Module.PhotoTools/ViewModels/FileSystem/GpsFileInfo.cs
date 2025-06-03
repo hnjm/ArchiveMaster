@@ -22,4 +22,7 @@ public partial class GpsFileInfo : SimpleFileInfo
 
     [ObservableProperty]
     private bool isMatched;
+    
+    [ObservableProperty]
+    private bool alreadyHasGps;
 }

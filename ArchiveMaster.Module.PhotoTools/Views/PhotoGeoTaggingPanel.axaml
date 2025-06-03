@@ -17,6 +17,8 @@
             <ct:FormItem Label="目录：">
                 <v:FilePickerTextBox
                     FileNames="{Binding Config.Dir}"
+                    Filter="{Binding Config.Filter}"
+                    IsFilterButtonVisible="True"
                     Type="OpenFolder" />
             </ct:FormItem>
             <ct:FormItem Label="GPX文件：">
@@ -63,7 +65,8 @@
             <DataGrid.Columns>
                 <DataGridTemplateColumn
                     CanUserResize="False"
-                    Header="匹配">
+                    Header="匹配"
+                    SortMemberPath="IsMatched">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <Ellipse
@@ -71,6 +74,20 @@
                                 Height="8"
                                 Fill="{DynamicResource Foreground0}"
                                 IsVisible="{Binding IsMatched}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn
+                    CanUserResize="False"
+                    Header="已有坐标"
+                    SortMemberPath="AlreadyHasGps">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Ellipse
+                                Width="8"
+                                Height="8"
+                                Fill="{DynamicResource Foreground0}"
+                                IsVisible="{Binding AlreadyHasGps}" />
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>

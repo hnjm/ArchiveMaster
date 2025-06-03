@@ -119,7 +119,8 @@ public class SimpleFileDataGrid : DataGrid
             CanUserResize = false,
             CanUserReorder = false,
             CanUserSort = false,
-            Header = ColumnIsCheckedHeader
+            Header = ColumnIsCheckedHeader,
+            SortMemberPath = nameof(SimpleFileInfo.IsChecked)
         };
         var cellTemplate = new FuncDataTemplate<SimpleFileInfo>((value, namescope) =>
         {

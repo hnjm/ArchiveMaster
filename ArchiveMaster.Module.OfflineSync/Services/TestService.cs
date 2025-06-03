@@ -116,8 +116,7 @@ namespace ArchiveMaster.Services
                 Step3Service u3 = new Step3Service(appConfig) { Config = c3 };
                 await u3.InitializeAsync();
                 await u3.ExecuteAsync();
-                u3.AnalyzeEmptyDirectories(CancellationToken.None);
-                u3.DeleteEmptyDirectories(DeleteMode.Delete, null);
+                await u3.DeleteEmptyDirectoriesAsync();
 
                 var localFiles = Directory.EnumerateFiles(localDir, "*", SearchOption.AllDirectories)
                     .Select(p => Path.GetRelativePath(localDir, p))

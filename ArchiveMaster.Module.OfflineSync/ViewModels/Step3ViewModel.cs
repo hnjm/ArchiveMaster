@@ -27,7 +27,6 @@ namespace ArchiveMaster.ViewModels
 
         protected override async Task OnExecutedAsync(CancellationToken token)
         {
-            Service.AnalyzeEmptyDirectories(token);
             if (Service.DeletingDirectories.Count != 0)
             {
                 var result = await this.SendMessage(new CommonDialogMessage()
@@ -40,7 +39,7 @@ namespace ArchiveMaster.ViewModels
                 }).Task;
                 if (result.Equals(true))
                 {
-                    Service.DeleteEmptyDirectories(Config.DeleteMode, Config.DeleteDir);
+                    await Service.DeleteEmptyDirectoriesAsync();
                 }
             }
         }
