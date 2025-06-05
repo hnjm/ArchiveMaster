@@ -112,7 +112,7 @@ namespace ArchiveMaster.Helpers
                 {
                     int bytesRead = await sourceStream.ReadAsync(readBuffer.AsMemory(0, bufferSize), ct);
                     if (bytesRead <= 0) break;
-        
+
                     var bufferToSend = readBuffer;
                     readBuffer = ArrayPool<byte>.Shared.Rent(bufferSize); // 提前租用下一个
                     await writer.WriteAsync((bufferToSend, bytesRead), ct);

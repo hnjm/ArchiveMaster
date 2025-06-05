@@ -25,6 +25,7 @@ namespace ArchiveMaster.Services
         private DateTime lastMessageTime = DateTime.MinValue;
 
         private string pendingMessage;
+
         public ServiceBase(AppConfig appConfig)
         {
             this.appConfig = appConfig;
@@ -42,6 +43,7 @@ namespace ArchiveMaster.Services
             {
                 return;
             }
+
             isDisposed = true;
             debounceTimer?.Dispose();
             GC.SuppressFinalize(this);
@@ -49,10 +51,16 @@ namespace ArchiveMaster.Services
 
         protected void NotifyMessage(string message)
         {
+#if DEBUG
+            Debug.WriteLine("{0:HH:m:s.fff}\t{1}", DateTime.Now, message);
+#endif
+            MessageUpdate?.Invoke(this, new MessageUpdateEventArgs(message));
+            return;
             if (isDisposed)
             {
                 return;
             }
+
             lock (syncLock)
             {
                 pendingMessage = message;
@@ -302,6 +310,7 @@ namespace ArchiveMaster.Services
             {
                 return;
             }
+
             if (pendingMessage == null)
             {
                 return;

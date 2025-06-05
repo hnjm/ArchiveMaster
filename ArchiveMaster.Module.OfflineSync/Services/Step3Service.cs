@@ -175,9 +175,8 @@ namespace ArchiveMaster.Services
                 await TryForFilesAsync(files, async (file, s) =>
                 {
                     //先处理移动，然后处理修改，这样能避免一些问题（2022-12-17）
-                    NotifyMessage($"正在处理{s.GetFileNumberMessage()}：{file.RelativePath}");
-                    int index = s.FileIndex;
-                    int count = s.FileCount;
+                    string numMsg = s.GetFileNumberMessage("{0}/{1}");
+                    NotifyMessage($"正在处理（{numMsg}）：{file.RelativePath}");
                     string patch = file.TempName == null ? null : Path.Combine(Config.PatchDir, file.TempName);
                     if (file.UpdateType is not (FileUpdateType.Delete or FileUpdateType.Move) &&
                         !File.Exists(patch))
@@ -202,7 +201,7 @@ namespace ArchiveMaster.Services
                         {
                             NotifyProgress(1.0 * (length + p.BytesCopied) / totalLength);
                             NotifyMessage(
-                                $"正在复制（{index}/{count}，本文件{1.0 * p.BytesCopied / 1024 / 1024:0}MB/{1.0 * p.TotalBytes / 1024 / 1024:0}MB）：{file.RelativePath}");
+                                $"正在复制（{numMsg}，本文件{1.0 * p.BytesCopied / 1024 / 1024:0}MB/{1.0 * p.TotalBytes / 1024 / 1024:0}MB）：{file.RelativePath}");
                         });
                         await CopyFileAsync(patch, target, file.Time, progress, token);
                     }

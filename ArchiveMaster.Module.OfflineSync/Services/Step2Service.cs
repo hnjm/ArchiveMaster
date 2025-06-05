@@ -89,9 +89,9 @@ namespace ArchiveMaster.Services
                     file.TempName = GetTempFileName(file, sha256) +
                                     (Config.EnableEncryption ? EncryptionFileSuffix : string.Empty);
 
-                    int index = s.FileIndex;
-                    int count = s.FileCount;
-                    NotifyMessage($"正在处理（{index}/{count}）：{file.RelativePath}");
+
+                    string numMsg = s.GetFileNumberMessage("{0}/{1}");
+                    NotifyMessage($"正在处理（{numMsg}）：{file.RelativePath}");
                     string sourceFile = Path.Combine(offsiteTopDir2LocalDir[file.TopDirectory], file.RelativePath);
                     string destFile = Path.Combine(Config.PatchDir, file.TempName);
                     if (File.Exists(destFile) && Config.ExportMode != ExportMode.Script)
@@ -120,7 +120,7 @@ namespace ArchiveMaster.Services
                             {
                                 NotifyProgress(1.0 * (length + p.BytesCopied) / totalLength);
                                 NotifyMessage(
-                                    $"正在复制（{index}/{count}，本文件{1.0 * p.BytesCopied / 1024 / 1024:0}MB/{1.0 * p.TotalBytes / 1024 / 1024:0}MB）：{file.RelativePath}");
+                                    $"正在复制（{numMsg}，本文件{1.0 * p.BytesCopied / 1024 / 1024:0}MB/{1.0 * p.TotalBytes / 1024 / 1024:0}MB）：{file.RelativePath}");
                             });
                             while (--tryCount > 0)
                             {

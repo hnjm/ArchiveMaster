@@ -173,7 +173,7 @@ namespace ArchiveMaster.Services
         {
             using (FileStream file = File.Create(path))
             {
-                byte[] buffer = new byte[1024 * 1024];
+                byte[] buffer = new byte[1024 * 1024 * 32];
                 for (int i = 0; i < buffer.Length; i++)
                 {
                     // 生成32-126范围内的随机ASCII可见字符

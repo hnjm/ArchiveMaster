@@ -19,40 +19,37 @@ namespace ArchiveMaster.Services
     public class EncryptorService(AppConfig appConfig) : TwoStepServiceBase<EncryptorConfig>(appConfig)
     {
         public const string EncryptedFileExtension = ".$ept$";
-        
+
         public const string EncryptedFileMetadataExtension = ".$eptm$";
-        
+
         private Aes aes;
-        
+
         public int BufferSize { get; set; } = 1024 * 1024;
-        
+
         public List<EncryptorFileInfo> ProcessingFiles { get; set; }
-        
+
         public override async Task ExecuteAsync(CancellationToken token)
         {
             ArgumentNullException.ThrowIfNull(ProcessingFiles, nameof(ProcessingFiles));
 
             await Task.Run(() =>
             {
-                int index = 0;
-
                 bool isEncrypting = IsEncrypting();
-
+                string numMsg = null;
                 //初始化进度通知
                 var files = ProcessingFiles.CheckedOnly().ToList();
-                int count = files.Count;
-
                 var progressReport = new Progress<FileCopyProgress>(
                     p =>
                     {
                         string baseMessage = isEncrypting ? "正在加密文件" : "正在解密文件";
                         NotifyMessage(baseMessage +
-                                      $"（{index}/{count}，当前文件{1.0 * p.BytesCopied / 1024 / 1024:0}MB/{1.0 * p.TotalBytes / 1024 / 1024:0}MB），当前文件：{Path.GetFileName(p.SourceFilePath)}");
+                                      $"（{numMsg}，当前文件{1.0 * p.BytesCopied / 1024 / 1024:0}MB/{1.0 * p.TotalBytes / 1024 / 1024:0}MB）：{Path.GetFileName(p.SourceFilePath)}");
                     });
 
                 TryForFiles(files, (file, s) =>
                 {
-                    index++;
+                    numMsg = s.GetFileNumberMessage("{0}/{1}");
+                    NotifyMessage($"正在处理（{numMsg}）：{file.Name}");
 
                     if (!CheckFileAndDirectoryExists(file))
                     {
@@ -239,11 +236,11 @@ namespace ArchiveMaster.Services
             {
                 if (isEncrypting)
                 {
-                  EncryptDirStructure();
+                    EncryptDirStructure();
                 }
                 else
                 {
-                   DecryptDirStructure();
+                    DecryptDirStructure();
                 }
             }
             else
@@ -278,7 +275,7 @@ namespace ArchiveMaster.Services
                 file.TargetName = Path.GetFileName(rawRelativePath);
                 file.TargetPath = Path.Combine(GetDistDir(), rawRelativePath);
             }
-            
+
             string DecryptFileName(string fileName)
             {
                 ArgumentException.ThrowIfNullOrEmpty(fileName);
@@ -286,6 +283,7 @@ namespace ArchiveMaster.Services
                 {
                     fileName = Path.GetFileNameWithoutExtension(fileName);
                 }
+
                 return fileName;
             }
         }

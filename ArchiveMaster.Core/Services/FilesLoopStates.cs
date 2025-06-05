@@ -1,6 +1,7 @@
 namespace ArchiveMaster.Services;
 
-public class FilesLoopStates{
+public class FilesLoopStates
+{
     public FilesLoopStates(FilesLoopOptions options)
     {
         Options = options;
@@ -8,7 +9,7 @@ public class FilesLoopStates{
         fileLength = options.InitialLength;
         fileCount = options.TotalCount;
         fileIndex = options.InitialCount;
-        
+
         if (totalLength > 0)
         {
             CanAccessTotalLength = true;
@@ -20,7 +21,7 @@ public class FilesLoopStates{
         }
     }
 
-    public FilesLoopOptions Options { get; } 
+    public FilesLoopOptions Options { get; }
     private long totalLength = 0;
     private int fileCount = 0;
     private int fileIndex = 0;
@@ -84,15 +85,16 @@ public class FilesLoopStates{
         }
     }
 
-    public string GetFileNumberMessage()
+    public string GetFileNumberMessage(string format = null)
     {
-        int fileIndex = FileIndex + 1;
+        format = format ?? (CanAccessFileCount ? ProgressMessageFormat : ProgressMessageIndexOnlyFormat);
+        int naturalIndex = FileIndex + 1;
         if (CanAccessFileCount)
         {
-            return string.Format(ProgressMessageFormat, fileIndex, FileCount);
+            return string.Format(format, naturalIndex, FileCount);
         }
 
-        return string.Format(ProgressMessageIndexOnlyFormat, fileIndex);
+        return string.Format(format, naturalIndex);
     }
 
     public void Break()

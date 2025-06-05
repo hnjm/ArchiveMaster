@@ -17,10 +17,19 @@ namespace ArchiveMaster.Services
             return TryForFilesAsync(files,
                 async (file, state) =>
                 {
-                    NotifyMessage($"正在复制{file.Name}");
+                    int index = state.FileIndex;
+                    int count = state.FileCount;
+                    NotifyMessage($"正在复制（{index}/{count}），当前文件：{Path.GetFileName(file.Name)}");
+
                     await FileIOHelper.CopyFileAsync(file.Path, file.DestinationPath,
                         progress: new Progress<FileCopyProgress>(
-                            p => { NotifyProgress(1.0 * (currentLength + p.BytesCopied) / totalLength); }),
+                            p =>
+                            {
+                                NotifyMessage(
+                                    $"正在复制（{index}/{count}，当前文件{1.0 * p.BytesCopied / 1024 / 1024:0}MB/{1.0 * p.TotalBytes / 1024 / 1024:0}MB），当前文件：{Path.GetFileName(p.SourceFilePath)}");
+                              
+                                NotifyProgress(1.0 * (currentLength + p.BytesCopied) / totalLength);
+                            }),
                         cancellationToken: token);
                     File.SetLastWriteTimeUtc(file.DestinationPath, file.Time);
                     currentLength += file.Length;
