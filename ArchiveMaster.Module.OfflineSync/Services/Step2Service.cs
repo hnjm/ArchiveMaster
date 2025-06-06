@@ -94,8 +94,25 @@ namespace ArchiveMaster.Services
                     NotifyMessage($"正在处理（{numMsg}）：{file.RelativePath}");
                     string sourceFile = Path.Combine(offsiteTopDir2LocalDir[file.TopDirectory], file.RelativePath);
                     string destFile = Path.Combine(Config.PatchDir, file.TempName);
-                    if (File.Exists(destFile) && Config.ExportMode != ExportMode.Script)
+                    var destFileInfo = new FileInfo(destFile);
+                    var sourceFileInfo = new FileInfo(sourceFile);
+
+                    long GetEncryptedFileLength(long rawFileLength)
                     {
+                        int ivLength = 16;
+                        int blockLength = 16;
+                        return ivLength + (rawFileLength / blockLength + 1) * blockLength;
+                    }
+
+                    if (File.Exists(destFile) && Config.ExportMode != ExportMode.Script &&
+                        destFileInfo.LastWriteTime == sourceFileInfo.LastWriteTime &&
+                        (
+                            Config.EnableEncryption &&
+                            destFileInfo.Length == GetEncryptedFileLength(sourceFileInfo.Length) //加密文件
+                            || !Config.EnableEncryption && destFileInfo.Length == sourceFileInfo.Length //非加密文件
+                        ))
+                    {
+                        NotifyMessage($"正在处理（{numMsg}）：{file.RelativePath} 已存在，跳过");
                         return;
                     }
 
@@ -124,7 +141,7 @@ namespace ArchiveMaster.Services
                             });
                             while (--tryCount > 0)
                             {
-                                if (tryCount < 9 && File.Exists(destFile))
+                                if (File.Exists(destFile))
                                 {
                                     File.Delete(destFile);
                                 }
@@ -470,6 +487,7 @@ namespace ArchiveMaster.Services
             if (Config.EnableEncryption)
             {
                 aes.EncryptFile(source, destination, progress: progress, cancellationToken: cancellationToken);
+                File.SetLastWriteTimeUtc(destination, File.GetLastWriteTimeUtc(source));
             }
             else
             {

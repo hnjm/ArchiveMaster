@@ -1,4 +1,6 @@
-﻿using System.Collections;
+﻿// #define WRITEMESSAGE
+
+using System.Collections;
 using System.Diagnostics;
 using ArchiveMaster.Configs;
 using ArchiveMaster.Enums;
@@ -51,7 +53,7 @@ namespace ArchiveMaster.Services
 
         protected void NotifyMessage(string message)
         {
-#if DEBUG
+#if DEBUG && WRITEMESSAGE
             Debug.WriteLine("{0:HH:m:s.fff}\t{1}", DateTime.Now, message);
 #endif
             MessageUpdate?.Invoke(this, new MessageUpdateEventArgs(message));
