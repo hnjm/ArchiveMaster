@@ -85,64 +85,6 @@ namespace ArchiveMaster.Services
             return text;
         }
 
-        private void AnalyzeEmptyDirectories(CancellationToken token)
-        {
-            DeletingDirectories = new List<SyncFileInfo>();
-
-            foreach (var topDir in LocalDirectories.Keys)
-            {
-                if (!Directory.Exists(topDir))
-                {
-                    continue;
-                }
-
-                HashSet<string> deletingDirsInThisTopDir = new HashSet<string>();
-                foreach (var offsiteSubDir in Directory
-                             .EnumerateDirectories(topDir, "*", SearchOption.AllDirectories)
-                             .ToList())
-                {
-                    token.ThrowIfCancellationRequested();
-                    if (!LocalDirectories[topDir]
-                            .Contains(Path.GetRelativePath(topDir, offsiteSubDir))) //本地已经没有远程的这个目录了
-                    {
-                        if (!Directory.EnumerateFiles(offsiteSubDir).Any()) //并且远程的这个目录是空的
-                        {
-                            deletingDirsInThisTopDir.Add(offsiteSubDir);
-                        }
-                        else if (!Directory.EnumerateFiles(offsiteSubDir).Skip(1).Any() //目录里只有缩略图
-                                 && Path.GetFileName(Directory.EnumerateFiles(offsiteSubDir).First()).ToLower() ==
-                                 "thumbs.db")
-                        {
-                            deletingDirsInThisTopDir.Add(offsiteSubDir);
-                        }
-                    }
-                }
-
-
-                //通过两层循环，删除位于空目录下的空目录
-                foreach (var dir1 in deletingDirsInThisTopDir.ToList()) //外层循环，dir1为内层空目录
-                {
-                    token.ThrowIfCancellationRequested();
-                    foreach (var dir2 in deletingDirsInThisTopDir) //内曾循环，dir2为外层空目录
-                    {
-                        if (dir1 == dir2)
-                        {
-                            continue;
-                        }
-
-                        if (dir1.StartsWith(dir2)) //如果dir2位于dir1的外层，那么dir1就不需要单独删除
-                        {
-                            deletingDirsInThisTopDir.Remove(dir1);
-                            break;
-                        }
-                    }
-                }
-
-                DeletingDirectories.AddRange(deletingDirsInThisTopDir.Select(p => new SyncFileInfo()
-                    { Path = p, TopDirectory = topDir }));
-            }
-        }
-
         public Task DeleteEmptyDirectoriesAsync()
         {
             return Task.Run(() =>
@@ -158,7 +100,7 @@ namespace ArchiveMaster.Services
         {
             if (!string.IsNullOrWhiteSpace(Config.Password))
             {
-                aes = OfflineSyncHelper.GetAes(Config.Password);
+                aes = Services.AesExtension.GetDefault(Config.Password);
             }
 
             long totalLength = 0;
@@ -355,6 +297,63 @@ namespace ArchiveMaster.Services
             return attr.HasFlag(FileAttributes.Directory);
         }
 
+        private void AnalyzeEmptyDirectories(CancellationToken token)
+        {
+            DeletingDirectories = new List<SyncFileInfo>();
+
+            foreach (var topDir in LocalDirectories.Keys)
+            {
+                if (!Directory.Exists(topDir))
+                {
+                    continue;
+                }
+
+                HashSet<string> deletingDirsInThisTopDir = new HashSet<string>();
+                foreach (var offsiteSubDir in Directory
+                             .EnumerateDirectories(topDir, "*", SearchOption.AllDirectories)
+                             .ToList())
+                {
+                    token.ThrowIfCancellationRequested();
+                    if (!LocalDirectories[topDir]
+                            .Contains(Path.GetRelativePath(topDir, offsiteSubDir))) //本地已经没有远程的这个目录了
+                    {
+                        if (!Directory.EnumerateFiles(offsiteSubDir).Any()) //并且远程的这个目录是空的
+                        {
+                            deletingDirsInThisTopDir.Add(offsiteSubDir);
+                        }
+                        else if (!Directory.EnumerateFiles(offsiteSubDir).Skip(1).Any() //目录里只有缩略图
+                                 && Path.GetFileName(Directory.EnumerateFiles(offsiteSubDir).First()).ToLower() ==
+                                 "thumbs.db")
+                        {
+                            deletingDirsInThisTopDir.Add(offsiteSubDir);
+                        }
+                    }
+                }
+
+
+                //通过两层循环，删除位于空目录下的空目录
+                foreach (var dir1 in deletingDirsInThisTopDir.ToList()) //外层循环，dir1为内层空目录
+                {
+                    token.ThrowIfCancellationRequested();
+                    foreach (var dir2 in deletingDirsInThisTopDir) //内曾循环，dir2为外层空目录
+                    {
+                        if (dir1 == dir2)
+                        {
+                            continue;
+                        }
+
+                        if (dir1.StartsWith(dir2)) //如果dir2位于dir1的外层，那么dir1就不需要单独删除
+                        {
+                            deletingDirsInThisTopDir.Remove(dir1);
+                            break;
+                        }
+                    }
+                }
+
+                DeletingDirectories.AddRange(deletingDirsInThisTopDir.Select(p => new SyncFileInfo()
+                    { Path = p, TopDirectory = topDir }));
+            }
+        }
         private async Task CopyFileAsync(string source, string destination,
             DateTime fileTime,
             Progress<FileCopyProgress> progress,
@@ -367,7 +366,8 @@ namespace ArchiveMaster.Services
                     throw new ArgumentException("备份文件已加密，但没有提供密码");
                 }
 
-                aes.DecryptFile(source, destination, progress: progress, cancellationToken: cancellationToken);
+                await aes.DecryptFileAsync(source, destination, progress: progress,
+                    cancellationToken: cancellationToken);
             }
             else
             {

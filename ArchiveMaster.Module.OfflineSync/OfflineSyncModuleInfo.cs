@@ -67,14 +67,30 @@ namespace ArchiveMaster
                     if (folders.Count > 0)
                     {
                         var folder = folders[0].TryGetLocalPath();
-                        await TestService.CreateSyncTestFilesAsync(folder);
+                        WeakReferenceMessenger.Default.Send(new LoadingMessage(true));
+                        try
+                        {
+                            await TestService.CreateSyncTestFilesAsync(folder);
+                        }
+                        finally
+                        {
+                            WeakReferenceMessenger.Default.Send(new LoadingMessage(false));
+                        }
                     }
                 })),
                 new ModuleMenuItemInfo("自动化测试", new AsyncRelayCommand(async () =>
                 {
                     try
                     {
-                        await TestService.TestAllAsync();
+                        WeakReferenceMessenger.Default.Send(new LoadingMessage(true));
+                        try
+                        {
+                            await TestService.TestAllAsync();
+                        }
+                        finally
+                        {
+                            WeakReferenceMessenger.Default.Send(new LoadingMessage(false));
+                        }
 
                         await WeakReferenceMessenger.Default.Send(new CommonDialogMessage()
                         {

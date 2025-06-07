@@ -13,12 +13,6 @@ namespace ArchiveMaster.Services
 {
     public static class AesExtension
     {
-        /// <summary>
-        /// 解密
-        /// </summary>
-        /// <param name="array">要解密的 byte[] 数组</param>
-        /// <param name="key"></param>
-        /// <returns></returns>
         public static byte[] Decrypt(this Aes aes, byte[] encryptedDataWithIv)
         {
             int ivSize = aes.BlockSize / 8; // AES IV 固定为 16 字节
@@ -29,7 +23,7 @@ namespace ArchiveMaster.Services
 
             byte[] iv = new byte[ivSize];
             byte[] ciphertext = new byte[encryptedDataWithIv.Length - ivSize];
-    
+
             Buffer.BlockCopy(encryptedDataWithIv, 0, iv, 0, ivSize);
             Buffer.BlockCopy(encryptedDataWithIv, ivSize, ciphertext, 0, ciphertext.Length);
 
@@ -38,15 +32,13 @@ namespace ArchiveMaster.Services
             return decryptor.TransformFinalBlock(ciphertext, 0, ciphertext.Length);
         }
 
-        public static void DecryptFile(this Aes manager, string sourcePath, string targetPath,
+        public static async Task DecryptFileAsync(this Aes manager, string sourcePath, string targetPath,
             int bufferLength = 0,
             IProgress<FileCopyProgress> progress = null,
             CancellationToken cancellationToken = default)
         {
             if (File.Exists(targetPath))
-            {
                 throw new IOException($"目标文件{targetPath}已存在");
-            }
 
             if (bufferLength <= 0)
             {
@@ -56,57 +48,45 @@ namespace ArchiveMaster.Services
 
             try
             {
-                using (FileStream streamSource = new FileStream(sourcePath, FileMode.Open, FileAccess.Read))
-                using (FileStream streamTarget = new FileStream(targetPath, FileMode.OpenOrCreate, FileAccess.Write))
+                await using var streamSource = new FileStream(sourcePath, FileMode.Open, FileAccess.Read,
+                    FileShare.Read, bufferLength, useAsync: true);
+                await using var streamTarget = new FileStream(targetPath, FileMode.CreateNew, FileAccess.Write,
+                    FileShare.None, bufferLength, useAsync: true);
+
+                byte[] iv = new byte[manager.BlockSize / 8];
+                await streamSource.ReadAsync(iv, 0, iv.Length, cancellationToken);
+                manager.IV = iv;
+
+                await using var cryptoStream = new CryptoStream(streamSource, manager.CreateDecryptor(),
+                    CryptoStreamMode.Read, leaveOpen: false);
+
+                byte[] buffer = new byte[bufferLength];
+                long totalRead = 0;
+                int read;
+                long fileLength = streamSource.Length;
+                long encryptedDataLength = fileLength - iv.Length;
+
+                while ((read = await cryptoStream.ReadAsync(buffer, 0, buffer.Length, cancellationToken)) > 0)
                 {
-                    byte[] iv = new byte[16];
-                    streamSource.Read(iv, 0, iv.Length);
-                    manager.IV = iv;
-                    using var decryptor = manager.CreateDecryptor();
-                    long currentSize = 0;
-                    int size;
-                    byte[] input = new byte[bufferLength];
-                    long fileLength = streamSource.Length;
+                    await streamTarget.WriteAsync(buffer.AsMemory(0, read), cancellationToken);
+                    totalRead += read;
 
                     progress?.Report(new FileCopyProgress
                     {
                         SourceFilePath = sourcePath,
                         DestinationFilePath = targetPath,
-                        TotalBytes = fileLength,
-                        BytesCopied = currentSize
+                        TotalBytes = encryptedDataLength,
+                        BytesCopied = totalRead
                     });
-                    while ((size = streamSource.Read(input, 0, bufferLength)) > 0)
-                    {
-                        cancellationToken.ThrowIfCancellationRequested();
-                        byte[] output;
-                        int outputSize;
-
-                        if (streamSource.Position == fileLength)
-                        {
-                            output = decryptor.TransformFinalBlock(input, 0, size);
-                            outputSize = output.Length;
-                        }
-                        else
-                        {
-                            output = new byte[size];
-                            outputSize = decryptor.TransformBlock(input, 0, size, output, 0);
-                        }
-
-                        currentSize += outputSize;
-                        streamTarget.Write(output, 0, outputSize);
-                        streamTarget.Flush();
-
-                        progress?.Report(new FileCopyProgress
-                        {
-                            SourceFilePath = sourcePath,
-                            DestinationFilePath = targetPath,
-                            TotalBytes = fileLength,
-                            BytesCopied = currentSize
-                        });
-                    }
                 }
 
-                new FileInfo(targetPath).Attributes = File.GetAttributes(sourcePath);
+                try
+                {
+                    File.SetAttributes(targetPath, File.GetAttributes(sourcePath));
+                }
+                catch
+                {
+                }
             }
             catch (Exception ex)
             {
@@ -115,13 +95,7 @@ namespace ArchiveMaster.Services
             }
         }
 
-        /// <summary>
-        /// 加密
-        /// </summary>
-        /// <param name="array">要加密的 byte[] 数组</param>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        public static byte[] Encrypt(this Aes aes, byte[] plaintext,byte[] iv=null)
+        public static byte[] Encrypt(this Aes aes, byte[] plaintext, byte[] iv = null)
         {
             if (iv == null)
             {
@@ -136,23 +110,24 @@ namespace ArchiveMaster.Services
             using (ICryptoTransform encryptor = aes.CreateEncryptor())
             {
                 byte[] ciphertext = encryptor.TransformFinalBlock(plaintext, 0, plaintext.Length);
-        
+
                 byte[] result = new byte[iv.Length + ciphertext.Length];
                 Buffer.BlockCopy(iv, 0, result, 0, iv.Length);
                 Buffer.BlockCopy(ciphertext, 0, result, iv.Length, ciphertext.Length);
                 return result;
             }
         }
-        public static void EncryptFile(this Aes manager, string sourcePath, string targetPath,
-            int bufferLength = 0,
+
+        public static async Task EncryptFileAsync(this Aes manager, string sourcePath, string targetPath,
+                                    int bufferLength = 0,
             IProgress<FileCopyProgress> progress = null,
             CancellationToken cancellationToken = default)
         {
             if (File.Exists(targetPath))
-            {
                 throw new IOException($"目标文件{targetPath}已存在");
-            }
+
             manager.GenerateIV();
+
             if (bufferLength <= 0)
             {
                 var fileInfo = new FileInfo(sourcePath);
@@ -161,46 +136,45 @@ namespace ArchiveMaster.Services
 
             try
             {
-                using (FileStream streamSource = new FileStream(sourcePath, FileMode.Open, FileAccess.Read))
-                using (FileStream streamTarget = new FileStream(targetPath, FileMode.OpenOrCreate, FileAccess.Write))
+                await using var streamSource = new FileStream(sourcePath, FileMode.Open, FileAccess.Read,
+                    FileShare.Read, bufferLength, useAsync: true);
+                await using var streamTarget = new FileStream(targetPath, FileMode.CreateNew, FileAccess.Write,
+                    FileShare.None, bufferLength, useAsync: true);
+
+                await streamTarget.WriteAsync(manager.IV, 0, manager.IV.Length, cancellationToken);
+
+                await using var cryptoStream = new CryptoStream(streamTarget, manager.CreateEncryptor(),
+                    CryptoStreamMode.Write, leaveOpen: false);
+
+                byte[] buffer = new byte[bufferLength];
+                long totalRead = 0;
+                int read;
+                long fileLength = streamSource.Length;
+
+                while ((read = await streamSource.ReadAsync(buffer, 0, buffer.Length, cancellationToken)) > 0)
                 {
-                    streamTarget.Write(manager.IV, 0, manager.IV.Length);
-                    using var encryptor = manager.CreateEncryptor();
-                    long currentSize = 0;
-                    int size;
-                    byte[] input = new byte[bufferLength];
-                    long fileLength = streamSource.Length;
+                    await cryptoStream.WriteAsync(buffer.AsMemory(0, read), cancellationToken);
+                    totalRead += read;
 
-                    while ((size = streamSource.Read(input, 0, bufferLength)) > 0)
+                    progress?.Report(new FileCopyProgress
                     {
-                        cancellationToken.ThrowIfCancellationRequested();
-                        byte[] output;
-
-                        if (streamSource.Position == fileLength)
-                        {
-                            output = encryptor.TransformFinalBlock(input, 0, size);
-                        }
-                        else
-                        {
-                            output = new byte[size];
-                            encryptor.TransformBlock(input, 0, size, output, 0);
-                        }
-
-                        currentSize += output.Length;
-                        streamTarget.Write(output, 0, output.Length);
-                        streamTarget.Flush();
-
-                        progress?.Report(new FileCopyProgress
-                        {
-                            SourceFilePath = sourcePath,
-                            DestinationFilePath = targetPath,
-                            TotalBytes = fileLength,
-                            BytesCopied = currentSize
-                        });
-                    }
+                        SourceFilePath = sourcePath,
+                        DestinationFilePath = targetPath,
+                        TotalBytes = fileLength,
+                        BytesCopied = totalRead
+                    });
                 }
 
-                new FileInfo(targetPath).Attributes = File.GetAttributes(sourcePath);
+                await cryptoStream.FlushAsync(cancellationToken);
+                await cryptoStream.FlushFinalBlockAsync(cancellationToken);
+
+                try
+                {
+                    File.SetAttributes(targetPath, File.GetAttributes(sourcePath));
+                }
+                catch
+                {
+                }
             }
             catch (Exception ex)
             {
@@ -209,9 +183,42 @@ namespace ArchiveMaster.Services
             }
         }
 
+        public static Aes GetDefault(string password)
+        {
+            Aes aes = Aes.Create();
+            aes.Mode = CipherMode.CBC;
+            aes.Padding = PaddingMode.PKCS7;
+            aes.SetStringKey(password);
+            return aes;
+        }
+        public static long GetEncryptedFileSize(long originalSize, int blockSizeBytes = 16, int ivSizeBytes = 16,
+            PaddingMode padding = PaddingMode.PKCS7)
+        {
+            long paddedLength = padding switch
+            {
+                PaddingMode.None => originalSize,
+                PaddingMode.Zeros => (originalSize % blockSizeBytes == 0)
+                    ? originalSize
+                    : ((originalSize / blockSizeBytes) + 1) * blockSizeBytes,
+                PaddingMode.PKCS7 => ((originalSize / blockSizeBytes) + 1) * blockSizeBytes,
+                PaddingMode.ANSIX923 => ((originalSize / blockSizeBytes) + 1) * blockSizeBytes,
+                PaddingMode.ISO10126 => ((originalSize / blockSizeBytes) + 1) * blockSizeBytes,
+                _ => throw new NotSupportedException($"不支持的填充模式：{padding}")
+            };
+
+            return ivSizeBytes + paddedLength;
+        }
+
+        public static long GetEncryptedFileSize(this Aes aes, long originalSize)
+        {
+            return GetEncryptedFileSize(originalSize, aes.BlockSize / 8, aes.BlockSize / 8, aes.Padding);
+        }
+
+
         public static Aes SetStringKey(this Aes manager, string key)
         {
-            using var deriveBytes = new Rfc2898DeriveBytes(key, Encoding.UTF8.GetBytes(nameof(ArchiveMaster)), 100000,HashAlgorithmName.SHA256);
+            using var deriveBytes = new Rfc2898DeriveBytes(key, Encoding.UTF8.GetBytes(nameof(ArchiveMaster)), 100000,
+                HashAlgorithmName.SHA256);
             manager.Key = deriveBytes.GetBytes(manager.KeySize / 8);
             return manager;
         }

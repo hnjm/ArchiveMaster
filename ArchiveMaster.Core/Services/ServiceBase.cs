@@ -1,4 +1,4 @@
-﻿// #define WRITEMESSAGE
+﻿#define WRITEMESSAGE
 
 using System.Collections;
 using System.Diagnostics;

@@ -64,7 +64,7 @@ namespace ArchiveMaster.Services
 
             if (Config.EnableEncryption)
             {
-                aes = OfflineSyncHelper.GetAes(Config.EncryptionPassword);
+                aes = Services.AesExtension.GetDefault(Config.EncryptionPassword);
             }
 
             var files = UpdateFiles.Where(p => p.IsChecked).ToList();
@@ -97,18 +97,11 @@ namespace ArchiveMaster.Services
                     var destFileInfo = new FileInfo(destFile);
                     var sourceFileInfo = new FileInfo(sourceFile);
 
-                    long GetEncryptedFileLength(long rawFileLength)
-                    {
-                        int ivLength = 16;
-                        int blockLength = 16;
-                        return ivLength + (rawFileLength / blockLength + 1) * blockLength;
-                    }
-
                     if (File.Exists(destFile) && Config.ExportMode != ExportMode.Script &&
                         destFileInfo.LastWriteTime == sourceFileInfo.LastWriteTime &&
                         (
                             Config.EnableEncryption &&
-                            destFileInfo.Length == GetEncryptedFileLength(sourceFileInfo.Length) //加密文件
+                            destFileInfo.Length == aes.GetEncryptedFileSize(sourceFileInfo.Length) //加密文件
                             || !Config.EnableEncryption && destFileInfo.Length == sourceFileInfo.Length //非加密文件
                         ))
                     {
@@ -486,7 +479,7 @@ namespace ArchiveMaster.Services
         {
             if (Config.EnableEncryption)
             {
-                aes.EncryptFile(source, destination, progress: progress, cancellationToken: cancellationToken);
+              await  aes.EncryptFileAsync(source, destination, progress: progress, cancellationToken: cancellationToken);
                 File.SetLastWriteTimeUtc(destination, File.GetLastWriteTimeUtc(source));
             }
             else

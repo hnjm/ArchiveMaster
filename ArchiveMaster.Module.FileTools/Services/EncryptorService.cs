@@ -32,7 +32,7 @@ namespace ArchiveMaster.Services
         {
             ArgumentNullException.ThrowIfNull(ProcessingFiles, nameof(ProcessingFiles));
 
-            await Task.Run(() =>
+            await Task.Run(async () =>
             {
                 bool isEncrypting = IsEncrypting();
                 string numMsg = null;
@@ -46,7 +46,7 @@ namespace ArchiveMaster.Services
                                       $"（{numMsg}，当前文件{1.0 * p.BytesCopied / 1024 / 1024:0}MB/{1.0 * p.TotalBytes / 1024 / 1024:0}MB）：{Path.GetFileName(p.SourceFilePath)}");
                     });
 
-                TryForFiles(files, (file, s) =>
+                await TryForFilesAsync(files, async (file, s) =>
                 {
                     numMsg = s.GetFileNumberMessage("{0}/{1}");
                     NotifyMessage($"正在处理（{numMsg}）：{file.Name}");
@@ -58,16 +58,17 @@ namespace ArchiveMaster.Services
 
                     if (isEncrypting)
                     {
-                        aes.EncryptFile(file.Path, file.TargetPath, BufferSize, progressReport, token);
+                        await aes.EncryptFileAsync(file.Path, file.TargetPath, BufferSize, progressReport, token);
                         if (Config.EncryptDirectoryStructure)
                         {
                             var bytes = aes.Encrypt(Encoding.UTF8.GetBytes(file.RelativePath));
-                            File.WriteAllBytes(file.TargetPath + EncryptedFileMetadataExtension, bytes);
+                            await File.WriteAllBytesAsync(file.TargetPath + EncryptedFileMetadataExtension, bytes,
+                                token);
                         }
                     }
                     else
                     {
-                        aes.DecryptFile(file.Path, file.TargetPath, BufferSize, progressReport, token);
+                        await aes.DecryptFileAsync(file.Path, file.TargetPath, BufferSize, progressReport, token);
                     }
 
                     File.SetLastWriteTime(file.TargetPath, File.GetLastWriteTime(file.Path));
