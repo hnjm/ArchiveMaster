@@ -371,7 +371,7 @@ namespace ArchiveMaster.Services
             }
             else
             {
-                await FileIOHelper.CopyFileAsync(source, destination, progress: progress,
+                await FileCopyHelper.CopyFileAsync(source, destination, progress: progress,
                     cancellationToken: cancellationToken);
             }
 
