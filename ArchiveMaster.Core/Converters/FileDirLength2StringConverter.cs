@@ -9,6 +9,11 @@ public class FileDirLength2StringConverter : IValueConverter
 {
     public string DirString { get; set; } = "文件夹";
 
+    public static string Convert(long length)
+    {
+        return NumberConverter.ByteToFitString(length, 2, " B", " KB", " MB", " GB", " TB");
+    }
+
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
         if (value == null)
@@ -22,7 +27,7 @@ public class FileDirLength2StringConverter : IValueConverter
             return DirString;
         }
 
-        return NumberConverter.ByteToFitString(fileOrDir.Length, 2, " B", " KB", " MB", " GB", " TB");
+        return Convert(fileOrDir.Length);
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

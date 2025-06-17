@@ -1,0 +1,53 @@
+<v:TwoStepPanelBase
+    x:Class="ArchiveMaster.Views.LinkDeduplicationPanel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:c="using:ArchiveMaster.Converters"
+    xmlns:cr="clr-namespace:System.Security.Cryptography;assembly=mscorlib"
+    xmlns:ct="clr-namespace:FzLib.Avalonia.Controls;assembly=FzLib.Avalonia"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:enums="using:ArchiveMaster.Enums"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:me="using:FzLib.Avalonia.MarkupExtensions"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib"
+    xmlns:ui="http://schemas.modernwpf.com/2019"
+    xmlns:v="using:ArchiveMaster.Views"
+    xmlns:vm="using:ArchiveMaster.ViewModels"
+    d:DesignHeight="600"
+    d:DesignWidth="800"
+    x:DataType="vm:EncryptorViewModel"
+    mc:Ignorable="d">
+    <v:TwoStepPanelBase.ConfigsContent>
+        <ct:StackFormItemGroup>
+            <ct:FormItem Label="目录：">
+                <v:FilePickerTextBox
+                    FileNames="{Binding Config.Dir}"
+                    Filter="{Binding Config.Filter}"
+                    IsFilterButtonVisible="True"
+                    Type="OpenFolder" />
+            </ct:FormItem>
+            <ct:FormItem Label="选项：">
+                <ct:WrapFormItemGroup>
+                    <CheckBox
+                        Content="允许文件修改日期不同"
+                        IsChecked="{Binding Config.AllowDifferentTime}" />
+                </ct:WrapFormItemGroup>
+            </ct:FormItem>
+        </ct:StackFormItemGroup>
+    </v:TwoStepPanelBase.ConfigsContent>
+    <v:TwoStepPanelBase.ResultsContent>
+        <Grid RowDefinitions="*,8,Auto">
+            <v:TreeFileDataGrid
+                IsDirCheckBoxVisible="True"
+                IsFileCheckBoxVisible="False"
+                ItemsSource="{Binding Groups}"
+                TreeFileDirLengthFormat="{}{L}">
+                <v:TreeFileDataGrid.Columns>
+                    <DataGridTextColumn
+                        Binding="{Binding RelativePath}"
+                        Header="相对路径" />
+                </v:TreeFileDataGrid.Columns>
+            </v:TreeFileDataGrid>
+        </Grid>
+    </v:TwoStepPanelBase.ResultsContent>
+</v:TwoStepPanelBase>

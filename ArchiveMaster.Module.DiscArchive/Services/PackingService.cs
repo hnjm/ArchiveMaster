@@ -135,7 +135,7 @@ namespace ArchiveMaster.Services
                                         md5 = GetMD5(file.Path);
                                         break;
                                     case PackingType.HardLink:
-                                        CreateHardLink(Path.Combine(dir, newName), file.Path);
+                                        HardLinkCreator.CreateHardLink(Path.Combine(dir, newName), file.Path);
                                         md5 = GetMD5(file.Path);
                                         break;
                                 }
@@ -164,35 +164,6 @@ namespace ArchiveMaster.Services
                     }
                 }
             }, token);
-        }
-
-
-        [DllImport("Kernel32.dll", CharSet = CharSet.Unicode)]
-        private static extern bool CreateHardLink(string lpFileName, string lpExistingFileName,
-            IntPtr lpSecurityAttributes);
-
-        private void CreateHardLink(string link, string source)
-        {
-            if (!File.Exists(source))
-            {
-                throw new FileNotFoundException(source);
-            }
-
-            if (File.Exists(link))
-            {
-                File.Delete(link);
-            }
-
-            if (Path.GetPathRoot(link) != Path.GetPathRoot(source))
-            {
-                throw new IOException("硬链接的两者必须在同一个分区中");
-            }
-
-            bool value = CreateHardLink(link, source, IntPtr.Zero);
-            if (!value)
-            {
-                throw new IOException("未知错误，无法创建硬链接");
-            }
         }
     }
 }

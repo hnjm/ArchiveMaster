@@ -12,7 +12,8 @@ using ArchiveMaster.ViewModels.FileSystem;
 
 namespace ArchiveMaster.ViewModels;
 
-public partial class BatchCommandLineViewModel : TwoStepViewModelBase<BatchCommandLineService, BatchCommandLineConfig>
+public partial class BatchCommandLineViewModel(AppConfig appConfig)
+    : TwoStepViewModelBase<BatchCommandLineService, BatchCommandLineConfig>(appConfig)
 {
     [ObservableProperty]
     private List<BatchCommandLineFileInfo> files;
@@ -22,10 +23,6 @@ public partial class BatchCommandLineViewModel : TwoStepViewModelBase<BatchComma
 
     [ObservableProperty]
     private bool showLevels;
-
-    public BatchCommandLineViewModel(AppConfig appConfig) : base(appConfig)
-    {
-    }
 
     protected override void OnConfigChanged()
     {
@@ -41,10 +38,7 @@ public partial class BatchCommandLineViewModel : TwoStepViewModelBase<BatchComma
 
     protected override Task OnExecutingAsync(CancellationToken token)
     {
-        Service.ProcessDataReceived += (s, e) =>
-        {
-            ProcessOutput = e.Data.Replace("\b", "");
-        };
+        Service.ProcessDataReceived += (s, e) => { ProcessOutput = e.Data.Replace("\b", ""); };
         return Task.CompletedTask;
     }
 

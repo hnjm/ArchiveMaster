@@ -142,7 +142,7 @@ namespace ArchiveMaster.Services
                 file.IsChecked = file.CanCheck = file.IsMatched;
             }
 
-            Files = files;
+            Files = results;
         }
 
         /// <summary>
