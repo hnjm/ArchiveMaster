@@ -11,43 +11,26 @@ public class LinkDeduplicationService(AppConfig appConfig)
 
     public override async Task ExecuteAsync(CancellationToken token)
     {
-        // await Task.Run(() =>
-        // {
-        //     NotifyMessage("正在检查问题");
-        //     if (Config.CleaningDir == Config.ReferenceDir) //删除自身
-        //     {
-        //         foreach (var group in DuplicateGroups.SubDirs)
-        //         {
-        //             if (group.SubFiles.Count(p => p.IsChecked) == group.SubFileCount) //如果所有文件均被勾选
-        //             {
-        //                 throw new InvalidOperationException($"文件{group.Name}的所有相同文件均被勾选待删除，会造成数据丢失");
-        //             }
-        //         }
-        //     }
-        //
-        //     NotifyMessage("正在将文件移动到回收站");
-        //     int index = 0;
-        //     foreach (var group in DuplicateGroups.SubDirs)
-        //     {
-        //         NotifyMessage($"正在删除与“{group.Name}”相同的文件");
-        //         foreach (var file in group.SubFiles.CheckedOnly())
-        //         {
-        //             try
-        //             {
-        //                 var distPath = Path.Combine(Config.RecycleBin, file.RelativePath);
-        //                 Directory.CreateDirectory(Path.GetDirectoryName(distPath));
-        //                 File.Move(file.Path, distPath);
-        //                 file.Complete();
-        //             }
-        //             catch (Exception ex)
-        //             {
-        //                 file.Error(ex);
-        //             }
-        //         }
-        //
-        //         NotifyProgress(1.0 * index++ / DuplicateGroups.SubFolderCount);
-        // }
-        // }, token);
+        await Task.Run(() =>
+        {
+            var groups = TreeRoot.SubDirs.Where(p => p.IsChecked).ToList();
+            TryForFiles(groups, (group, s) =>
+            {
+                var sourceFile = group.SubFiles[0];
+                sourceFile.Complete();
+                foreach (var file in group.SubFiles.Skip(1))
+                {
+                    NotifyMessage($"正在创建硬链接{s.GetFileNumberMessage()}：{file.RelativePath}");
+                    FileDeleteHelper.DeleteByConfig(file.Path);
+                    HardLinkCreator.CreateHardLink(file.Path,sourceFile.Path);
+                    file.Complete();
+                }
+                
+            },token,FilesLoopOptions.Builder().AutoApplyStatus().AutoApplyFileNumberProgress().Build());
+          
+        
+         
+        }, token);
     }
 
     public override Task InitializeAsync(CancellationToken token)
