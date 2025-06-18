@@ -60,10 +60,6 @@ namespace ArchiveMaster.Configs
 
         public event EventHandler BeforeSaving;
 
-        public bool DebugMode { get; set; }
-
-        public int DebugModeLoopDelay { get; set; } = 30;
-
         public Exception LoadError { get; private set; }
 
         public string GetCurrentPreset(string groupName)

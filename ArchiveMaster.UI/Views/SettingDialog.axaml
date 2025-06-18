@@ -1,0 +1,31 @@
+<dialog:DialogHost
+    x:Class="ArchiveMaster.Views.SettingDialog"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ct="using:FzLib.Avalonia.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:dialog="using:FzLib.Avalonia.Dialogs"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="using:ArchiveMaster.ViewModels"
+    Title="设置"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    PrimaryButtonContent="完成"
+    mc:Ignorable="d">
+    <StackPanel Orientation="Vertical">
+        <CheckBox
+            Content="调试模式"
+            IsChecked="{Binding Path=Configs.DebugMode}" />
+        <ct:FormItem Label="调试模式循环延迟（毫秒）：">
+            <TextBox Text="{Binding Path=Configs.DebugModeLoopDelay}" />
+        </ct:FormItem>
+        <CheckBox
+            Command="{Binding SetAutoStartCommand}"
+            CommandParameter="{Binding $self.IsChecked, Mode=OneWay}"
+            Content="开机自启"
+            IsChecked="{Binding IsAutoStart}" />
+        <CheckBox
+            Content="优先删除文件到回收站"
+            IsChecked="{Binding Configs.PreferDeleteToRecycleBin}" />
+    </StackPanel>
+</dialog:DialogHost>

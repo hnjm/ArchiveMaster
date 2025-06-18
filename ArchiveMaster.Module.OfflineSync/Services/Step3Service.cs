@@ -419,7 +419,10 @@ namespace ArchiveMaster.Services
                     {
                         File.Move(filePath, GetNoDuplicateFile(target));
                     }
-
+                    break;
+                
+                case DeleteMode.RecycleBinPrefer:
+                    FileDeleteHelper.DeleteByConfig(filePath);
                     break;
                 default:
                     throw new InvalidEnumArgumentException();

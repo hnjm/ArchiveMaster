@@ -4,6 +4,7 @@ using System.Diagnostics;
 using ArchiveMaster.Basic;
 using ArchiveMaster.Configs;
 using ArchiveMaster.Enums;
+using ArchiveMaster.Helpers;
 using ArchiveMaster.Models;
 using ArchiveMaster.Services;
 using ArchiveMaster.ViewModels.FileSystem;
@@ -222,7 +223,7 @@ public partial class BackupManageCenterViewModel
                 {
                     foreach (var file in issuedFiles.RedundantFiles)
                     {
-                        file.Delete();
+                        FileDeleteHelper.DeleteByConfig(file.FullName);
                     }
                 });
             });

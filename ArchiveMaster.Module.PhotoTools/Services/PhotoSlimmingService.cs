@@ -46,7 +46,7 @@ namespace ArchiveMaster.Services
                 {
                     if (Directory.Exists(Config.DistDir))
                     {
-                        Directory.Delete(Config.DistDir, true);
+                        FileDeleteHelper.DeleteByConfig(Config.DistDir);
                     }
                 }
 
@@ -172,11 +172,11 @@ namespace ArchiveMaster.Services
 
                 if (file.IsDir)
                 {
-                    Directory.Delete(file.Path, true);
+                    FileDeleteHelper.DeleteByConfig(file.Path);
                 }
                 else
                 {
-                    File.Delete(file.Path);
+                    FileDeleteHelper.DeleteByConfig(file.Path);
                 }
             }, token, FilesLoopOptions.Builder().AutoApplyStatus().AutoApplyFileNumberProgress().Build());
         }
@@ -189,7 +189,7 @@ namespace ArchiveMaster.Services
                 string distPath = GetDistPath(file.Path, Config.OutputFormat, out _);
                 if (File.Exists(distPath))
                 {
-                    File.Delete(distPath);
+                    FileDeleteHelper.DeleteByConfig(distPath);
                 }
 
                 string dir = Path.GetDirectoryName(distPath)!;
@@ -248,7 +248,7 @@ namespace ArchiveMaster.Services
                 string distPath = GetDistPath(file.Path, null, out string subPath);
                 if (File.Exists(distPath))
                 {
-                    File.Delete(distPath);
+                    FileDeleteHelper.DeleteByConfig(distPath);
                 }
 
                 string dir = Path.GetDirectoryName(distPath)!;

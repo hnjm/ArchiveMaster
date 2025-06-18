@@ -146,34 +146,6 @@
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
-
-                <Button
-                    Padding="6"
-                    HorizontalAlignment="Right"
-                    VerticalAlignment="Top"
-                    Background="Transparent"
-                    Content="{StaticResource Settings}"
-                    FontFamily="{StaticResource IconFont}"
-                    FontSize="18"
-                    IsVisible="{Binding !IsToolOpened}">
-                    <Button.Flyout>
-                        <Flyout>
-                            <StackPanel Orientation="Vertical">
-                                <CheckBox
-                                    Content="调试模式"
-                                    IsChecked="{Binding Path=AppConfig.DebugMode}" />
-                                <ctrl:FormItem Label="调试模式循环延迟（毫秒）：">
-                                    <TextBox Text="{Binding Path=AppConfig.DebugModeLoopDelay}" />
-                                </ctrl:FormItem>
-                                <CheckBox
-                                    Command="{Binding SetAutoStartCommand}"
-                                    CommandParameter="{Binding $self.IsChecked, Mode=OneWay}"
-                                    Content="开机自启"
-                                    IsChecked="{Binding IsAutoStart}" />
-                            </StackPanel>
-                        </Flyout>
-                    </Button.Flyout>
-                </Button>
             </Panel>
         </ScrollViewer>
         <ContentControl
@@ -199,5 +171,15 @@
                 </Style>
             </ContentControl.Styles>
         </ContentControl>
+        <Button
+            Padding="6"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Top"
+            Background="Transparent"
+            Command="{Binding OpenSettingDialogCommand}"
+            Content="{StaticResource Settings}"
+            FontFamily="{StaticResource IconFont}"
+            FontSize="18"
+            IsVisible="{Binding !IsToolOpened}" />
     </Grid>
 </UserControl>

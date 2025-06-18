@@ -23,7 +23,7 @@ namespace ArchiveMaster.Services
             return TryForFilesAsync(files, (file, s) =>
             {
                 NotifyMessage($"正在删除{s.GetFileNumberMessage()}：{file.Name}");
-                File.Delete(file.Path);
+                FileDeleteHelper.DeleteByConfig(file.Path);
             }, token, FilesLoopOptions.Builder().AutoApplyStatus().AutoApplyFileNumberProgress().Build());
         }
 

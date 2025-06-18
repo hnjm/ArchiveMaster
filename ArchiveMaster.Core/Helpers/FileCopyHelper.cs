@@ -84,7 +84,9 @@ namespace ArchiveMaster.Helpers
             catch (OperationCanceledException)
             {
                 if (File.Exists(destinationFilePath))
-                    File.Delete(destinationFilePath);
+                {
+                    FileDeleteHelper.DeleteByConfig(destinationFilePath);
+                }
                 throw;
             }
         }

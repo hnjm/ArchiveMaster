@@ -350,9 +350,9 @@ namespace ArchiveMaster.Services
             }
 
 
-            if (appConfig.DebugMode && appConfig.DebugModeLoopDelay > 0)
+            if (GlobalConfigs.Instance.DebugMode && GlobalConfigs.Instance.DebugModeLoopDelay > 0)
             {
-                Thread.Sleep(appConfig.DebugModeLoopDelay);
+                Thread.Sleep(GlobalConfigs.Instance.DebugModeLoopDelay);
             }
         }
 
@@ -385,9 +385,9 @@ namespace ArchiveMaster.Services
             }
 
 
-            if (appConfig.DebugMode && appConfig.DebugModeLoopDelay > 0)
+            if (GlobalConfigs.Instance.DebugMode && GlobalConfigs.Instance.DebugModeLoopDelay > 0)
             {
-                await Task.Delay(appConfig.DebugModeLoopDelay, cancellationToken);
+                Thread.Sleep(GlobalConfigs.Instance.DebugModeLoopDelay);
             }
         }
     }

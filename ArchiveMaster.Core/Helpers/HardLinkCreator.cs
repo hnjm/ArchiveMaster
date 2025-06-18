@@ -10,7 +10,7 @@ public static class HardLinkCreator
     // Windows API
     [DllImport("Kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
     private static extern bool CreateHardLink(
-        string lpFileName, 
+        string lpFileName,
         string lpExistingFileName,
         IntPtr lpSecurityAttributes);
 
@@ -41,7 +41,7 @@ public static class HardLinkCreator
         if (!CreateHardLink(linkPath, sourcePath, IntPtr.Zero))
         {
             throw new IOException(
-                $"Failed to create hard link (0x{Marshal.GetLastWin32Error():X8})", 
+                $"Failed to create hard link (0x{Marshal.GetLastWin32Error():X8})",
                 new Win32Exception());
         }
     }
@@ -60,15 +60,21 @@ public static class HardLinkCreator
     private static void ValidatePaths(string linkPath, string sourcePath)
     {
         if (!File.Exists(sourcePath))
-            throw new FileNotFoundException("Source file not found", sourcePath);
+        {
+            throw new FileNotFoundException("源文件不存在", sourcePath);
+        }
 
         if (File.Exists(linkPath))
-            File.Delete(linkPath);
+        {
+            throw new IOException($"文件{linkPath}已存在");
+        }
 
         // 仅在Windows上检查分区
-        if (OperatingSystem.IsWindows() && 
+        if (OperatingSystem.IsWindows() &&
             Path.GetPathRoot(linkPath) != Path.GetPathRoot(sourcePath))
-            throw new IOException("Hard links must be on the same volume");
+        {
+            throw new IOException("硬链接必须在同一分区");
+        }
     }
 
     private static string GetUnixErrorDescription(int errno)
