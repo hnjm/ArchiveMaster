@@ -18,6 +18,8 @@ namespace ArchiveMaster.ViewModels.FileSystem
 
         private string message;
 
+        private string relativePath;
+
         [ObservableProperty]
         private string name;
 
@@ -47,6 +49,10 @@ namespace ArchiveMaster.ViewModels.FileSystem
         {
             get
             {
+                if (relativePath != null)
+                {
+                    return relativePath;
+                }
                 if (string.IsNullOrEmpty(TopDirectory))
                 {
                     return Path;
@@ -148,6 +154,11 @@ namespace ArchiveMaster.ViewModels.FileSystem
             status = ProcessStatus.Processing;
             OnPropertyChanged(nameof(Status));
             OnPropertyChanged(nameof(IsCompleted));
+        }
+
+        public void SetRelativePath(string relativePath)
+        {
+            this.relativePath = relativePath;
         }
 
         public static IEqualityComparer<SimpleFileInfo> EqualityComparer { get; }

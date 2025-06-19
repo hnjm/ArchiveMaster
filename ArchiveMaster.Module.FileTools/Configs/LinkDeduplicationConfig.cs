@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using ArchiveMaster.Helpers;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace ArchiveMaster.Configs;
 
@@ -12,6 +13,9 @@ public partial class LinkDeduplicationConfig : ConfigBase
 
     [ObservableProperty]
     private bool allowDifferentTime = true;
+
+    [ObservableProperty]
+    private FileHashHelper.HashAlgorithmType hashType = FileHashHelper.HashAlgorithmType.SHA256;
 
     public override void Check()
     {

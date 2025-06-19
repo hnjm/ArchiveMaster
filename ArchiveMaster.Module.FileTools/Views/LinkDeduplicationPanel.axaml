@@ -7,6 +7,7 @@
     xmlns:ct="clr-namespace:FzLib.Avalonia.Controls;assembly=FzLib.Avalonia"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:enums="using:ArchiveMaster.Enums"
+    xmlns:h="using:ArchiveMaster.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:me="using:FzLib.Avalonia.MarkupExtensions"
     xmlns:sys="clr-namespace:System;assembly=mscorlib"
@@ -28,6 +29,11 @@
             </ct:FormItem>
             <ct:FormItem Label="选项：">
                 <ct:WrapFormItemGroup>
+                    <ct:FormItem Label="Hash类型：">
+                        <ComboBox
+                            ItemsSource="{me:EnumValues h:FileHashHelper+HashAlgorithmType}"
+                            SelectedItem="{Binding Config.HashType}" />
+                    </ct:FormItem>
                     <CheckBox
                         Content="允许文件修改日期不同"
                         IsChecked="{Binding Config.AllowDifferentTime}" />
@@ -45,7 +51,7 @@
                 <v:TreeFileDataGrid.Columns>
                     <DataGridTextColumn
                         Binding="{Binding RelativePath}"
-                        Header="相对路径" />
+                        Header="Hash" />
                 </v:TreeFileDataGrid.Columns>
             </v:TreeFileDataGrid>
         </Grid>

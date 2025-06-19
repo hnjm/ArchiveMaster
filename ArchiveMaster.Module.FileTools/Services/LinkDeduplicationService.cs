@@ -13,7 +13,7 @@ public class LinkDeduplicationService(AppConfig appConfig)
     {
         await Task.Run(() =>
         {
-            var groups = TreeRoot.SubDirs.Where(p => p.IsChecked).ToList();
+            var groups = TreeRoot.SubDirs.CheckedOnly().ToList();
             TryForFiles(groups, (group, s) =>
             {
                 var sourceFile = group.SubFiles[0];
@@ -22,14 +22,10 @@ public class LinkDeduplicationService(AppConfig appConfig)
                 {
                     NotifyMessage($"正在创建硬链接{s.GetFileNumberMessage()}：{file.RelativePath}");
                     FileDeleteHelper.DeleteByConfig(file.Path);
-                    HardLinkCreator.CreateHardLink(file.Path,sourceFile.Path);
+                    HardLinkCreator.CreateHardLink(file.Path, sourceFile.Path);
                     file.Complete();
                 }
-                
-            },token,FilesLoopOptions.Builder().AutoApplyStatus().AutoApplyFileNumberProgress().Build());
-          
-        
-         
+            }, token, FilesLoopOptions.Builder().AutoApplyStatus().AutoApplyFileNumberProgress().Build());
         }, token);
     }
 
@@ -60,7 +56,8 @@ public class LinkDeduplicationService(AppConfig appConfig)
                     NotifyMessage(
                         $"正在计算Hash（{numMsg}，本文件{1.0 * p.BytesCopied / 1024 / 1024:0}MB/{1.0 * p.TotalBytes / 1024 / 1024:0}MB）：{f.RelativePath}");
                 });
-                string hash = await FileHashHelper.ComputeHashAsync(f.Path, cancellationToken: token, progress: progress);
+                string hash = await FileHashHelper.ComputeHashAsync(f.Path, Config.HashType, cancellationToken: token,
+                    progress: progress);
                 f.Hash = hash;
                 if (!hash2File.TryAdd(hash, f))
                 {
@@ -81,6 +78,7 @@ public class LinkDeduplicationService(AppConfig appConfig)
             {
                 var sameHashFileList = sameHashFiles.ToList();
                 var group = tree.AddSubDir($"{sameHashFileList.Count}个相同文件");
+                group.SetRelativePath(sameHashFiles.Key);
                 if (sameHashFiles.DistinctBy(p => p.Length).Count() == 1)
                 {
                     group.Length = sameHashFileList[0].Length;
