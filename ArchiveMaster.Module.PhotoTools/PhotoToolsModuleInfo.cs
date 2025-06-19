@@ -23,6 +23,7 @@ namespace ArchiveMaster
             new ConfigMetadata(typeof(RepairModifiedTimeConfig)),
             new ConfigMetadata(typeof(PhotoSlimmingConfig)),
             new ConfigMetadata(typeof(PhotoGeoTaggingConfig)),
+            new ConfigMetadata(typeof(PhotoGeoSorterConfig)),
         ];
 
         public string ModuleName => "照片工具";
@@ -35,6 +36,7 @@ namespace ArchiveMaster
             typeof(PhotoSlimmingService),
             typeof(RepairModifiedTimeService),
             typeof(PhotoGeoTaggingService),
+            typeof(PhotoGeoSorterService),
         ];
 
         public ToolPanelGroupInfo Views => new ToolPanelGroupInfo()
@@ -47,6 +49,8 @@ namespace ArchiveMaster
                     "复制或压缩照片，用于生成更小的照片集副本", baseUrl + "zip.svg"),
                 new ToolPanelInfo(typeof(PhotoGeoTaggingPanel), typeof(PhotoGeoTaggingViewModel), "照片地理信息写入",
                     "将GPX轨迹中的GPS位置信息，根据拍摄时间自动匹配并写入照片Exif", baseUrl + "location.svg"),
+                new ToolPanelInfo(typeof(PhotoGeoSorterPanel), typeof(PhotoGeoSorterViewModel), "照片位置分类",
+                    "根据照片的GPS位置信息，将照片分为不同地理区域的多个目录", baseUrl + "map.svg"),
             },
             GroupName = ModuleName
         };

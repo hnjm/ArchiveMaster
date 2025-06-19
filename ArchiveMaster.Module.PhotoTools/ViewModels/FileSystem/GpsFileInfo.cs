@@ -25,4 +25,7 @@ public partial class GpsFileInfo : SimpleFileInfo
     
     [ObservableProperty]
     private bool alreadyHasGps;
+
+    [ObservableProperty]
+    private string region;
 }
