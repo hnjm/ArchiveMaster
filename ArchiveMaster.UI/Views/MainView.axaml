@@ -29,23 +29,12 @@
     </UserControl.Resources>
 
     <Grid Margin="8">
-
-        <ScrollViewer
-            x:Name="scr"
-            v:SmoothScrollBehavior.IsEnabled="True"
-            BringIntoViewOnFocusChange="{Binding ScrollViewBringIntoViewOnFocusChange}"
+        <Panel
+            x:Name="mainMenu"
             Classes.hidden="{Binding IsToolOpened}"
-            HorizontalScrollBarVisibility="Disabled"
-            VerticalScrollBarVisibility="Auto">
-            <Interaction.Behaviors>
-                <EventTriggerBehavior
-                    EventName="KeyDown"
-                    SourceObject="scr">
-                    <InvokeCommandAction Command="{Binding ScrollViewKeyDownCommand}" />
-                </EventTriggerBehavior>
-            </Interaction.Behaviors>
-            <ScrollViewer.Styles>
-                <Style Selector="ScrollViewer">
+            IsVisible="{Binding !IsToolOpened}">
+            <Panel.Styles>
+                <Style Selector="Panel">
                     <Setter Property="Opacity" Value="1" />
                     <Setter Property="Transitions">
                         <Transitions>
@@ -61,93 +50,117 @@
                     </Style>
                 </Style>
 
-            </ScrollViewer.Styles>
-            <Panel>
-                <ItemsControl ItemsSource="{Binding PanelGroups}">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <StackPanel
-                                Orientation="Vertical"
-                                Spacing="16" />
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <StackPanel Orientation="Vertical">
-                                <Grid ColumnDefinitions="*,Auto,*">
-                                    <TextBlock
-                                        Grid.Column="1"
-                                        FontSize="20"
-                                        FontWeight="Bold"
-                                        Text="{Binding GroupName}" />
-                                    <Button
-                                        Grid.Column="2"
-                                        Margin="8,0,0,0"
-                                        Padding="4"
-                                        HorizontalAlignment="Left"
-                                        Background="Transparent"
-                                        IsVisible="{Binding MenuItems, Converter={StaticResource CountMoreThanZeroConverter}}">
+            </Panel.Styles>
+            <ScrollViewer
+                x:Name="scr"
+                v:SmoothScrollBehavior.IsEnabled="True"
+                BringIntoViewOnFocusChange="{Binding ScrollViewBringIntoViewOnFocusChange}"
+                HorizontalScrollBarVisibility="Disabled"
+                VerticalScrollBarVisibility="Auto">
+                <Interaction.Behaviors>
+                    <EventTriggerBehavior
+                        EventName="KeyDown"
+                        SourceObject="scr">
+                        <InvokeCommandAction Command="{Binding ScrollViewKeyDownCommand}" />
+                    </EventTriggerBehavior>
+                </Interaction.Behaviors>
+                <Panel>
+                    <ItemsControl ItemsSource="{Binding PanelGroups}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel
+                                    Orientation="Vertical"
+                                    Spacing="16" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Vertical">
+                                    <Grid ColumnDefinitions="*,Auto,*">
                                         <TextBlock
-                                            FontFamily="{StaticResource IconFont}"
-                                            FontSize="16"
-                                            Text="{StaticResource More}" />
-                                        <Button.Flyout>
-                                            <MenuFlyout ItemsSource="{Binding MenuItems}">
-                                                <MenuFlyout.ItemContainerTheme>
-                                                    <ControlTheme
-                                                        BasedOn="{StaticResource {x:Type MenuItem}}"
-                                                        TargetType="MenuItem">
-                                                        <Setter Property="Header" Value="{Binding Header}" />
-                                                        <Setter Property="Command" Value="{Binding Command}" />
-                                                    </ControlTheme>
-                                                </MenuFlyout.ItemContainerTheme>
-                                            </MenuFlyout>
-                                        </Button.Flyout>
-                                    </Button>
-                                </Grid>
-                                <Border
-                                    MaxWidth="240"
-                                    BorderBrush="{DynamicResource Foreground3}"
-                                    BorderThickness="0,2,0,0" />
-                                <ItemsControl ItemsSource="{Binding Panels}">
-                                    <ItemsControl.ItemsPanel>
-                                        <ItemsPanelTemplate>
-                                            <local:ExtendedWrapPanel
-                                                HorizontalAlignment="Center"
-                                                HorizontalContentAlignment="Center" />
-                                        </ItemsPanelTemplate>
-                                    </ItemsControl.ItemsPanel>
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <local:ToolItemBox
-                                                x:Name="tib"
-                                                Title="{Binding Title}"
-                                                Width="{DynamicResource BoxWidth}"
-                                                Height="{DynamicResource BoxHeight}"
-                                                Description="{Binding Description}"
-                                                Focusable="{Binding !#root.DataContext.IsToolOpened}"
-                                                Icon="{Binding IconUri}"
-                                                KeyDown="ToolItem_OnKeyDown"
-                                                ShowDescription="{DynamicResource ShowDescription}">
-                                                <Interaction.Behaviors>
-                                                    <EventTriggerBehavior
-                                                        EventName="Tapped"
-                                                        SourceObject="tib">
-                                                        <InvokeCommandAction
-                                                            Command="{Binding #root.DataContext.EnterToolCommand}"
-                                                            CommandParameter="{Binding .}" />
-                                                    </EventTriggerBehavior>
-                                                </Interaction.Behaviors>
-                                            </local:ToolItemBox>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                            </StackPanel>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </Panel>
-        </ScrollViewer>
+                                            Grid.Column="1"
+                                            FontSize="20"
+                                            FontWeight="Bold"
+                                            Text="{Binding GroupName}" />
+                                        <Button
+                                            Grid.Column="2"
+                                            Margin="8,0,0,0"
+                                            Padding="4"
+                                            HorizontalAlignment="Left"
+                                            Background="Transparent"
+                                            IsVisible="{Binding MenuItems, Converter={StaticResource CountMoreThanZeroConverter}}">
+                                            <TextBlock
+                                                FontFamily="{StaticResource IconFont}"
+                                                FontSize="16"
+                                                Text="{StaticResource More}" />
+                                            <Button.Flyout>
+                                                <MenuFlyout ItemsSource="{Binding MenuItems}">
+                                                    <MenuFlyout.ItemContainerTheme>
+                                                        <ControlTheme
+                                                            BasedOn="{StaticResource {x:Type MenuItem}}"
+                                                            TargetType="MenuItem">
+                                                            <Setter Property="Header" Value="{Binding Header}" />
+                                                            <Setter Property="Command" Value="{Binding Command}" />
+                                                        </ControlTheme>
+                                                    </MenuFlyout.ItemContainerTheme>
+                                                </MenuFlyout>
+                                            </Button.Flyout>
+                                        </Button>
+                                    </Grid>
+                                    <Border
+                                        MaxWidth="240"
+                                        BorderBrush="{DynamicResource Foreground3}"
+                                        BorderThickness="0,2,0,0" />
+                                    <ItemsControl ItemsSource="{Binding Panels}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <local:ExtendedWrapPanel
+                                                    HorizontalAlignment="Center"
+                                                    HorizontalContentAlignment="Center" />
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <local:ToolItemBox
+                                                    x:Name="tib"
+                                                    Title="{Binding Title}"
+                                                    Width="{DynamicResource BoxWidth}"
+                                                    Height="{DynamicResource BoxHeight}"
+                                                    Description="{Binding Description}"
+                                                    Focusable="{Binding !#root.DataContext.IsToolOpened}"
+                                                    Icon="{Binding IconUri}"
+                                                    KeyDown="ToolItem_OnKeyDown"
+                                                    ShowDescription="{DynamicResource ShowDescription}">
+                                                    <Interaction.Behaviors>
+                                                        <EventTriggerBehavior
+                                                            EventName="Tapped"
+                                                            SourceObject="tib">
+                                                            <InvokeCommandAction
+                                                                Command="{Binding #root.DataContext.EnterToolCommand}"
+                                                                CommandParameter="{Binding .}" />
+                                                        </EventTriggerBehavior>
+                                                    </Interaction.Behaviors>
+                                                </local:ToolItemBox>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Panel>
+            </ScrollViewer>
+            <Button
+                Padding="6"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Top"
+                Background="Transparent"
+                Command="{Binding OpenSettingDialogCommand}"
+                Content="{StaticResource Settings}"
+                FontFamily="{StaticResource IconFont}"
+                FontSize="18" />
+        </Panel>
+
         <ContentControl
             x:Name="mainContent"
             Classes.hidden="{Binding !IsToolOpened}"
@@ -171,15 +184,5 @@
                 </Style>
             </ContentControl.Styles>
         </ContentControl>
-        <Button
-            Padding="6"
-            HorizontalAlignment="Left"
-            VerticalAlignment="Top"
-            Background="Transparent"
-            Command="{Binding OpenSettingDialogCommand}"
-            Content="{StaticResource Settings}"
-            FontFamily="{StaticResource IconFont}"
-            FontSize="18"
-            IsVisible="{Binding !IsToolOpened}" />
     </Grid>
 </UserControl>
