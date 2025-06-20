@@ -11,22 +11,27 @@ public partial class PhotoGeoSorterConfig : ConfigBase
     private string vectorFile;
 
     [ObservableProperty]
-    private FileFilterConfig filter=new FileFilterConfig();
+    private FileFilterConfig filter = new FileFilterConfig()
+    {
+        IncludeFiles = @"*.heic
+*.heif
+*.jpg
+*.jpeg
+*.dng
+*.arw"
+    };
 
     [ObservableProperty]
     private string fieldName;
-    
-    [ObservableProperty]
-    private string nameOutOfRegion="其他";
-    
+
     public override void Check()
     {
-        CheckDir(Dir,"目录");
-        CheckFile(VectorFile,"矢量地理文件");
+        CheckDir(Dir, "目录");
+        CheckFile(VectorFile, "矢量地理文件");
         if (Path.GetExtension(VectorFile).ToLower() is not (".shp" or ".geojson"))
         {
             throw new Exception($"矢量地理文件应当为Shapefile(*.shp)或GeoJSON(*.geojson)");
         }
-        CheckEmpty(FieldName,"字段名");
+        CheckEmpty(FieldName, "字段名");
     }
 }

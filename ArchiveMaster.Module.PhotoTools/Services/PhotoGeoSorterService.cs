@@ -6,12 +6,15 @@ using FzLib;
 using NetTopologySuite.Features;
 using NetTopologySuite.Geometries;
 using NetTopologySuite.Index.Strtree;
+using NetTopologySuite.IO.Converters;
 using NetTopologySuite.IO.Esri;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,41 +26,19 @@ namespace ArchiveMaster.Services
     {
         public List<GpsFileInfo> Files { get; private set; }
 
-        public async override Task ExecuteAsync(CancellationToken token)
+        public override Task ExecuteAsync(CancellationToken token)
         {
-            // return TryForFilesAsync(Files, (file, s) =>
-            // {
-            //     if (!file.ExifTime.HasValue)
-            //     {
-            //         return;
-            //     }
-            //
-            //     NotifyMessage($"正在处理{s.GetFileNumberMessage()}：{file.Name}");
-            //     File.SetLastWriteTime(file.Path, file.ExifTime.Value);
-            // }, token, FilesLoopOptions.Builder().AutoApplyStatus().AutoApplyFileNumberProgress().Build());
-        }
-
-        private STRtree<IFeature> ReadShapefile()
-        {
-            using var shapefile = Shapefile.OpenRead(Config.VectorFile);
-            if (shapefile.ShapeType is not (ShapeType.Polygon or ShapeType.PolygonM or ShapeType.PolyLineZM))
+            return TryForFilesAsync(Files
+                .CheckedOnly()
+                .Where(p => p.IsMatched && !string.IsNullOrWhiteSpace(p.Region))
+                .ToList(), (file, s) =>
             {
-                throw new Exception($"Shapefile的几何类型应当为面，实际为{shapefile.ShapeType}");
-            }
-
-            if (shapefile.Fields[Config.FieldName] == null)
-            {
-                throw new Exception($"没有名为{Config.FieldName}的字段");
-            }
-
-            var tree = new STRtree<IFeature>();
-            foreach (var feature in shapefile)
-            {
-                tree.Insert(feature.Geometry.EnvelopeInternal, feature);
-            }
-
-            tree.Build();
-            return tree;
+                NotifyMessage($"正在移动{s.GetFileNumberMessage()}：{file.Name}");
+                var destDir = Path.Combine(Config.Dir, file.Region);
+                Directory.CreateDirectory(destDir);
+                var destPath = Path.Combine(destDir, file.Name);
+                File.Move(file.Path, destPath);
+            }, token, FilesLoopOptions.Builder().AutoApplyStatus().AutoApplyFileNumberProgress().Build());
         }
 
         public override async Task InitializeAsync(CancellationToken token)
@@ -65,10 +46,11 @@ namespace ArchiveMaster.Services
             var tree = Path.GetExtension(Config.VectorFile).ToLower() switch
             {
                 ".shp" => ReadShapefile(),
+                ".geojson" or ".json" => ReadGeoJson(),
                 _ => throw new Exception($"矢量地理文件应当为Shapefile(*.shp)或GeoJSON(*.geojson)")
             };
 
-            await Task.Run(async () =>
+            await Task.Run(() =>
             {
                 var files = new DirectoryInfo(Config.Dir)
                         .EnumerateFiles("*", FileEnumerateExtension.GetEnumerationOptions())
@@ -91,8 +73,9 @@ namespace ArchiveMaster.Services
                        {
                            if (candidate.Geometry.Contains(point))
                            {
-                               f.Region = candidate.Attributes[Config.FieldName].ToString();
+                               f.Region = FileNameHelper.GetValidFileName(candidate.Attributes[Config.FieldName].ToString());
                                f.IsMatched = true;
+                               f.IsChecked = true;
                                break;
                            }
                        }
@@ -101,6 +84,52 @@ namespace ArchiveMaster.Services
 
                 Files = files;
             });
+        }
+
+        private STRtree<IFeature> CreateSpatialIndexFromFeatures(IEnumerable<IFeature> features)
+        {
+            if (!features.Any())
+            {
+                throw new Exception("矢量文件中没有包含任何要素");
+            }
+
+            // 检查第一个要素的几何类型
+            var firstGeometryType = features.First().Geometry.GeometryType;
+            if (!firstGeometryType.Contains("Polygon")) // 包括 Polygon 和 MultiPolygon
+            {
+                throw new Exception($"矢量文件的几何类型应当为面(Polygon)或多面(MultiPolygon)，实际为{firstGeometryType}");
+            }
+
+            if (!features.First().Attributes.Exists(Config.FieldName))
+            {
+                throw new Exception($"没有名为{Config.FieldName}的字段");
+            }
+
+            var tree = new STRtree<IFeature>();
+            foreach (var feature in features)
+            {
+                tree.Insert(feature.Geometry.EnvelopeInternal, feature);
+            }
+
+            tree.Build();
+            return tree;
+        }
+
+        private STRtree<IFeature> ReadGeoJson()
+        {
+            var geoJson = File.ReadAllText(Config.VectorFile);
+            JsonSerializerOptions options = new JsonSerializerOptions()
+            {
+                Converters = { new GeoJsonConverterFactory() }
+            };
+            var features = JsonSerializer.Deserialize<FeatureCollection>(geoJson, options);
+            return CreateSpatialIndexFromFeatures(features);
+        }
+
+        private STRtree<IFeature> ReadShapefile()
+        {
+            using var shapefile = Shapefile.OpenRead(Config.VectorFile);
+            return CreateSpatialIndexFromFeatures(shapefile);
         }
     }
 }

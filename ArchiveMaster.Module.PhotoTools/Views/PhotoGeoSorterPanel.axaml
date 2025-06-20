@@ -30,11 +30,6 @@
             <ct:FormItem Label="目录字段名：">
                 <TextBox Text="{Binding Config.FieldName}" />
             </ct:FormItem>
-            <ct:FormItem Label="范围外目录名：">
-                <TextBox Text="{Binding Config.NameOutOfRegion}" />
-            </ct:FormItem>
-
-
         </ct:StackFormItemGroup>
     </v:TwoStepPanelBase.ConfigsContent>
     <v:TwoStepPanelBase.ResultsContent>
@@ -60,14 +55,16 @@
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
                 <DataGridTextColumn
-                    Binding="{Binding Longitude}"
+                    Binding="{Binding Longitude, StringFormat='0.000000'}"
                     Header="经度" />
                 <DataGridTextColumn
-                    Binding="{Binding Latitude}"
-                    Header="纬度" />
+                    Binding="{Binding Latitude, StringFormat='0.000000'}"
+                    Header="纬度"
+                    IsReadOnly="True" />
                 <DataGridTextColumn
                     Binding="{Binding Region}"
-                    Header="目标目录名" />
+                    Header="目标目录名"
+                    IsReadOnly="True" />
             </DataGrid.Columns>
         </v:SimpleFileDataGrid>
     </v:TwoStepPanelBase.ResultsContent>

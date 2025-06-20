@@ -39,10 +39,6 @@ public class TreeFileDataGrid : SimpleFileDataGrid
         AvaloniaProperty.Register<TreeFileDataGrid, bool>(
             nameof(IsFileCheckBoxVisible), true);
 
-    public static readonly StyledProperty<bool> DoubleTappedToOpenFileProperty =
-        AvaloniaProperty.Register<TreeFileDataGrid, bool>(
-            nameof(DoubleTappedToOpenFile), true);
-
     public static readonly StyledProperty<int> RootDepthProperty
         = AvaloniaProperty.Register<TreeFileDataGrid, int>(nameof(RootDepth), 1);
 
@@ -58,11 +54,10 @@ public class TreeFileDataGrid : SimpleFileDataGrid
         AvaloniaProperty.Register<TreeFileDataGrid, string>(
             nameof(SearchText));
 
-    protected static readonly TreeFileDirLengthConverter TreeFileDirLengthConverter = new TreeFileDirLengthConverter();
-
     protected static readonly TreeFileCheckBoxVisibleConverter TreeFileCheckBoxVisibleConverter =
         new TreeFileCheckBoxVisibleConverter();
 
+    protected static readonly TreeFileDirLengthConverter TreeFileDirLengthConverter = new TreeFileDirLengthConverter();
     public TreeFileDataGrid()
     {
         DoubleTapped += DataGridDoubleTapped;
@@ -80,12 +75,6 @@ public class TreeFileDataGrid : SimpleFileDataGrid
     {
         get => GetValue(IsFileCheckBoxVisibleProperty);
         set => SetValue(IsFileCheckBoxVisibleProperty, value);
-    }
-
-    public bool DoubleTappedToOpenFile
-    {
-        get => GetValue(DoubleTappedToOpenFileProperty);
-        set => SetValue(DoubleTappedToOpenFileProperty, value);
     }
 
     public int RootDepth
@@ -183,7 +172,7 @@ public class TreeFileDataGrid : SimpleFileDataGrid
                     ConverterParameter = this,
                 },
                 [!IsEnabledProperty] = new Binding("DataContext.IsWorking") //执行命令时，这CheckBox不可以Enable
-                    { Source = rootPanel, Converter = InverseBoolConverter },
+                { Source = rootPanel, Converter = InverseBoolConverter },
             };
         });
 
@@ -295,6 +284,11 @@ public class TreeFileDataGrid : SimpleFileDataGrid
         return column;
     }
 
+    protected override void OnFileDoubleTapped(SimpleFileInfo file)
+    {
+
+    }
+
     private void Collapse(TreeDirInfo dir)
     {
         if (dir.IsExpanded == false)
@@ -357,7 +351,6 @@ public class TreeFileDataGrid : SimpleFileDataGrid
             }
         }
     }
-
     private void Expand(TreeDirInfo dir)
     {
         if (dir.IsExpanded == true)

@@ -51,7 +51,7 @@
                 <v:TreeFileDataGrid.Columns>
                     <DataGridTextColumn
                         Binding="{Binding RelativePath}"
-                        Header="Hash" />
+                        Header="Hash/相对路径" />
                 </v:TreeFileDataGrid.Columns>
             </v:TreeFileDataGrid>
         </Grid>
