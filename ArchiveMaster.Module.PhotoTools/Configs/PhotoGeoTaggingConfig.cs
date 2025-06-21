@@ -6,15 +6,12 @@ namespace ArchiveMaster.Configs
     {
         [ObservableProperty]
         private string dir;
-        
+
         [ObservableProperty]
-        private FileFilterConfig filter=new FileFilterConfig();
+        private FileFilterConfig filter = FileFilterConfig.NoRawImage;
 
         [ObservableProperty]
         private string gpxFile;
-        
-        [ObservableProperty]
-        private List<string> photoExtensions = new() { "heic", "heif", "jpg", "jpeg" };
 
         partial void OnMaxToleranceChanged(TimeSpan value)
         {

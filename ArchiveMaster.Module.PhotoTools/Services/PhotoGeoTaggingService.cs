@@ -29,10 +29,6 @@ namespace ArchiveMaster.Services
 
         public override async Task InitializeAsync(CancellationToken token = default)
         {
-            // 准备照片扩展名正则表达式
-            var rPhotos = new Regex($"\\.({string.Join('|', Config.PhotoExtensions)})$",
-                RegexOptions.IgnoreCase);
-
             NotifyProgressIndeterminate();
 
             List<GpsFileInfo> files = null;
@@ -97,11 +93,6 @@ namespace ArchiveMaster.Services
             await TryForFilesAsync(files, (file, state) =>
             {
                 NotifyMessage($"正在处理照片 {state.GetFileNumberMessage()}");
-
-                if (!rPhotos.IsMatch(file.Name))
-                {
-                    return;
-                }
 
                 results.Add(file);
 

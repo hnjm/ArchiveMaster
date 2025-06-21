@@ -11,15 +11,7 @@ public partial class PhotoGeoSorterConfig : ConfigBase
     private string vectorFile;
 
     [ObservableProperty]
-    private FileFilterConfig filter = new FileFilterConfig()
-    {
-        IncludeFiles = @"*.heic
-*.heif
-*.jpg
-*.jpeg
-*.dng
-*.arw"
-    };
+    private FileFilterConfig filter = FileFilterConfig.Image;
 
     [ObservableProperty]
     private string fieldName;
