@@ -43,6 +43,8 @@ namespace ArchiveMaster.Services
 
         public override async Task InitializeAsync(CancellationToken token)
         {
+
+            NotifyMessage($"正在解析矢量文件");
             var tree = Path.GetExtension(Config.VectorFile).ToLower() switch
             {
                 ".shp" => ReadShapefile(),
@@ -52,6 +54,7 @@ namespace ArchiveMaster.Services
 
             await Task.Run(() =>
             {
+                NotifyMessage($"正在枚举文件");
                 var files = new DirectoryInfo(Config.Dir)
                         .EnumerateFiles("*", FileEnumerateExtension.GetEnumerationOptions())
                         .ApplyFilter(token, Config.Filter)
@@ -59,8 +62,9 @@ namespace ArchiveMaster.Services
                         .ToList();
 
                 TryForFiles(files, (f, s) =>
-               {
-                   var gps = ExifHelper.FindGps(f.Path);
+                {
+                    NotifyMessage($"正在解析文件{s.GetFileNumberMessage()}：{f.Name}");
+                    var gps = ExifHelper.FindGps(f.Path);
                    if (gps != null)
                    {
                        f.Longitude = gps.Value.lon;
