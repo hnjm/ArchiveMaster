@@ -2,6 +2,7 @@
 using ArchiveMaster.ViewModels;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -15,11 +16,11 @@ namespace ArchiveMaster.Services
     public class TwinFileCleanerService(AppConfig appConfig)
         : TwoStepServiceBase<TwinFileCleanerConfig>(appConfig)
     {
-        public List<SimpleFileInfo> DeletingJpgFiles { get; set; }
+        public List<TwinFileInfo> DeletingFiles { get; set; }
 
         public override Task ExecuteAsync(CancellationToken token)
         {
-            var files = DeletingJpgFiles.CheckedOnly().ToList();
+            var files = DeletingFiles.CheckedOnly().ToList();
             return TryForFilesAsync(files, (file, s) =>
             {
                 NotifyMessage($"正在删除{s.GetFileNumberMessage()}：{file.Name}");
@@ -29,25 +30,33 @@ namespace ArchiveMaster.Services
 
         public override async Task InitializeAsync(CancellationToken token)
         {
-            DeletingJpgFiles = new List<SimpleFileInfo>();
-            List<SimpleFileInfo> files = null;
+            DeletingFiles = new List<TwinFileInfo>();
+            List<SimpleFileInfo> masterFiles = null;
+            Dictionary<string, List<FileInfo>> dir2AllFiles = new Dictionary<string, List<FileInfo>>();
             await Task.Run(() =>
             {
-                files = new DirectoryInfo(Config.Dir)
-                    .EnumerateFiles("*." + Config.SearchExtension,
-                        FileEnumerateExtension.GetEnumerationOptions(matchCasing: MatchCasing.CaseInsensitive))
-                    .ApplyFilter(token)
-                    .Select(p => new SimpleFileInfo(p, Config.Dir))
+                masterFiles = Config.MasterExtensions.Select(e => new DirectoryInfo(Config.Dir)
+                        .EnumerateFiles($"*.{e}", FileEnumerateExtension.GetEnumerationOptions())
+                        .ApplyFilter(token)
+                        .Select(p => new SimpleFileInfo(p, Config.Dir)))
+                    .SelectMany(p => p)
                     .ToList();
+                var allFiles =
+                    new DirectoryInfo(Config.Dir).EnumerateFiles("*", FileEnumerateExtension.GetEnumerationOptions());
+                dir2AllFiles = allFiles.GroupBy(p => p.DirectoryName)
+                    .ToDictionary(p => p.Key, p => p.ToList());
             }, token);
-            await TryForFilesAsync(files, (file, s) =>
+            await TryForFilesAsync(masterFiles, (masterFile, s) =>
             {
                 NotifyMessage($"正在查找同名不同后缀的文件{s.GetFileNumberMessage()}");
-                var twinFile =
-                    $"{Path.Combine(Path.GetDirectoryName(file.Path), Path.GetFileNameWithoutExtension(file.Name))}.{Config.DeletingExtension}";
-                if (File.Exists(twinFile))
+                var dir = Path.GetDirectoryName(masterFile.Path);
+                Debug.Assert(dir2AllFiles.ContainsKey(dir));
+                var dirFiles = dir2AllFiles[dir];
+                foreach (var pattern in Config.DeletingPatterns)
                 {
-                    DeletingJpgFiles.Add(new SimpleFileInfo(new FileInfo(twinFile), Config.Dir));
+                    var tempPattern = pattern.Replace("{Name}", Path.GetFileNameWithoutExtension(masterFile.Path));
+                    var auxiliaryFiles = dirFiles.Where(p => FileFilterHelper.IsMatchedByPattern(p.Name, tempPattern));
+                    DeletingFiles.AddRange(auxiliaryFiles.Select(p => new TwinFileInfo(p, masterFile)));
                 }
             }, token, FilesLoopOptions.Builder().AutoApplyFileNumberProgress().Build());
         }

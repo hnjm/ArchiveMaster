@@ -126,7 +126,7 @@ public partial class FileFilterHelper
     /// <param name="text">字符串</param>
     /// <param name="pattern">匹配模式</param>
     /// <returns></returns>
-    private static bool IsMatchedByPattern(string text, string pattern)
+    public static bool IsMatchedByPattern(string text, string pattern)
     {
         // 判断是否在 Windows 系统上运行
         if (OperatingSystem.IsWindows())

@@ -65,7 +65,7 @@ namespace ArchiveMaster
                 new ToolPanelInfo(typeof(TimeClassifyPanel), typeof(TimeClassifyViewModel), "根据时间段归档",
                     "识别目录中相同时间段的文件，将它们移动到相同的新目录中",
                     baseUrl + "archive.svg"),
-                new ToolPanelInfo(typeof(TwinFileCleanerPanel), typeof(TwinFileCleanerViewModel), "同名异后缀文件清理",
+                new ToolPanelInfo(typeof(TwinFileCleanerPanel), typeof(TwinFileCleanerViewModel), "附属文件清理",
                     "当目录中存在某后缀文件（如.dng）时，自动删除同名不同后缀的关联文件（如.jpg）", baseUrl + "jpg.svg"),
                 new ToolPanelInfo(typeof(BatchCommandLinePanel), typeof(BatchCommandLineViewModel), "批量命令行执行",
                     "以文件或目录为元素，批量执行命令行", baseUrl + "cmd.svg"), 

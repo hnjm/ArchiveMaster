@@ -19,24 +19,26 @@
                     Type="OpenFolder" />
             </ct:FormItem>
 
-            <ct:FormItem Label="后缀：">
-                <WrapPanel Orientation="Horizontal">
-                    <WrapPanel.Styles>
-                        <Style Selector="TextBox">
-                            <Setter Property="Margin" Value="8,0" />
-                            <Setter Property="Width" Value="80" />
-                        </Style>
-                    </WrapPanel.Styles>
-                    <TextBlock Text="若存在后缀为" />
-                    <TextBox Text="{Binding Config.SearchExtension}" />
-                    <TextBlock Text="的文件，则删除后缀为" />
-                    <TextBox Text="{Binding Config.DeletingExtension}" />
-                    <TextBlock Text="的同名文件（后缀名不区分大小写）" />
-                </WrapPanel>
+            <ct:FormItem Label="主文件后缀：">
+                <TextBox Text="{Binding Config.MasterExtensions, Converter={StaticResource StringListConverter}}" />
             </ct:FormItem>
+            <ct:FormItem Label="附属文件模式：">
+                <TextBox Text="{Binding Config.DeletingPatterns, Converter={StaticResource StringListConverter}}" />
+            </ct:FormItem>
+
         </ct:StackFormItemGroup>
     </v:TwoStepPanelBase.ConfigsContent>
     <v:TwoStepPanelBase.ResultsContent>
-        <v:SimpleFileDataGrid ItemsSource="{Binding DeletingJpgFiles}" />
+        <v:SimpleFileDataGrid
+            ColumnLengthIndex="-1"
+            ColumnPathIndex="2"
+            ColumnTimeIndex="-1"
+            ItemsSource="{Binding DeletingFiles}">
+            <DataGrid.Columns>
+                <DataGridTextColumn
+                    Binding="{Binding MasterFile.Name}"
+                    Header="主文件名" />
+            </DataGrid.Columns>
+        </v:SimpleFileDataGrid>
     </v:TwoStepPanelBase.ResultsContent>
 </v:TwoStepPanelBase>
