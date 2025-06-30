@@ -43,7 +43,6 @@ namespace ArchiveMaster.Services
 
         public override async Task InitializeAsync(CancellationToken token)
         {
-
             NotifyMessage($"正在解析矢量文件");
             var tree = Path.GetExtension(Config.VectorFile).ToLower() switch
             {
@@ -56,35 +55,36 @@ namespace ArchiveMaster.Services
             {
                 NotifyMessage($"正在枚举文件");
                 var files = new DirectoryInfo(Config.Dir)
-                        .EnumerateFiles("*", FileEnumerateExtension.GetEnumerationOptions())
-                        .ApplyFilter(token, Config.Filter)
-                        .Select(p => new GpsFileInfo(p, Config.Dir))
-                        .ToList();
+                    .EnumerateFiles("*", FileEnumerateExtension.GetEnumerationOptions())
+                    .ApplyFilter(token, Config.Filter)
+                    .Select(p => new GpsFileInfo(p, Config.Dir))
+                    .ToList();
 
                 TryForFiles(files, (f, s) =>
                 {
                     NotifyMessage($"正在解析文件{s.GetFileNumberMessage()}：{f.Name}");
                     var gps = ExifHelper.FindGps(f.Path);
-                   if (gps != null)
-                   {
-                       f.Longitude = gps.Value.lon;
-                       f.Latitude = gps.Value.lat;
-                       f.AlreadyHasGps = true;
+                    if (gps != null)
+                    {
+                        f.Longitude = gps.Value.lon;
+                        f.Latitude = gps.Value.lat;
+                        f.AlreadyHasGps = true;
 
-                       Point point = new Point(f.Longitude.Value, f.Latitude.Value);
-                       var candidates = tree.Query(point.EnvelopeInternal);
-                       foreach (var candidate in candidates)
-                       {
-                           if (candidate.Geometry.Contains(point))
-                           {
-                               f.Region = FileNameHelper.GetValidFileName(candidate.Attributes[Config.FieldName].ToString());
-                               f.IsMatched = true;
-                               f.IsChecked = true;
-                               break;
-                           }
-                       }
-                   }
-               }, token, FilesLoopOptions.Builder().AutoApplyFileNumberProgress().Build());
+                        Point point = new Point(f.Longitude.Value, f.Latitude.Value);
+                        var candidates = tree.Query(point.EnvelopeInternal);
+                        foreach (var candidate in candidates)
+                        {
+                            if (candidate.Geometry.Contains(point))
+                            {
+                                f.Region = FileNameHelper.GetValidFileName(candidate.Attributes[Config.FieldName]
+                                    .ToString());
+                                f.IsMatched = true;
+                                f.IsChecked = true;
+                                break;
+                            }
+                        }
+                    }
+                }, token, FilesLoopOptions.Builder().AutoApplyFileNumberProgress().Build());
 
                 Files = files;
             });
