@@ -19,6 +19,7 @@ using ArchiveMaster.Platforms;
 using ArchiveMaster.Services;
 using Avalonia;
 using Avalonia.Input;
+using FzLib.Avalonia.Messages;
 using FzLib.Program.Startup;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -26,11 +27,6 @@ namespace ArchiveMaster.ViewModels;
 
 public partial class MainViewModel : ObservableObject
 {
-    private readonly IStartupManager startupManager;
-
-    [ObservableProperty]
-    private bool isAutoStart;
-
     [ObservableProperty]
     private bool isToolOpened;
 
@@ -46,11 +42,9 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private AppConfig appConfig;
 
-    public MainViewModel(AppConfig appConfig, IStartupManager startupManager = null,
-        IBackCommandService backCommandService = null)
+    public MainViewModel(AppConfig appConfig, IBackCommandService backCommandService = null)
     {
         AppConfig = appConfig;
-        this.startupManager = startupManager;
         foreach (var view in Initializer.Views)
         {
             PanelGroups.Add(view);
@@ -67,8 +61,6 @@ public partial class MainViewModel : ObservableObject
             return false;
         });
         BackCommandService = backCommandService;
-
-        IsAutoStart = startupManager?.IsStartupEnabled() ?? false;
     }
 
     public IBackCommandService BackCommandService { get; }
@@ -114,20 +106,9 @@ public partial class MainViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void SetAutoStart(bool autoStart)
+    private async Task OpenSettingDialogAsync()
     {
-        if (startupManager == null)
-        {
-            return;
-        }
-
-        if (autoStart)
-        {
-            startupManager.EnableStartup("s");
-        }
-        else
-        {
-            startupManager.DisableStartup();
-        }
+        var dialog = HostServices.GetRequiredService<SettingDialog>();
+        await this.SendMessage(new DialogHostMessage(dialog)).Task;
     }
 }

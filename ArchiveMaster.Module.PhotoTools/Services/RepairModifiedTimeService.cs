@@ -19,8 +19,6 @@ namespace ArchiveMaster.Services
     {
         public ConcurrentBag<ExifTimeFileInfo> Files { get; } = new ConcurrentBag<ExifTimeFileInfo>();
 
-        private Regex rRepairTime;
-
         public override Task ExecuteAsync(CancellationToken token)
         {
             return TryForFilesAsync(Files, (file, s) =>
@@ -37,8 +35,6 @@ namespace ArchiveMaster.Services
 
         public override async Task InitializeAsync(CancellationToken token)
         {
-            rRepairTime = new Regex(@$"\.({string.Join('|', Config.PhotoExtensions)})$",
-                RegexOptions.IgnoreCase | RegexOptions.Compiled);
             NotifyProgressIndeterminate();
             NotifyMessage("正在查找文件");
             List<ExifTimeFileInfo> files = null;
@@ -46,26 +42,24 @@ namespace ArchiveMaster.Services
             {
                 files = new DirectoryInfo(Config.Dir)
                     .EnumerateFiles("*", FileEnumerateExtension.GetEnumerationOptions())
-                    .ApplyFilter(token)
+                    .ApplyFilter(token, Config.Filter)
                     .Select(p => new ExifTimeFileInfo(p, Config.Dir))
                     .ToList();
             });
             await TryForFilesAsync(files, (file, s) =>
                 {
                     NotifyMessage($"正在扫描照片日期{s.GetFileNumberMessage()}");
-                    if (rRepairTime.IsMatch(file.Name))
-                    {
-                        DateTime? exifTime = ExifHelper.FindExifTime(file.Path);
 
-                        if (exifTime.HasValue)
+                    DateTime? exifTime = ExifHelper.FindExifTime(file.Path);
+
+                    if (exifTime.HasValue)
+                    {
+                        var fileTime = file.Time;
+                        var duration = (exifTime.Value - fileTime).Duration();
+                        if (duration > Config.MaxDurationTolerance)
                         {
-                            var fileTime = file.Time;
-                            var duration = (exifTime.Value - fileTime).Duration();
-                            if (duration > Config.MaxDurationTolerance)
-                            {
-                                file.ExifTime = exifTime.Value;
-                                Files.Add(file);
-                            }
+                            file.ExifTime = exifTime.Value;
+                            Files.Add(file);
                         }
                     }
                 }, token,

@@ -4,9 +4,29 @@ namespace ArchiveMaster.Configs
 {
     public partial class FileFilterConfig : ObservableObject
     {
-        private static readonly string DefaultExcludeFiles = $"Thumbs.db{Environment.NewLine}desktop.ini";
+        public static FileFilterConfig Image=>new FileFilterConfig()
+        {
+            IncludeFiles = """
+                           *.heic
+                           *.heif
+                           *.jpg
+                           *.jpeg
+                           *.dng
+                           *.arw
+                           """
+        };
+        public static FileFilterConfig NoRawImage=>new FileFilterConfig()
+        {
+            IncludeFiles = """
+                           *.heic
+                           *.heif
+                           *.jpg
+                           *.jpeg
+                           """
+        };
+        private static readonly string DefaultExcludeFiles = $"Thumbs.db{Environment.NewLine}Thumb.db{Environment.NewLine}desktop.ini";
         
-        private static readonly string DefaultExcludeFilesR = @"^(Thumbs\.db)|(desktop.ini)$";
+        private static readonly string DefaultExcludeFilesR = @"^(Thumbs?\.db)|(desktop.ini)$";
         
         private static readonly string DefaultExcludeFolders = "$*";
         

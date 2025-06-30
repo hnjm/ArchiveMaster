@@ -54,7 +54,7 @@ namespace ArchiveMaster.Services
                     FileShare.None, bufferLength, useAsync: true);
 
                 byte[] iv = new byte[manager.BlockSize / 8];
-                await streamSource.ReadAsync(iv, 0, iv.Length, cancellationToken);
+                await streamSource.ReadAsync(iv, cancellationToken);
                 manager.IV = iv;
 
                 await using var cryptoStream = new CryptoStream(streamSource, manager.CreateDecryptor(),
@@ -66,7 +66,7 @@ namespace ArchiveMaster.Services
                 long fileLength = streamSource.Length;
                 long encryptedDataLength = fileLength - iv.Length;
 
-                while ((read = await cryptoStream.ReadAsync(buffer, 0, buffer.Length, cancellationToken)) > 0)
+                while ((read = await cryptoStream.ReadAsync(buffer, cancellationToken)) > 0)
                 {
                     await streamTarget.WriteAsync(buffer.AsMemory(0, read), cancellationToken);
                     totalRead += read;
@@ -107,15 +107,13 @@ namespace ArchiveMaster.Services
                 throw new Exception("iv应当为空表示自动生成，或提供一个长度为16的字符数组");
             }
 
-            using (ICryptoTransform encryptor = aes.CreateEncryptor())
-            {
-                byte[] ciphertext = encryptor.TransformFinalBlock(plaintext, 0, plaintext.Length);
+            using ICryptoTransform encryptor = aes.CreateEncryptor();
+            byte[] ciphertext = encryptor.TransformFinalBlock(plaintext, 0, plaintext.Length);
 
-                byte[] result = new byte[iv.Length + ciphertext.Length];
-                Buffer.BlockCopy(iv, 0, result, 0, iv.Length);
-                Buffer.BlockCopy(ciphertext, 0, result, iv.Length, ciphertext.Length);
-                return result;
-            }
+            byte[] result = new byte[iv.Length + ciphertext.Length];
+            Buffer.BlockCopy(iv, 0, result, 0, iv.Length);
+            Buffer.BlockCopy(ciphertext, 0, result, iv.Length, ciphertext.Length);
+            return result;
         }
 
         public static async Task EncryptFileAsync(this Aes manager, string sourcePath, string targetPath,
@@ -151,7 +149,7 @@ namespace ArchiveMaster.Services
                 int read;
                 long fileLength = streamSource.Length;
 
-                while ((read = await streamSource.ReadAsync(buffer, 0, buffer.Length, cancellationToken)) > 0)
+                while ((read = await streamSource.ReadAsync(buffer, cancellationToken)) > 0)
                 {
                     await cryptoStream.WriteAsync(buffer.AsMemory(0, read), cancellationToken);
                     totalRead += read;

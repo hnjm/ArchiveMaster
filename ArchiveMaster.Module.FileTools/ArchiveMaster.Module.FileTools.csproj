@@ -24,6 +24,10 @@
       <DependentUpon>BatchCommandLinePanel.axaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Views\LinkDeduplicationPanel.axaml.cs">
+      <DependentUpon>LinkDeduplicationPanel.axaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>

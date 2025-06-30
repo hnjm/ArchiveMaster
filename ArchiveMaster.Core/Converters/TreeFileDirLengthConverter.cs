@@ -36,7 +36,8 @@ public class TreeFileDirLengthConverter : IValueConverter
 
             return str
                 .Replace("{D}", dir.SubFolderCount.ToString("N0", culture))
-                .Replace("{F}", dir.SubFileCount.ToString("N0", culture));
+                .Replace("{F}", dir.SubFileCount.ToString("N0", culture))
+                .Replace("{L}", FileDirLength2StringConverter.Convert(dir.Length));
         }
 
         return NumberConverter.ByteToFitString(fileOrDir.Length, 2, " B", " KB", " MB", " GB", " TB");

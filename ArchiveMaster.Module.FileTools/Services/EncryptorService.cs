@@ -80,7 +80,7 @@ namespace ArchiveMaster.Services
                             File.SetAttributes(file.Path, FileAttributes.Normal);
                         }
 
-                        File.Delete(file.Path);
+                        FileDeleteHelper.DeleteByConfig(file.Path);
                     }
                 }, token, FilesLoopOptions.Builder().AutoApplyStatus().AutoApplyFileLengthProgress().Build());
             }, token);
@@ -177,7 +177,7 @@ namespace ArchiveMaster.Services
                             File.SetAttributes(path, FileAttributes.Normal);
                         }
 
-                        File.Delete(path);
+                        FileDeleteHelper.DeleteByConfig(path);
                         break;
 
                     case FilenameDuplicationPolicy.Skip:

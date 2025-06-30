@@ -21,7 +21,7 @@ namespace ArchiveMaster.Services
                     int count = state.FileCount;
                     NotifyMessage($"正在复制（{index}/{count}），当前文件：{Path.GetFileName(file.Name)}");
 
-                    await FileIOHelper.CopyFileAsync(file.Path, file.DestinationPath,
+                    await FileCopyHelper.CopyFileAsync(file.Path, file.DestinationPath,
                         progress: new Progress<FileCopyProgress>(
                             p =>
                             {

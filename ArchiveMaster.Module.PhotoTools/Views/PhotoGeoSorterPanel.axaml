@@ -1,0 +1,71 @@
+<v:TwoStepPanelBase
+    x:Class="ArchiveMaster.Views.PhotoGeoSorterPanel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ct="using:FzLib.Avalonia.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:gb="using:GroupBox.Avalonia.Controls"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:v="using:ArchiveMaster.Views"
+    xmlns:vm="clr-namespace:ArchiveMaster.ViewModels"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    mc:Ignorable="d">
+    <v:TwoStepPanelBase.ConfigsContent>
+        <ct:StackFormItemGroup>
+            <ct:FormItem Label="目录：">
+                <v:FilePickerTextBox
+                    FileNames="{Binding Config.Dir}"
+                    Filter="{Binding Config.Filter}"
+                    IsFilterButtonVisible="True"
+                    Type="OpenFolder" />
+            </ct:FormItem>
+            <ct:FormItem Label="矢量地理文件：">
+                <v:FilePickerTextBox
+                    AllowMultiple="True"
+                    FileNames="{Binding Config.VectorFile}"
+                    StringFileTypeFilter="Shapefile文件;*.shp;;|GeoJSON文件;*.geojson;;"
+                    Type="OpenFile" />
+            </ct:FormItem>
+            <ct:FormItem Label="目录字段名：">
+                <TextBox Text="{Binding Config.FieldName}" />
+            </ct:FormItem>
+        </ct:StackFormItemGroup>
+    </v:TwoStepPanelBase.ConfigsContent>
+    <v:TwoStepPanelBase.ResultsContent>
+        <v:SimpleFileDataGrid
+            ColumnLengthIndex="1.2"
+            ColumnNameIndex="1.1"
+            ColumnPathIndex="-1"
+            ColumnTimeIndex="-1"
+            ItemsSource="{Binding Files}">
+            <DataGrid.Columns>
+                <DataGridTemplateColumn
+                    CanUserResize="False"
+                    Header="匹配"
+                    SortMemberPath="IsMatched">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Ellipse
+                                Width="8"
+                                Height="8"
+                                Fill="{DynamicResource Foreground0}"
+                                IsVisible="{Binding IsMatched}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn
+                    Binding="{Binding Longitude, StringFormat='0.000000'}"
+                    Header="经度" />
+                <DataGridTextColumn
+                    Binding="{Binding Latitude, StringFormat='0.000000'}"
+                    Header="纬度"
+                    IsReadOnly="True" />
+                <DataGridTextColumn
+                    Binding="{Binding Region}"
+                    Header="目标目录名"
+                    IsReadOnly="True" />
+            </DataGrid.Columns>
+        </v:SimpleFileDataGrid>
+    </v:TwoStepPanelBase.ResultsContent>
+</v:TwoStepPanelBase>

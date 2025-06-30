@@ -17,6 +17,8 @@
             <ct:FormItem Label="目录：">
                 <v:FilePickerTextBox
                     FileNames="{Binding Config.Dir}"
+                    Filter="{Binding Config.Filter}"
+                    IsFilterButtonVisible="True"
                     Type="OpenFolder" />
             </ct:FormItem>
             <ct:FormItem Label="选项：">
@@ -28,9 +30,6 @@
                             Maximum="16"
                             Minimum="1"
                             Value="{Binding Config.ThreadCount}" />
-                    </ct:FormItem>
-                    <ct:FormItem Label="需处理文件后缀名：">
-                        <TextBox Text="{Binding Config.PhotoExtensions, Converter={StaticResource StringListConverter}}" />
                     </ct:FormItem>
                     <ct:FormItem Label="最长容忍差异时间（秒）：">
                         <NumericUpDown

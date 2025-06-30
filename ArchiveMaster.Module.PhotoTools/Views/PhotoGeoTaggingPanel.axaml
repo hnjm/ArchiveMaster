@@ -10,7 +10,6 @@
     xmlns:vm="clr-namespace:ArchiveMaster.ViewModels"
     d:DesignHeight="450"
     d:DesignWidth="800"
-    x:DataType="vm:RepairModifiedTimeViewModel"
     mc:Ignorable="d">
     <v:TwoStepPanelBase.ConfigsContent>
         <ct:StackFormItemGroup>
@@ -27,9 +26,6 @@
                     FileNames="{Binding Config.GpxFile}"
                     StringFileTypeFilter="GPS轨迹文件;*.gpx;;"
                     Type="OpenFile" />
-            </ct:FormItem>
-            <ct:FormItem Label="需处理文件后缀名：">
-                <TextBox Text="{Binding Config.PhotoExtensions, Converter={StaticResource StringListConverter}}" />
             </ct:FormItem>
             <ct:FormItem
                 Description="允许匹配的最大时间差。若照片时间与所有GPX点的时间差均超过此值，则跳过该照片"
@@ -100,10 +96,10 @@
                     Header="GPS时间"
                     IsReadOnly="True" />
                 <DataGridTextColumn
-                    Binding="{Binding Longitude}"
+                    Binding="{Binding Longitude, StringFormat='0.000000'}"
                     Header="经度" />
                 <DataGridTextColumn
-                    Binding="{Binding Latitude}"
+                    Binding="{Binding Latitude, StringFormat='0.000000'}"
                     Header="纬度" />
             </DataGrid.Columns>
         </v:SimpleFileDataGrid>

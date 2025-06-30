@@ -55,13 +55,14 @@
 | 工具名       | 用途                                                         | 期望解决的问题                                               | 类名前缀             | 原项目                                                       |
 |-----------| ------------------------------------------------------------ | ------------------------------------------------------------ | -------------------- | ------------------------------------------------------------ |
 | 根据时间段归档   | 识别目录中相同时间段的文件，将它们移动到相同的新目录中       | 例如对于航拍照片，多次起飞的照片和视频会混在一起。通过该工具，可以通过拍摄时间来自动将不同航次的照片和视频进行归类。 | `TimeClassify`       | [照片归档工具](https://github.com/autodotua/PhotoArchivingTools) |
-| 同名异后缀文件清理 | 当目录中存在某后缀文件（如.dng）时，自动删除同名不同后缀的关联文件（如.jpg）                           | 当拍摄了RAW+JPG格式的照片时，若决定处理RAW文件，那么JPG格式是多余的，需要删除。 | `TwinFileCleaner`  | [照片归档工具](https://github.com/autodotua/PhotoArchivingTools) |
+| 附属文件清理 | 自动清理与主文件同名的关联文件。例如，当目录中存在.dng文件时，自动删除同名但不同后缀的.jpg等关联文件。 | 当拍摄了RAW+JPG格式的照片时，若决定处理RAW文件，那么JPG格式是多余的，需要删除。 | `TwinFileCleaner`  | [照片归档工具](https://github.com/autodotua/PhotoArchivingTools) |
 | 文件加密解密 | 使用AES加密方法，对文件进行加密或解密 | 需要对一个文件夹内的文件和子文件进行加密，并需要保留目录结构，需要加密文件名、文件夹名或目录结构。 | `Encryptor` | [照片归档工具](https://github.com/autodotua/PhotoArchivingTools)<br />文件夹加密 |
 | 目录结构同步 | 以一个目录为模板，将另一个目录中的文件同步到与模板内相同文件一直的位置 | 有两份初始状态一样的目录，其中一份中的某些文件进行了移动等操作，希望能够让另一份也同步应用更改，避免不必要的复制操作。 | `DirStructureSync` | [异地备份离线同步](https://github.com/autodotua/OffsiteBackupOfflineSync)<br />控制台小程序集 |
 | 目录结构克隆 | 以一个目录为模板，生成一个新的目录，目录中文件与模板一致，但大小为0 | 需要保存一个目录的结构，但是不需要了解文件的内容，只是想用尽可能小的容量存储文件树状结构。 | `DirStructureClone` | [异地备份离线同步](https://github.com/autodotua/OffsiteBackupOfflineSync)<br />文件归位器 |
 | 批量重命名 | 批量对一个目录中的文件或文件夹按规则进行重命名操作 | 需要对一个目录中的文件按一定规则进行重命名。 | `Rename` | 文件批量操作 |
 | 重复文件清理 | 清理一个目录内的重复文件，或已包含在另一个目录中的相同文件 | 一些相同的文件散落在各个地方，为了节省空间，需要删除一部分 | `DuplicateFileCleanup` | 控制台小程序集 |
 | 批量命令行执行 | 以文件或目录为元素，批量执行命令行 | 有一个能够传入参数的可执行文件，需要将某个目录下的所有子目录或文件作为参数，传入可执行文件并运行，每个子目录或文件作为参数运行一次。例如需要对指定目录下筛选后的文件分别压缩。 | `BatchCommandLine` |  |
+| 硬链接去重 | 将一个目录中二进制相同的文件指向同一个硬盘物理地址，即硬链接，以减少磁盘占用 | 加入一个目录中有很多完全相同的文件，用这个工具可以大幅减少占用空间 | `LinkDeduplication` | |
 
 ## 照片工具（PhotoTools）
 
@@ -72,6 +73,7 @@
 | 修复照片修改时间 | 寻找EXIF信息中的拍摄时间与照片修改时间不同的文件，将修改时间更新闻EXIF时间 | 对照片进行处理后，文件修改时间会更新，不利于部分软件的照片排序，需要从EXIF中读取实际拍摄时间，对文件修改时间进行更新。 | `RepairModifiedTime` | [照片归档工具](https://github.com/autodotua/PhotoArchivingTools)<br />控制台小程序集 |
 | 创建照片集合副本 | 复制或压缩照片，用于生成更小的照片集副本                     | 需要将硬盘中整理后的部分照片复制到手机中以便随时查看，但可能存在文件过大放不进手机、只需要部分目录中的文件、只需要部分类型文件等需求。 | `PhotoSlimming`      | [照片归档工具](https://github.com/autodotua/PhotoArchivingTools)<br />[照片瘦身工具](https://github.com/autodotua/PhotoSlimming) |
 | 照片地理信息写入 | 将GPX轨迹中的GPS位置信息，根据拍摄时间自动匹配并写入照片Exif | 相机拍摄的照片，不包含地理信息，无法根据位置查找照片。使用该工具，可以将拍摄时在相关工具记录的GPX轨迹中找到拍摄时间所在的位置，并写入照片元数据中。 | `PhotoGeoTagging`    |                                                              |
+| 照片位置分类     | 根据照片EXIF信息中的地理位置，以及用于提供分类标准的矢量数据，将照片移动到不同的目录 | 有大量的照片，这些照片由手机或其他能够定位的设备拍摄，并写入了位置信息。希望将这些数据 | `PhotoGeoSorter`     |                                                              |
 
 ## 异地备份离线同步（`OfflineSync`）
 
@@ -128,16 +130,17 @@
 
 除了`ArchiveMaster.UI.*`外，其余项目结构基本一致。本解决方案的主要结构是总（公共方法、接口、定义）-分（功能模块）-总（UI启动器）
 
-| 项目名称     | 描述                                                         |
-| ------------ | ------------------------------------------------------------ |
-| `Assets`     | 图标等素材文件，作为`AvaloniaResource`                       |
-| `Configs`    | 工具的配置文件                                               |
-| `Converters` | 用于XAML的值转换器                                           |
-| `Enums`      | 枚举类型                                                     |
-| `Messages`   | 用于ViewModel和View之间通过`WeakReferenceMessenger`的通信    |
-| `Services`   | 各工具的执行逻辑代码，每个`Service`拥有一个`ConfigBase`的属性。 |
-| `ViewModels` | 视图模型，连接`Views`、`Configs`和`Services`。               |
-| `Views`      | UI视图界面。本软件实现了完全的MVVM。除`UI`项目外，`Views`中仅包含界面，不包含逻辑。 |
+| 项目名称                | 描述                                                         |
+| ----------------------- | ------------------------------------------------------------ |
+| `Assets`                | 图标等素材文件，作为`AvaloniaResource`                       |
+| `Configs`               | 工具的配置文件                                               |
+| `Converters`            | 用于XAML的值转换器                                           |
+| `Enums`                 | 枚举类型                                                     |
+| `Messages`              | 用于ViewModel和View之间通过`WeakReferenceMessenger`的通信    |
+| `Services`              | 各工具的执行逻辑代码，每个`Service`拥有一个`ConfigBase`的属性。 |
+| `ViewModels`            | 视图模型，连接`Views`、`Configs`和`Services`。               |
+| `ViewModels.FileSystem` | 用于表达文件或目录信息的类，继承自`SimpleFileInfo`。         |
+| `Views`                 | UI视图界面。本软件实现了完全的MVVM。除`UI`项目外，`Views`中仅包含界面，不包含逻辑。 |
 
 ## 模块
 

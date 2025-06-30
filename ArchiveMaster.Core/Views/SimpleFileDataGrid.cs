@@ -5,6 +5,7 @@ using ArchiveMaster.Converters;
 using ArchiveMaster.Helpers;
 using ArchiveMaster.Services;
 using ArchiveMaster.ViewModels;
+using ArchiveMaster.ViewModels.FileSystem;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -19,14 +20,19 @@ using Avalonia.Media;
 using Avalonia.VisualTree;
 using FzLib.Avalonia.Converters;
 using FzLib.Avalonia.Dialogs;
+using Serilog;
 using SimpleFileInfo = ArchiveMaster.ViewModels.FileSystem.SimpleFileInfo;
 
 namespace ArchiveMaster.Views;
 
 public class SimpleFileDataGrid : DataGrid
 {
+    public static readonly StyledProperty<bool> DoubleTappedToOpenFileProperty =
+        AvaloniaProperty.Register<TreeFileDataGrid, bool>(
+            nameof(DoubleTappedToOpenFile), true);
+
     public static readonly StyledProperty<object> FooterProperty =
-        AvaloniaProperty.Register<SimpleFileDataGrid, object>(
+            AvaloniaProperty.Register<SimpleFileDataGrid, object>(
             nameof(Footer));
 
     public static readonly StyledProperty<bool> ShowCountProperty = AvaloniaProperty.Register<SimpleFileDataGrid, bool>(
@@ -36,7 +42,6 @@ public class SimpleFileDataGrid : DataGrid
 
     protected static readonly FileDirLength2StringConverter FileDirLength2StringConverter =
         new FileDirLength2StringConverter();
-
     protected static readonly InverseBoolConverter InverseBoolConverter = new InverseBoolConverter();
 
     protected static readonly ProcessStatusColorConverter ProcessStatusColorConverter =
@@ -47,16 +52,8 @@ public class SimpleFileDataGrid : DataGrid
         AreRowDetailsFrozen = true;
         CanUserReorderColumns = true;
         CanUserResizeColumns = true;
-        this[!IsReadOnlyProperty] =
-            new Binding("IsWorking");
-    }
-
-    protected override void OnSelectionChanged(SelectionChangedEventArgs e)
-    {
-        base.OnSelectionChanged(e);
-        RowDetailsVisibilityMode = SelectedItems.Count == 1
-            ? DataGridRowDetailsVisibilityMode.VisibleWhenSelected
-            : DataGridRowDetailsVisibilityMode.Collapsed;
+        this[!IsReadOnlyProperty] = new Binding("IsWorking");
+        DoubleTapped += SimpleFileDataGrid_DoubleTapped;
     }
 
     public virtual string ColumnIsCheckedHeader { get; init; } = "";
@@ -87,6 +84,11 @@ public class SimpleFileDataGrid : DataGrid
 
     public virtual double ColumnTimeIndex { get; init; } = 0.6;
 
+    public bool DoubleTappedToOpenFile
+    {
+        get => GetValue(DoubleTappedToOpenFileProperty);
+        set => SetValue(DoubleTappedToOpenFileProperty, value);
+    }
     public object Footer
     {
         get => GetValue(FooterProperty);
@@ -132,7 +134,7 @@ public class SimpleFileDataGrid : DataGrid
                     HorizontalAlignment = HorizontalAlignment.Center,
                     [!ToggleButton.IsCheckedProperty] = new Binding(nameof(SimpleFileInfo.IsChecked)),
                     [!IsEnabledProperty] = new Binding("DataContext.IsWorking") //执行命令时，这CheckBox不可以Enable
-                        { Source = rootPanel, Converter = InverseBoolConverter },
+                    { Source = rootPanel, Converter = InverseBoolConverter },
                 },
                 [!IsEnabledProperty] = new Binding(nameof(SimpleFileInfo.CanCheck)) //套两层控件，实现任一禁止选择则不允许选择
             };
@@ -148,7 +150,7 @@ public class SimpleFileDataGrid : DataGrid
         {
             Header = ColumnLengthHeader,
             Binding = new Binding(".")
-                { Converter = FileDirLength2StringConverter, Mode = BindingMode.OneWay },
+            { Converter = FileDirLength2StringConverter, Mode = BindingMode.OneWay },
             SortMemberPath = nameof(SimpleFileInfo.Length),
             IsReadOnly = true,
             MaxWidth = 120,
@@ -205,7 +207,7 @@ public class SimpleFileDataGrid : DataGrid
             Width = 8,
             Height = 8,
             [!Shape.FillProperty] = new Binding(nameof(SimpleFileInfo.Status))
-                { Converter = ProcessStatusColorConverter }
+            { Converter = ProcessStatusColorConverter }
         });
 
         column.CellTemplate = cellTemplate;
@@ -327,7 +329,7 @@ public class SimpleFileDataGrid : DataGrid
                     this.ShowWarningDialogAsync("搜索", $"没有搜索到任何记录");
                 }
             }
-            
+
             //筛选
             var filterGrid = (buttons[5].Flyout as Flyout)?.Content as Grid;
             Debug.Assert(filterGrid != null);
@@ -354,8 +356,8 @@ public class SimpleFileDataGrid : DataGrid
                         file.IsChecked = false;
                     }
                 }
-                
-                if (count> 0)
+
+                if (count > 0)
                 {
                     this.ShowOkDialogAsync("筛选", $"筛选到{count}条记录，已全部勾选");
                 }
@@ -376,6 +378,21 @@ public class SimpleFileDataGrid : DataGrid
             {
                 ((Grid)stk.Parent)?.Children.Remove(stk);
             }
+        }
+    }
+
+    protected virtual void OnFileDoubleTapped(SimpleFileInfo file)
+    {
+        try
+        {
+            Process.Start(new ProcessStartInfo(file.Path)
+            {
+                UseShellExecute = true
+            });
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "打开文件失败");
         }
     }
 
@@ -404,6 +421,22 @@ public class SimpleFileDataGrid : DataGrid
         foreach (var column in ordered2)
         {
             Columns.Add(column.Func());
+        }
+    }
+
+    protected override void OnSelectionChanged(SelectionChangedEventArgs e)
+    {
+        base.OnSelectionChanged(e);
+        RowDetailsVisibilityMode = SelectedItems.Count == 1
+            ? DataGridRowDetailsVisibilityMode.VisibleWhenSelected
+            : DataGridRowDetailsVisibilityMode.Collapsed;
+    }
+
+    private void SimpleFileDataGrid_DoubleTapped(object sender, TappedEventArgs e)
+    {
+        if (e.Source is Visual { DataContext: SimpleFileInfo file })
+        {
+            OnFileDoubleTapped(file);
         }
     }
 }

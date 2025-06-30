@@ -1,6 +1,7 @@
 using System.Collections;
 using ArchiveMaster.Configs;
 using ArchiveMaster.Enums;
+using ArchiveMaster.Helpers;
 using ArchiveMaster.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -69,7 +70,7 @@ public partial class PackingViewModel(AppConfig appConfig)
                         var dir = Path.Combine(Config.TargetDir, index.ToString());
                         if (Directory.Exists(dir))
                         {
-                            Directory.Delete(dir, true);
+                            FileDeleteHelper.DeleteByConfig(dir);
                         }
                     }
                 }

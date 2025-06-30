@@ -1,4 +1,4 @@
-﻿#define WRITEMESSAGE
+﻿//#define WRITEMESSAGE
 
 using System.Collections;
 using System.Diagnostics;
@@ -82,6 +82,9 @@ namespace ArchiveMaster.Services
 
         protected void NotifyProgress(double percent)
         {
+#if DEBUG && WRITEMESSAGE
+            Debug.WriteLine("{0:HH:m:s.fff}\t更新进度：{1:P2}", DateTime.Now, percent);
+#endif
             ProgressUpdate?.Invoke(this, new ProgressUpdateEventArgs(percent));
             //Debug.WriteLine($"{percent * 100:0.00}%");
         }
@@ -347,9 +350,9 @@ namespace ArchiveMaster.Services
             }
 
 
-            if (appConfig.DebugMode && appConfig.DebugModeLoopDelay > 0)
+            if (GlobalConfigs.Instance.DebugMode && GlobalConfigs.Instance.DebugModeLoopDelay > 0)
             {
-                Thread.Sleep(appConfig.DebugModeLoopDelay);
+                Thread.Sleep(GlobalConfigs.Instance.DebugModeLoopDelay);
             }
         }
 
@@ -382,9 +385,9 @@ namespace ArchiveMaster.Services
             }
 
 
-            if (appConfig.DebugMode && appConfig.DebugModeLoopDelay > 0)
+            if (GlobalConfigs.Instance.DebugMode && GlobalConfigs.Instance.DebugModeLoopDelay > 0)
             {
-                await Task.Delay(appConfig.DebugModeLoopDelay, cancellationToken);
+                Thread.Sleep(GlobalConfigs.Instance.DebugModeLoopDelay);
             }
         }
     }

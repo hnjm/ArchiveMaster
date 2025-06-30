@@ -15,16 +15,16 @@ public partial class TwinFileCleanerViewModel(AppConfig appConfig)
     : TwoStepViewModelBase<TwinFileCleanerService, TwinFileCleanerConfig>(appConfig)
 {
     [ObservableProperty]
-    private List<SimpleFileInfo> deletingJpgFiles;
+    private List<TwinFileInfo> deletingFiles;
 
     protected override Task OnInitializedAsync()
     {
-        DeletingJpgFiles = Service.DeletingJpgFiles;
+        DeletingFiles = Service.DeletingFiles;
         return base.OnInitializedAsync();
     }
 
     protected override void OnReset()
     {
-        DeletingJpgFiles = null;
+        DeletingFiles = null;
     }
 }

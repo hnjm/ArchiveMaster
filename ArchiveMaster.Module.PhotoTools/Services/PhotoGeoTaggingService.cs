@@ -29,10 +29,6 @@ namespace ArchiveMaster.Services
 
         public override async Task InitializeAsync(CancellationToken token = default)
         {
-            // 准备照片扩展名正则表达式
-            var rPhotos = new Regex($"\\.({string.Join('|', Config.PhotoExtensions)})$",
-                RegexOptions.IgnoreCase);
-
             NotifyProgressIndeterminate();
 
             List<GpsFileInfo> files = null;
@@ -98,11 +94,6 @@ namespace ArchiveMaster.Services
             {
                 NotifyMessage($"正在处理照片 {state.GetFileNumberMessage()}");
 
-                if (!rPhotos.IsMatch(file.Name))
-                {
-                    return;
-                }
-
                 results.Add(file);
 
                 // 5.1 获取照片Exif时间
@@ -142,7 +133,7 @@ namespace ArchiveMaster.Services
                 file.IsChecked = file.CanCheck = file.IsMatched;
             }
 
-            Files = files;
+            Files = results;
         }
 
         /// <summary>

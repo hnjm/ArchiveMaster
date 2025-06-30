@@ -31,9 +31,13 @@ namespace ArchiveMaster.Views;
 
 public class TreeFileDataGrid : SimpleFileDataGrid
 {
-    public static readonly StyledProperty<bool> DoubleTappedToOpenFileProperty =
+    public static readonly StyledProperty<bool> IsDirCheckBoxVisibleProperty =
         AvaloniaProperty.Register<TreeFileDataGrid, bool>(
-            nameof(DoubleTappedToOpenFile), true);
+            nameof(IsDirCheckBoxVisible), false);
+
+    public static readonly StyledProperty<bool> IsFileCheckBoxVisibleProperty =
+        AvaloniaProperty.Register<TreeFileDataGrid, bool>(
+            nameof(IsFileCheckBoxVisible), true);
 
     public static readonly StyledProperty<int> RootDepthProperty
         = AvaloniaProperty.Register<TreeFileDataGrid, int>(nameof(RootDepth), 1);
@@ -50,8 +54,10 @@ public class TreeFileDataGrid : SimpleFileDataGrid
         AvaloniaProperty.Register<TreeFileDataGrid, string>(
             nameof(SearchText));
 
-    protected static readonly TreeFileDirLengthConverter TreeFileDirLengthConverter = new TreeFileDirLengthConverter();
+    protected static readonly TreeFileCheckBoxVisibleConverter TreeFileCheckBoxVisibleConverter =
+        new TreeFileCheckBoxVisibleConverter();
 
+    protected static readonly TreeFileDirLengthConverter TreeFileDirLengthConverter = new TreeFileDirLengthConverter();
     public TreeFileDataGrid()
     {
         DoubleTapped += DataGridDoubleTapped;
@@ -59,10 +65,16 @@ public class TreeFileDataGrid : SimpleFileDataGrid
 
     public override double ColumnPathIndex => -1;
 
-    public bool DoubleTappedToOpenFile
+    public bool IsDirCheckBoxVisible
     {
-        get => GetValue(DoubleTappedToOpenFileProperty);
-        set => SetValue(DoubleTappedToOpenFileProperty, value);
+        get => GetValue(IsDirCheckBoxVisibleProperty);
+        set => SetValue(IsDirCheckBoxVisibleProperty, value);
+    }
+
+    public bool IsFileCheckBoxVisible
+    {
+        get => GetValue(IsFileCheckBoxVisibleProperty);
+        set => SetValue(IsFileCheckBoxVisibleProperty, value);
     }
 
     public int RootDepth
@@ -154,16 +166,20 @@ public class TreeFileDataGrid : SimpleFileDataGrid
             {
                 HorizontalAlignment = HorizontalAlignment.Center,
                 [!ToggleButton.IsCheckedProperty] = new Binding(nameof(SimpleFileInfo.IsChecked)),
-                [!IsVisibleProperty] = new Binding(nameof(SimpleFileInfo.IsDir))
-                    { Converter = InverseBoolConverter },
+                [!IsVisibleProperty] = new Binding(".")
+                {
+                    Converter = TreeFileCheckBoxVisibleConverter,
+                    ConverterParameter = this,
+                },
                 [!IsEnabledProperty] = new Binding("DataContext.IsWorking") //执行命令时，这CheckBox不可以Enable
-                    { Source = rootPanel, Converter = InverseBoolConverter },
+                { Source = rootPanel, Converter = InverseBoolConverter },
             };
         });
 
         column.CellTemplate = cellTemplate;
         return column;
     }
+
     protected override DataGridColumn GetLengthColumn()
     {
         return new DataGridTextColumn()
@@ -171,7 +187,7 @@ public class TreeFileDataGrid : SimpleFileDataGrid
             Header = ColumnLengthHeader,
             Binding = new Binding()
             {
-                Converter = TreeFileDirLengthConverter, 
+                Converter = TreeFileDirLengthConverter,
                 ConverterParameter = TreeFileDirLengthFormat,
                 Mode = BindingMode.OneWay
             },
@@ -268,6 +284,11 @@ public class TreeFileDataGrid : SimpleFileDataGrid
         return column;
     }
 
+    protected override void OnFileDoubleTapped(SimpleFileInfo file)
+    {
+
+    }
+
     private void Collapse(TreeDirInfo dir)
     {
         if (dir.IsExpanded == false)
@@ -330,7 +351,6 @@ public class TreeFileDataGrid : SimpleFileDataGrid
             }
         }
     }
-
     private void Expand(TreeDirInfo dir)
     {
         if (dir.IsExpanded == true)

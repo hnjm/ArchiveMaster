@@ -371,7 +371,7 @@ namespace ArchiveMaster.Services
             }
             else
             {
-                await FileIOHelper.CopyFileAsync(source, destination, progress: progress,
+                await FileCopyHelper.CopyFileAsync(source, destination, progress: progress,
                     cancellationToken: cancellationToken);
             }
 
@@ -419,7 +419,10 @@ namespace ArchiveMaster.Services
                     {
                         File.Move(filePath, GetNoDuplicateFile(target));
                     }
-
+                    break;
+                
+                case DeleteMode.RecycleBinPrefer:
+                    FileDeleteHelper.DeleteByConfig(filePath);
                     break;
                 default:
                     throw new InvalidEnumArgumentException();

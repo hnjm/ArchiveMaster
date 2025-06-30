@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -88,6 +89,11 @@ public static class Initializer
         builder.Services.AddTransient<MainWindow>();
         builder.Services.AddTransient<MainView>();
         builder.Services.AddTransient<MainViewModel>();
+        builder.Services.AddTransient<SettingViewModel>();
+        builder.Services.AddTransient(s => new SettingDialog()
+        {
+            DataContext = s.GetRequiredService<SettingViewModel>()
+        });
         builder.Services.AddHostedService<AppLifetime>();
         builder.Services.TryAddStartupManager();
         ServiceInitializing?.Invoke(null, new ServiceInitializingEventArgs(builder.Services));
