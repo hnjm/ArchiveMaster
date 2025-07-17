@@ -203,14 +203,14 @@ namespace ArchiveMaster.Services
                 using (MagickImage image = new MagickImage(file.Path))
                 {
                     bool portrait = image.Height > image.Width;
-                    int width = portrait ? image.Height : image.Width;
-                    int height = portrait ? image.Width : image.Height;
+                    uint width = portrait ? image.Height : image.Width;
+                    uint height = portrait ? image.Width : image.Height;
                     if (width > Config.MaxLongSize || height > Config.MaxShortSize)
                     {
                         double ratio = width > Config.MaxLongSize ? 1.0 * Config.MaxLongSize / width : 1;
                         ratio = Math.Min(ratio, height > Config.MaxShortSize ? 1.0 * Config.MaxShortSize / height : 1);
-                        width = (int)(width * ratio);
-                        height = (int)(height * ratio);
+                        width = (uint)(width * ratio);
+                        height = (uint)(height * ratio);
                         if (portrait)
                         {
                             (width, height) = (height, width);
@@ -219,7 +219,7 @@ namespace ArchiveMaster.Services
                         image.AdaptiveResize(width, height);
                     }
 
-                    image.Quality = Config.Quality;
+                    image.Quality = (uint)Config.Quality;
                     image.Write(distPath);
                 }
 

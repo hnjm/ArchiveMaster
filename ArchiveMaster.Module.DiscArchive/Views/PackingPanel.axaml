@@ -137,7 +137,7 @@
                                         <TextBlock
                                             Grid.Column="4"
                                             VerticalAlignment="Center"
-                                            Text="{Binding TotalLength, Converter={StaticResource FileLength2StringConverter}}" />
+                                            Text="{Binding TotalLength, Converter={StaticResource FileLengthConverter}}" />
 
                                     </Grid>
 

@@ -3,6 +3,7 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:c="using:ArchiveMaster.Converters"
+    xmlns:cf="using:FzLib.Avalonia.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:l="using:Microsoft.Extensions.Logging"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -12,12 +13,17 @@
     d:DesignHeight="450"
     d:DesignWidth="800"
     mc:Ignorable="d">
+    <UserControl.Resources>
+        <cf:ValueMappingConverter
+            x:Key="LogMapConverter"
+            Map="{me:StringToDictionary Trace:细节;Debug:调试;Information:信息;Warning:警告;Error:错误;Critical:关键;None:全部}" />
+    </UserControl.Resources>
     <Grid RowDefinitions="Auto,8,*">
         <Grid ColumnDefinitions="Auto,8,Auto,32,Auto,8,Auto,8,Auto,8,Auto,32,*,8,Auto,0,Auto">
             <TextBlock Text="类型：" />
             <ComboBox
                 Grid.Column="2"
-                DisplayMemberBinding="{Binding ., Converter={StaticResource StringReplaceConverter}, ConverterParameter='Trace:细节;Debug:调试;Information:信息;Warning:警告;Error:错误;Critical:关键;None:全部'}"
+                DisplayMemberBinding="{Binding ., Converter={StaticResource LogMapConverter}}"
                 ItemsSource="{me:EnumValues l:LogLevel}"
                 SelectedItem="{Binding LogType}" />
 

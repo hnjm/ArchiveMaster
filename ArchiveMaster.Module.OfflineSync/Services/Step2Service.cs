@@ -328,7 +328,7 @@ namespace ArchiveMaster.Services
                             };
                             if ((offsiteFile.Time - file.LastWriteTime).TotalSeconds > Config.MaxTimeToleranceSecond)
                             {
-                                newFile.Warn("异地文件时间晚于本地文件时间");
+                                newFile.Warn($"异地文件时间（{offsiteFile.Time}）晚于本地文件时间");
                             }
 
                             UpdateFiles.Add(newFile);

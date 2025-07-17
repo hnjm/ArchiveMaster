@@ -158,11 +158,11 @@
             <Run Text="共新增文件" />
             <Run Text="{Binding AddedFileCount, Mode=OneWay}" />
             <Run Text="个（" />
-            <Run Text="{Binding AddedFileLength, Mode=OneWay, Converter={StaticResource FileLength2StringConverter}}" />
+            <Run Text="{Binding AddedFileLength, Mode=OneWay, Converter={StaticResource FileLengthConverter}}" />
             <Run Text="），修改文件" />
             <Run Text="{Binding ModifiedFileCount, Mode=OneWay}" />
             <Run Text="个（" />
-            <Run Text="{Binding ModifiedFileLength, Mode=OneWay, Converter={StaticResource FileLength2StringConverter}}" />
+            <Run Text="{Binding ModifiedFileLength, Mode=OneWay, Converter={StaticResource FileLengthConverter}}" />
             <Run Text="），移动文件" />
             <Run Text="{Binding MovedFileCount, Mode=OneWay}" />
             <Run Text="个，删除文件" />

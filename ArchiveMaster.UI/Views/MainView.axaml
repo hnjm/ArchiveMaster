@@ -88,7 +88,7 @@
                                             Padding="4"
                                             HorizontalAlignment="Left"
                                             Background="Transparent"
-                                            IsVisible="{Binding MenuItems, Converter={StaticResource CountMoreThanZeroConverter}}">
+                                            IsVisible="{Binding MenuItems, Converter={StaticResource CountGreaterThan0Converter}}">
                                             <TextBlock
                                                 FontFamily="{StaticResource IconFont}"
                                                 FontSize="16"

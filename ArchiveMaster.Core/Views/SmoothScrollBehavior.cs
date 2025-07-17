@@ -60,6 +60,7 @@ public class SmoothScrollBehavior : AvaloniaObject
         else
         {
             // DataGrid、ListBox、TextBox… 模板里都带 ScrollViewer
+            // ​​引用 System.Reactive 并使用扩展方法，自动将Lambda转IObservable<>
             ctrl.GetObservable(Visual.IsVisibleProperty).Subscribe(_ =>
             {
                 var inner = ctrl.FindDescendantOfType<ScrollViewer>();

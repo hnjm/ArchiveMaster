@@ -53,7 +53,7 @@
             <ctrl:FormItem Label="回收站目录名:">
                 <ctrl:FormItem.IsVisible>
                     <Binding
-                        Converter="{StaticResource EqualConverter}"
+                        Converter="{StaticResource Equal2BoolConverter}"
                         Path="Config.DeleteMode">
                         <Binding.ConverterParameter>
                             <enums:DeleteMode>MoveToDeletedFolder</enums:DeleteMode>

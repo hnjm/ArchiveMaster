@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Nullable>disable</Nullable>
     <AppVersion>2.1.0</AppVersion>
-    <AvaloniaVersion>11.2.5</AvaloniaVersion>
+    <AvaloniaVersion>11.3.2</AvaloniaVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -22,7 +22,7 @@
     <PackageReference Include="Avalonia"/>
     <PackageReference Include="Avalonia.Controls.DataGrid"/>
     <PackageReference Include="Avalonia.Themes.Fluent"/>
-    <PackageReference Include="Avalonia.Xaml.Behaviors"/>
+    <PackageReference Include="Xaml.Behaviors.Avalonia"/>
     <PackageReference Include="BinToss.GroupBox.Avalonia"/>
     <PackageReference Include="CommunityToolkit.Mvvm"/>
     <PackageReference Include="Serilog"/>

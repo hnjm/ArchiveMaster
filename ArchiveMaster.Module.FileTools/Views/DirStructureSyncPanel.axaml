@@ -54,7 +54,7 @@
                     <SelectableTextBlock
                         Grid.Row="6"
                         Grid.Column="2"
-                        Text="{Binding Template.Length, Converter={StaticResource FileLength2StringConverter}}" />
+                        Text="{Binding Template.Length, Converter={StaticResource FileLengthConverter}}" />
 
                     <TextBlock
                         Grid.Row="8"
@@ -96,7 +96,7 @@
                     <SelectableTextBlock
                         Grid.Row="6"
                         Grid.Column="2"
-                        Text="{Binding Length, Mode=OneWay, Converter={StaticResource FileLength2StringConverter}}" />
+                        Text="{Binding Length, Mode=OneWay, Converter={StaticResource FileLengthConverter}}" />
 
                     <TextBlock
                         Grid.Row="8"

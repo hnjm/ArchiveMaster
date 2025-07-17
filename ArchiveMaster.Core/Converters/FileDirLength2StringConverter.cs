@@ -11,7 +11,7 @@ public class FileDirLength2StringConverter : IValueConverter
 
     public static string Convert(long length)
     {
-        return NumberConverter.ByteToFitString(length, 2, " B", " KB", " MB", " GB", " TB");
+        return NumberConverter.ByteToFitString(length, [" B", " KB", " MB", " GB", " TB"], 2);
     }
 
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)

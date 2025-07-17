@@ -40,7 +40,7 @@ public class TreeFileDirLengthConverter : IValueConverter
                 .Replace("{L}", FileDirLength2StringConverter.Convert(dir.Length));
         }
 
-        return NumberConverter.ByteToFitString(fileOrDir.Length, 2, " B", " KB", " MB", " GB", " TB");
+        return NumberConverter.ByteToFitString(fileOrDir.Length, [" B", " KB", " MB", " GB", " TB"], 2);
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
