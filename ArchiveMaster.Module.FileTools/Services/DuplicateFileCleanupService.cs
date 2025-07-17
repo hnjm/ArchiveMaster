@@ -64,6 +64,11 @@ namespace ArchiveMaster.Services
             }, token);
         }
 
+        public override IEnumerable<SimpleFileInfo> GetInitializedFiles()
+        {
+            return DuplicateGroups.Flatten();
+        }
+
         public override Task InitializeAsync(CancellationToken token)
         {
             List<DuplicateFileInfo> files = new List<DuplicateFileInfo>();

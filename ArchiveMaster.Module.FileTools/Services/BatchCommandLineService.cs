@@ -24,6 +24,10 @@ namespace ArchiveMaster.Services
 
         public List<BatchCommandLineFileInfo> Files { get; set; }
 
+        public override IEnumerable<SimpleFileInfo> GetInitializedFiles()
+        {
+            return Files.Cast<SimpleFileInfo>();
+        }
         public override Task ExecuteAsync(CancellationToken token)
         {
             return TryForFilesAsync(Files.CheckedOnly().ToList(), async (file, s) =>

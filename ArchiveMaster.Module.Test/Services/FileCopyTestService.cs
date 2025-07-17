@@ -9,6 +9,8 @@ namespace ArchiveMaster.Services
 {
     public class FileCopyTestService(AppConfig appConfig) : TwoStepServiceBase<FileCopyTestConfig>(appConfig)
     {
+        public List<CopyingFile> Files { get; private set; }
+
         public override Task ExecuteAsync(CancellationToken token = default)
         {
             var files = Files.Where(p => p.IsChecked).ToList();
@@ -37,7 +39,10 @@ namespace ArchiveMaster.Services
                 token, FilesLoopOptions.Builder().AutoApplyFileLengthProgress().AutoApplyStatus().Build());
         }
 
-        public List<CopyingFile> Files { get; private set; }
+        public override IEnumerable<SimpleFileInfo> GetInitializedFiles()
+        {
+            return Files.Cast<SimpleFileInfo>();
+        }
 
         public override async Task InitializeAsync(CancellationToken token = default)
         {

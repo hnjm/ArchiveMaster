@@ -9,6 +9,10 @@ public class LinkDeduplicationService(AppConfig appConfig)
 {
     public TreeDirInfo TreeRoot { get; private set; }
 
+    public override IEnumerable<SimpleFileInfo> GetInitializedFiles()
+    {
+        return TreeRoot.Flatten();
+    }
     public override async Task ExecuteAsync(CancellationToken token)
     {
         await Task.Run(() =>

@@ -206,6 +206,10 @@ namespace ArchiveMaster.Services
             }, token);
         }
 
+        public override IEnumerable<SimpleFileInfo> GetInitializedFiles()
+        {
+            return UpdateFiles.Cast<SimpleFileInfo>();
+        }
         public override async Task InitializeAsync(CancellationToken token = default)
         {
             var patchFile = Path.Combine(Config.PatchDir, "file.os2");

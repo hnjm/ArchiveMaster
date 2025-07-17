@@ -5,9 +5,11 @@
     xmlns:c="clr-namespace:ArchiveMaster.Converters"
     xmlns:ctrl="clr-namespace:FzLib.Avalonia.Controls;assembly=FzLib.Avalonia"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:e="using:ArchiveMaster.Enums"
     xmlns:enums="clr-namespace:ArchiveMaster.Enums"
     xmlns:gb="clr-namespace:GroupBox.Avalonia.Controls;assembly=GroupBox.Avalonia"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:me="using:FzLib.Avalonia.MarkupExtensions"
     xmlns:sys="clr-namespace:System;assembly=mscorlib"
     xmlns:ui="http://schemas.modernwpf.com/2019"
     xmlns:v="using:ArchiveMaster.Views"
@@ -88,7 +90,7 @@
                         <ctrl:FormItem Label="导出方式：">
                             <ComboBox
                                 Width="128"
-                                ItemsSource="{Binding ExportModes}"
+                                ItemsSource="{me:EnumValues e:ExportMode}"
                                 SelectedItem="{Binding Config.ExportMode}">
                                 <ComboBox.ItemTemplate>
                                     <DataTemplate>

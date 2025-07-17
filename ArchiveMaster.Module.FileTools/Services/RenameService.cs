@@ -71,6 +71,10 @@ public class RenameService(AppConfig appConfig)
         }, token, FilesLoopOptions.Builder().AutoApplyStatus().AutoApplyFileNumberProgress().Build());
     }
 
+    public override IEnumerable<SimpleFileInfo> GetInitializedFiles()
+    {
+        return Files.Cast<RenameFileInfo>();
+    }
     public override async Task InitializeAsync(CancellationToken token = default)
     {
         regexOptions = Config.IgnoreCase ? RegexOptions.IgnoreCase : RegexOptions.None;
@@ -115,6 +119,72 @@ public class RenameService(AppConfig appConfig)
 
             Files = renameFiles.AsReadOnly();
         }, token);
+    }
+
+    private Regex GetRegex(string pattern)
+    {
+        if (regexes.TryGetValue(pattern, out Regex r))
+        {
+            return r;
+        }
+
+        r = new Regex(pattern, regexOptions);
+        regexes.Add(pattern, r);
+        return r;
+    }
+
+    private bool IsMatched(RenameFileInfo file)
+    {
+        string name = Config.SearchPath ? file.Path : file.Name;
+
+        return Config.SearchMode switch
+        {
+            SearchMode.Contain => name.Contains(Config.SearchPattern, stringComparison),
+            SearchMode.EqualWithExtension => Path.GetExtension(name).Equals(Config.SearchPattern, stringComparison),
+            SearchMode.EqualWithName => Path.GetFileNameWithoutExtension(name)
+                .Equals(Config.SearchPattern, stringComparison),
+            SearchMode.Equal => name.Equals(Config.SearchPattern, stringComparison),
+            SearchMode.Regex => GetRegex(Config.SearchPattern).IsMatch(name),
+            _ => throw new ArgumentOutOfRangeException()
+        };
+    }
+
+    private async Task<List<RenameFileInfo>> ProcessAutoAsync(HashSet<string> usedPaths)
+    {
+        FilePlaceholderReplacer placeholderReplacer = new FilePlaceholderReplacer(Config.ReplacePattern ?? "");
+
+        // 获取所有待处理文件
+        IEnumerable<FileSystemInfo> files = new DirectoryInfo(Config.Dir)
+            .EnumerateFileSystemInfos("*", FileEnumerateExtension.GetEnumerationOptions(Config.IncludeSubDirs));
+        List<RenameFileInfo> renameFiles = new List<RenameFileInfo>();
+
+
+        foreach (var file in files)
+        {
+            if (file is FileInfo && Config.RenameTarget == RenameTargetType.Folder ||
+                file is DirectoryInfo && Config.RenameTarget == RenameTargetType.File)
+            {
+                usedPaths.Add(file.FullName);
+                continue;
+            }
+
+            var renameFile = new RenameFileInfo(file, Config.Dir);
+            renameFile.IsMatched = IsMatched(renameFile);
+
+            if (renameFile.IsMatched)
+            {
+                string originalNewName = await RenameAsync(placeholderReplacer, renameFile);
+                renameFile.NewName = originalNewName; // 临时存储原始目标名称
+            }
+            else
+            {
+                usedPaths.Add(file.FullName);
+            }
+
+            renameFiles.Add(renameFile);
+        }
+
+        return renameFiles;
     }
 
     private async Task<List<RenameFileInfo>> ProcessManualAsync(HashSet<string> usedPaths)
@@ -187,73 +257,6 @@ public class RenameService(AppConfig appConfig)
 
         return renameFiles;
     }
-    
-    private async Task<List<RenameFileInfo>> ProcessAutoAsync(HashSet<string> usedPaths)
-    {
-        FilePlaceholderReplacer placeholderReplacer = new FilePlaceholderReplacer(Config.ReplacePattern ?? "");
-
-        // 获取所有待处理文件
-        IEnumerable<FileSystemInfo> files=new DirectoryInfo(Config.Dir)
-            .EnumerateFileSystemInfos("*", FileEnumerateExtension.GetEnumerationOptions(Config.IncludeSubDirs));
-        List<RenameFileInfo> renameFiles = new List<RenameFileInfo>();
-
-
-        foreach (var file in files)
-        {
-            if (file is FileInfo && Config.RenameTarget == RenameTargetType.Folder ||
-                file is DirectoryInfo && Config.RenameTarget == RenameTargetType.File)
-            {
-                usedPaths.Add(file.FullName);
-                continue;
-            }
-            
-            var renameFile = new RenameFileInfo(file, Config.Dir);
-            renameFile.IsMatched = IsMatched(renameFile);
-
-            if (renameFile.IsMatched)
-            {
-                string originalNewName = await RenameAsync(placeholderReplacer, renameFile);
-                renameFile.NewName = originalNewName; // 临时存储原始目标名称
-            }
-            else
-            {
-                usedPaths.Add(file.FullName);
-            }
-
-            renameFiles.Add(renameFile);
-        }
-
-        return renameFiles;
-    }
-
-    private Regex GetRegex(string pattern)
-    {
-        if (regexes.TryGetValue(pattern, out Regex r))
-        {
-            return r;
-        }
-
-        r = new Regex(pattern, regexOptions);
-        regexes.Add(pattern, r);
-        return r;
-    }
-
-    private bool IsMatched(RenameFileInfo file)
-    {
-        string name = Config.SearchPath ? file.Path : file.Name;
-
-        return Config.SearchMode switch
-        {
-            SearchMode.Contain => name.Contains(Config.SearchPattern, stringComparison),
-            SearchMode.EqualWithExtension => Path.GetExtension(name).Equals(Config.SearchPattern, stringComparison),
-            SearchMode.EqualWithName => Path.GetFileNameWithoutExtension(name)
-                .Equals(Config.SearchPattern, stringComparison),
-            SearchMode.Equal => name.Equals(Config.SearchPattern, stringComparison),
-            SearchMode.Regex => GetRegex(Config.SearchPattern).IsMatch(name),
-            _ => throw new ArgumentOutOfRangeException()
-        };
-    }
-
     private async Task<string> RenameAsync(FilePlaceholderReplacer replacer, RenameFileInfo file)
     {
         string name = file.Name;

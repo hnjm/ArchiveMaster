@@ -18,8 +18,6 @@ namespace ArchiveMaster.ViewModels
     public partial class Step2ViewModel(AppConfig appConfig)
         : OfflineSyncViewModelBase<Step2Service, OfflineSyncStep2Config, FileSystem.SyncFileInfo>(appConfig)
     {
-        public IEnumerable ExportModes => Enum.GetValues<ExportMode>();
-
         [RelayCommand]
         private async Task BrowseLocalDirAsync()
         {

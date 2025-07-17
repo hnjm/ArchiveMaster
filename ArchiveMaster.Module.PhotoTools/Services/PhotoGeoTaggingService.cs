@@ -8,6 +8,52 @@ namespace ArchiveMaster.Services
 {
     public class PhotoGeoTaggingService(AppConfig appConfig) : TwoStepServiceBase<PhotoGeoTaggingConfig>(appConfig)
     {
+        public List<GpsFileInfo> Files { get; private set; }
+
+        /// <summary>
+        /// 独立GPX解析方法
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
+        public static List<(double lat, double lon, DateTime time)> ParseGpx(string filePath)
+        {
+            var doc = XDocument.Load(filePath);
+
+            // 尝试带命名空间查找 <trk>
+            XNamespace ns = "http://www.topografix.com/GPX/1/0";
+            var trk = doc.Root.Element(ns + "trk") ?? doc.Root.Element("trk"); // 如果带命名空间找不到，再尝试不带命名空间
+
+            if (trk == null) return new List<(double, double, DateTime)>();
+
+            // 查找 <trkseg>（带/不带命名空间）
+            var trksegElements = trk.Elements(ns + "trkseg").Any()
+                ? trk.Elements(ns + "trkseg")
+                : trk.Elements("trkseg");
+
+            return trksegElements
+                .SelectMany(seg =>
+                {
+                    // 查找 <trkpt>（带/不带命名空间）
+                    var trkptElements = seg.Elements(ns + "trkpt").Any()
+                        ? seg.Elements(ns + "trkpt")
+                        : seg.Elements("trkpt");
+
+                    return trkptElements.Select(pt =>
+                    {
+                        // 查找 <time>（带/不带命名空间）
+                        var timeElement = pt.Element(ns + "time") ?? pt.Element("time");
+
+                        return (
+                            lat: (double)pt.Attribute("lat"),
+                            lon: (double)pt.Attribute("lon"),
+                            time: (DateTime)timeElement
+                        );
+                    });
+                })
+                .OrderBy(p => p.time) // 按时间排序
+                .ToList();
+        }
+
         public override Task ExecuteAsync(CancellationToken token = default)
         {
             var files = Files.Where(p => p.IsMatched && p.IsChecked).ToList();
@@ -25,7 +71,11 @@ namespace ArchiveMaster.Services
                 token, FilesLoopOptions.Builder().AutoApplyFileLengthProgress().AutoApplyStatus().Build());
         }
 
-        public List<GpsFileInfo> Files { get; private set; }
+
+        public override IEnumerable<SimpleFileInfo> GetInitializedFiles()
+        {
+            return Files.Cast<SimpleFileInfo>();
+        }
 
         public override async Task InitializeAsync(CancellationToken token = default)
         {
@@ -135,51 +185,6 @@ namespace ArchiveMaster.Services
 
             Files = results;
         }
-
-        /// <summary>
-        /// 独立GPX解析方法
-        /// </summary>
-        /// <param name="filePath"></param>
-        /// <returns></returns>
-        public static List<(double lat, double lon, DateTime time)> ParseGpx(string filePath)
-        {
-            var doc = XDocument.Load(filePath);
-    
-            // 尝试带命名空间查找 <trk>
-            XNamespace ns = "http://www.topografix.com/GPX/1/0";
-            var trk = doc.Root.Element(ns + "trk") ?? doc.Root.Element("trk"); // 如果带命名空间找不到，再尝试不带命名空间
-
-            if (trk == null) return new List<(double, double, DateTime)>();
-
-            // 查找 <trkseg>（带/不带命名空间）
-            var trksegElements = trk.Elements(ns + "trkseg").Any() 
-                ? trk.Elements(ns + "trkseg") 
-                : trk.Elements("trkseg");
-
-            return trksegElements
-                .SelectMany(seg => 
-                {
-                    // 查找 <trkpt>（带/不带命名空间）
-                    var trkptElements = seg.Elements(ns + "trkpt").Any() 
-                        ? seg.Elements(ns + "trkpt") 
-                        : seg.Elements("trkpt");
-
-                    return trkptElements.Select(pt => 
-                    {
-                        // 查找 <time>（带/不带命名空间）
-                        var timeElement = pt.Element(ns + "time") ?? pt.Element("time");
-                
-                        return (
-                            lat: (double)pt.Attribute("lat"),
-                            lon: (double)pt.Attribute("lon"),
-                            time: (DateTime)timeElement
-                        );
-                    });
-                })
-                .OrderBy(p => p.time) // 按时间排序
-                .ToList();
-        }
-
         /// <summary>
         /// 双指针查找最近点
         /// </summary>

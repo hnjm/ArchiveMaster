@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using ArchiveMaster.Enums;
 using ArchiveMaster.Helpers;
 using EncryptorFileInfo = ArchiveMaster.ViewModels.FileSystem.EncryptorFileInfo;
+using ArchiveMaster.ViewModels.FileSystem;
 
 namespace ArchiveMaster.Services
 {
@@ -27,6 +28,11 @@ namespace ArchiveMaster.Services
         public int BufferSize { get; set; } = 1024 * 1024;
 
         public List<EncryptorFileInfo> ProcessingFiles { get; set; }
+
+        public override IEnumerable<SimpleFileInfo> GetInitializedFiles()
+        {
+            return ProcessingFiles.Cast<SimpleFileInfo>();
+        }
 
         public override async Task ExecuteAsync(CancellationToken token)
         {

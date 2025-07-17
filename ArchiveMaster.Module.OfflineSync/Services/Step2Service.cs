@@ -25,10 +25,10 @@ namespace ArchiveMaster.Services
         public const string EncryptionFileSuffix = "_enc";
         private Aes aes;
         public Dictionary<string, List<string>> LocalDirectories { get; } = new Dictionary<string, List<string>>();
+
         public List<SyncFileInfo> UpdateFiles { get; } = new List<SyncFileInfo>();
 
-        public static async Task<IList<LocalAndOffsiteDir>> MatchLocalAndOffsiteDirsAsync(string snapshotPath,
-            string[] localSearchingDirs)
+        public static async Task<IList<LocalAndOffsiteDir>> MatchLocalAndOffsiteDirsAsync(string snapshotPath, string[] localSearchingDirs)
         {
             List<LocalAndOffsiteDir> matchingDirs = null;
             await Task.Run(() =>
@@ -123,7 +123,7 @@ namespace ArchiveMaster.Services
 
                             break;
                         case ExportMode.Copy:
-                            copy:
+                        copy:
                             int tryCount = 10;
 
                             Progress<FileCopyProgress> progress = new Progress<FileCopyProgress>(p =>
@@ -193,6 +193,10 @@ namespace ArchiveMaster.Services
             }, token);
         }
 
+        public override IEnumerable<SimpleFileInfo> GetInitializedFiles()
+        {
+            return UpdateFiles.Cast<SimpleFileInfo>();
+        }
         public override async Task InitializeAsync(CancellationToken token = default)
         {
             UpdateFiles.Clear();
@@ -479,7 +483,7 @@ namespace ArchiveMaster.Services
         {
             if (Config.EnableEncryption)
             {
-              await  aes.EncryptFileAsync(source, destination, progress: progress, cancellationToken: cancellationToken);
+                await aes.EncryptFileAsync(source, destination, progress: progress, cancellationToken: cancellationToken);
                 File.SetLastWriteTimeUtc(destination, File.GetLastWriteTimeUtc(source));
             }
             else

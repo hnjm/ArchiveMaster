@@ -7,6 +7,7 @@ using System.Text;
 using ArchiveMaster.Configs;
 using ArchiveMaster.Services;
 using SyncFileInfo = ArchiveMaster.ViewModels.FileSystem.SyncFileInfo;
+using ArchiveMaster.ViewModels.FileSystem;
 
 namespace ArchiveMaster.Services
 {
@@ -53,6 +54,10 @@ namespace ArchiveMaster.Services
             }, token);
         }
 
+        public override IEnumerable<SimpleFileInfo> GetInitializedFiles()
+        {
+            return null;
+        }
         public override Task InitializeAsync(CancellationToken token = default)
         {
             throw new NotImplementedException();

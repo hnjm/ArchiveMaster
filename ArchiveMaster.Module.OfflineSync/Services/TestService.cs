@@ -7,6 +7,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using ArchiveMaster.Configs;
@@ -91,7 +92,7 @@ namespace ArchiveMaster.Services
                 await u2.InitializeAsync();
 
                 Check(u2.UpdateFiles != null);
-                Check(u2.UpdateFiles.Count == Count * 8);
+                Check(u2.UpdateFiles.Count == Count * 10);
                 Check(!u2.UpdateFiles.Any(p => p.Name.Contains('黑')));
                 Check(u2.UpdateFiles.Where(p => p.Name.Contains("新建"))
                     .All(p => p.UpdateType == FileUpdateType.Add));
@@ -104,7 +105,7 @@ namespace ArchiveMaster.Services
                 Check(u2.UpdateFiles.Where(p => p.Name.Contains("移动")).Count() == Count * 2);
                 Check(u2.UpdateFiles.Where(p => p.Name.Contains("修改"))
                     .All(p => p.UpdateType == FileUpdateType.Modify));
-                Check(u2.UpdateFiles.Where(p => p.Name.Contains("修改")).Count() == Count * 2);
+                Check(u2.UpdateFiles.Where(p => p.Name.Contains("修改的文件")).Count() == Count * 2);
 
                 await u2.ExecuteAsync();
 
@@ -161,11 +162,11 @@ namespace ArchiveMaster.Services
             }
         }
 
-        private static void Check(bool b)
+        private static void Check(bool b, [CallerLineNumber] int lineNumber = 0)
         {
             if (!b)
             {
-                throw new Exception();
+                throw new Exception($"测试代码第{lineNumber}行发生错误");
             }
         }
 
@@ -173,7 +174,7 @@ namespace ArchiveMaster.Services
         {
             using (FileStream file = File.Create(path))
             {
-                byte[] buffer = new byte[1024 * 1024 * 32 + random.Next(0, 31)];
+                byte[] buffer = new byte[1024 * 1024 * 4 + random.Next(0, 31)];
                 for (int i = 0; i < buffer.Length; i++)
                 {
                     // 生成32-126范围内的随机ASCII可见字符
@@ -225,6 +226,12 @@ namespace ArchiveMaster.Services
                 fileName = Path.Combine(remoteDir.FullName, $"修改的文件{i}");
                 CreateRandomFile(fileName);
                 File.SetLastWriteTime(fileName, now.AddDays(-1));
+
+                fileName = Path.Combine(localDir.FullName, $"修改但时间错误的文件{i}");
+                CreateRandomFile(fileName);
+                File.SetLastWriteTime(fileName, now.AddDays(-1));
+                fileName = Path.Combine(remoteDir.FullName, $"修改但时间错误的文件{i}");
+                CreateRandomFile(fileName);
 
                 fileName = Path.Combine(localMovedDir.FullName, $"移动的文件{i}");
                 CreateRandomFile(fileName);

@@ -28,6 +28,10 @@ namespace ArchiveMaster.Services
             }, token, FilesLoopOptions.Builder().AutoApplyStatus().AutoApplyFileNumberProgress().Build());
         }
 
+        public override IEnumerable<SimpleFileInfo> GetInitializedFiles()
+        {
+            return DeletingFiles.Cast<SimpleFileInfo>();
+        }
         public override async Task InitializeAsync(CancellationToken token)
         {
             DeletingFiles = new List<TwinFileInfo>();

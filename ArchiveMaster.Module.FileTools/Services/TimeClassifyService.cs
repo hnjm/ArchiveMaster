@@ -43,6 +43,10 @@ namespace ArchiveMaster.Services
             }, token, FilesLoopOptions.Builder().AutoApplyStatus().AutoApplyFileNumberProgress().Build());
         }
 
+        public override IEnumerable<SimpleFileInfo> GetInitializedFiles()
+        {
+            return TargetDirs.Cast<SimpleFileInfo>();
+        }
         public override async Task InitializeAsync(CancellationToken token)
         {
             List<SimpleFileInfo> files = null;

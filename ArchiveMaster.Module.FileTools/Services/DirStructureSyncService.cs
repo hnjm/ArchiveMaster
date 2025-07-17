@@ -19,12 +19,56 @@ namespace ArchiveMaster.Services
     public class DirStructureSyncService(AppConfig appConfig)
         : TwoStepServiceBase<DirStructureSyncConfig>(appConfig)
     {
-        public IList<MatchingFileInfo> ExecutingFiles { get; set; }
         private readonly Dictionary<long, object> length2Template = new Dictionary<long, object>();
         private readonly Dictionary<DateTime, object> modifiedTime2Template = new Dictionary<DateTime, object>();
         private readonly Dictionary<string, object> name2Template = new Dictionary<string, object>();
+        public IList<MatchingFileInfo> ExecutingFiles { get; set; }
         public List<MatchingFileInfo> RightPositionFiles { get; private set; }
         public List<MatchingFileInfo> WrongPositionFiles { get; private set; }
+
+
+        public override Task ExecuteAsync(CancellationToken token)
+        {
+            if (ExecutingFiles == null)
+            {
+                throw new NullReferenceException($"{nameof(ExecutingFiles)}为空");
+            }
+
+            string copyMoveText = Config.Copy ? "复制" : "移动";
+            IEnumerable<MatchingFileInfo> files = ExecutingFiles;
+
+            if (!Config.Copy)
+            {
+                files = files.Where(p => !p.RightPosition);
+            }
+
+            files = files.ToList();
+
+            return TryForFilesAsync(files, (file, s) =>
+            {
+                NotifyMessage($"正在{copyMoveText}{s.GetFileNumberMessage()}：{file.RelativePath}");
+                string destFile = Path.Combine(Config.TargetDir, file.Template.RelativePath);
+                string destFileDir = Path.GetDirectoryName(destFile);
+                if (!Directory.Exists(destFileDir))
+                {
+                    Directory.CreateDirectory(destFileDir);
+                }
+
+                if (Config.Copy)
+                {
+                    File.Copy(Path.Combine(Config.SourceDir, file.RelativePath), destFile);
+                }
+                else
+                {
+                    File.Move(Path.Combine(Config.SourceDir, file.RelativePath), destFile);
+                }
+            }, token, FilesLoopOptions.Builder().AutoApplyStatus().AutoApplyFileNumberProgress().Build());
+        }
+
+        public override IEnumerable<SimpleFileInfo> GetInitializedFiles()
+        {
+            return WrongPositionFiles.Concat(RightPositionFiles).Cast<SimpleFileInfo>();
+        }
 
         public override async Task InitializeAsync(CancellationToken token)
         {
@@ -224,44 +268,6 @@ namespace ArchiveMaster.Services
                     }
                 }
             }
-        }
-
-        public override Task ExecuteAsync(CancellationToken token)
-        {
-            if (ExecutingFiles == null)
-            {
-                throw new NullReferenceException($"{nameof(ExecutingFiles)}为空");
-            }
-
-            string copyMoveText = Config.Copy ? "复制" : "移动";
-            IEnumerable<MatchingFileInfo> files = ExecutingFiles;
-
-            if (!Config.Copy)
-            {
-                files = files.Where(p => !p.RightPosition);
-            }
-
-            files = files.ToList();
-
-            return TryForFilesAsync(files, (file, s) =>
-            {
-                NotifyMessage($"正在{copyMoveText}{s.GetFileNumberMessage()}：{file.RelativePath}");
-                string destFile = Path.Combine(Config.TargetDir, file.Template.RelativePath);
-                string destFileDir = Path.GetDirectoryName(destFile);
-                if (!Directory.Exists(destFileDir))
-                {
-                    Directory.CreateDirectory(destFileDir);
-                }
-
-                if (Config.Copy)
-                {
-                    File.Copy(Path.Combine(Config.SourceDir, file.RelativePath), destFile);
-                }
-                else
-                {
-                    File.Move(Path.Combine(Config.SourceDir, file.RelativePath), destFile);
-                }
-            }, token, FilesLoopOptions.Builder().AutoApplyStatus().AutoApplyFileNumberProgress().Build());
         }
     }
 }

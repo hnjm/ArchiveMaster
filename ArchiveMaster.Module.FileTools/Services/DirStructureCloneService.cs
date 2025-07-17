@@ -48,25 +48,10 @@ namespace ArchiveMaster.Services
             }, token);
         }
 
-        private void CreateSparseFile(SimpleFileInfo file)
+        public override IEnumerable<SimpleFileInfo> GetInitializedFiles()
         {
-            string newPath = Path.Combine(Config.TargetDir, file.RelativePath);
-            FileInfo newFile = new FileInfo(newPath);
-            if (!newFile.Directory.Exists)
-            {
-                newFile.Directory.Create();
-            }
-
-            using (FileStream fs = File.Create(newPath))
-            {
-                MarkAsSparseFile(fs.SafeFileHandle);
-                fs.SetLength(file.Length);
-                fs.Seek(-1, SeekOrigin.End);
-            }
-
-            File.SetLastWriteTime(newPath, File.GetLastWriteTime(file.Path));
+            return RootDir.Flatten();
         }
-
         public override async Task InitializeAsync(CancellationToken token)
         {
             List<SimpleFileInfo> files = new List<SimpleFileInfo>();
@@ -105,6 +90,25 @@ namespace ArchiveMaster.Services
                     ref lpOverlapped);
             if (result == false)
                 throw new Win32Exception();
+        }
+
+        private void CreateSparseFile(SimpleFileInfo file)
+        {
+            string newPath = Path.Combine(Config.TargetDir, file.RelativePath);
+            FileInfo newFile = new FileInfo(newPath);
+            if (!newFile.Directory.Exists)
+            {
+                newFile.Directory.Create();
+            }
+
+            using (FileStream fs = File.Create(newPath))
+            {
+                MarkAsSparseFile(fs.SafeFileHandle);
+                fs.SetLength(file.Length);
+                fs.Seek(-1, SeekOrigin.End);
+            }
+
+            File.SetLastWriteTime(newPath, File.GetLastWriteTime(file.Path));
         }
     }
 }

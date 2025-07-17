@@ -18,6 +18,10 @@ namespace ArchiveMaster.Services
         /// </summary>
         public DiscFilePackageCollection Packages { get; private set; }
 
+        public override IEnumerable<SimpleFileInfo> GetInitializedFiles()
+        {
+            return null;
+        }
         public override async Task InitializeAsync(CancellationToken token)
         {
             DiscFilePackageCollection packages = new DiscFilePackageCollection();

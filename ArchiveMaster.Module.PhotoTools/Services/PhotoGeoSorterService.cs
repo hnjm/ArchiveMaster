@@ -26,6 +26,11 @@ namespace ArchiveMaster.Services
     {
         public List<GpsFileInfo> Files { get; private set; }
 
+        public override IEnumerable<SimpleFileInfo> GetInitializedFiles()
+        {
+            return Files.Cast<SimpleFileInfo>();
+        }
+
         public override Task ExecuteAsync(CancellationToken token)
         {
             return TryForFilesAsync(Files

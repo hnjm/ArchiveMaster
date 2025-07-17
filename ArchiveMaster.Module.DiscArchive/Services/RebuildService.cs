@@ -11,61 +11,11 @@ namespace ArchiveMaster.Services
 {
     public class RebuildService(AppConfig appConfig) : DiscServiceBase<RebuildConfig>(appConfig)
     {
+        public List<RebuildError> rebuildErrors;
         private Dictionary<string, List<DiscFile>> files;
 
         public FileSystemTree FileTree { get; private set; }
-
-        public List<RebuildError> rebuildErrors;
         public IReadOnlyList<RebuildError> RebuildErrors => rebuildErrors.AsReadOnly();
-
-        public override async Task InitializeAsync(CancellationToken token)
-        {
-            NotifyProgressIndeterminate();
-            NotifyMessage("正在建立文件树");
-            FileSystemTree tree = FileSystemTree.CreateRoot();
-            await Task.Run(() =>
-            {
-                files = ReadFileList(Config.DiscDirs);
-                int count = files.Sum(p => p.Value.Count);
-                int index = 0;
-                foreach (var dir in files.Keys)
-                {
-                    FilesLoopOptions options = FilesLoopOptions.Builder()
-                        .SetCount(index, count)
-                        .AutoApplyFileNumberProgress()
-                        .Build();
-                    var states = TryForFiles(files[dir], (file, s) =>
-                    {
-                        NotifyMessage($"正在列举目录{dir}中的文件：{file.Name}");
-                        string filePath = Path.Combine(dir, file.DiscName);
-                        if (!File.Exists(filePath))
-                        {
-                            throw new FileNotFoundException(filePath);
-                        }
-
-                        var pathParts = file.Path.Split('\\', '/');
-                        var current = tree;
-                        for (int i = 0; i < pathParts.Length - 1; i++)
-                        {
-                            var part = pathParts[i];
-                            if (current.Directories.Any(p => p.Name == part))
-                            {
-                                current = current.Directories.First(p => p.Name == part);
-                            }
-                            else
-                            {
-                                current = current.AddChild(part);
-                            }
-                        }
-
-                        var treeFile = current.AddFile(file.Name);
-                        treeFile.File = file;
-                    }, token, options);
-                    index = states.FileIndex;
-                }
-            }, token);
-            FileTree = tree;
-        }
 
         public override Task ExecuteAsync(CancellationToken token)
         {
@@ -125,6 +75,60 @@ namespace ArchiveMaster.Services
                     currentLength = states.AccumulatedLength;
                 }
             }, token);
+        }
+
+        public override IEnumerable<SimpleFileInfo> GetInitializedFiles()
+        {
+            return null;
+        }
+
+        public override async Task InitializeAsync(CancellationToken token)
+        {
+            NotifyProgressIndeterminate();
+            NotifyMessage("正在建立文件树");
+            FileSystemTree tree = FileSystemTree.CreateRoot();
+            await Task.Run(() =>
+            {
+                files = ReadFileList(Config.DiscDirs);
+                int count = files.Sum(p => p.Value.Count);
+                int index = 0;
+                foreach (var dir in files.Keys)
+                {
+                    FilesLoopOptions options = FilesLoopOptions.Builder()
+                        .SetCount(index, count)
+                        .AutoApplyFileNumberProgress()
+                        .Build();
+                    var states = TryForFiles(files[dir], (file, s) =>
+                    {
+                        NotifyMessage($"正在列举目录{dir}中的文件：{file.Name}");
+                        string filePath = Path.Combine(dir, file.DiscName);
+                        if (!File.Exists(filePath))
+                        {
+                            throw new FileNotFoundException(filePath);
+                        }
+
+                        var pathParts = file.Path.Split('\\', '/');
+                        var current = tree;
+                        for (int i = 0; i < pathParts.Length - 1; i++)
+                        {
+                            var part = pathParts[i];
+                            if (current.Directories.Any(p => p.Name == part))
+                            {
+                                current = current.Directories.First(p => p.Name == part);
+                            }
+                            else
+                            {
+                                current = current.AddChild(part);
+                            }
+                        }
+
+                        var treeFile = current.AddFile(file.Name);
+                        treeFile.File = file;
+                    }, token, options);
+                    index = states.FileIndex;
+                }
+            }, token);
+            FileTree = tree;
         }
     }
 }
