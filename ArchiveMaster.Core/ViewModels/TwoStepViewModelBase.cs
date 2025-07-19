@@ -289,7 +289,7 @@ public abstract partial class TwoStepViewModelBase<TService, TConfig> : MultiPre
             {
                 await this.SendMessage(new CommonDialogMessage()
                 {
-                    Type = CommonDialogMessage.CommonDialogType.Warn,
+                    Type = CommonDialogMessage.CommonDialogType.Ok,
                     Title = "存在警告",
                     Message = "初始化完成，但存在警告或错误文件，请仔细检查",
                 }).Task;
