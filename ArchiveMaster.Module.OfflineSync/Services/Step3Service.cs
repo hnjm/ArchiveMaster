@@ -9,6 +9,7 @@ using ArchiveMaster.Configs;
 using ArchiveMaster.Helpers;
 using ArchiveMaster.Services;
 using ArchiveMaster.ViewModels.FileSystem;
+using FzLib.Cryptography;
 using SyncFileInfo = ArchiveMaster.ViewModels.FileSystem.SyncFileInfo;
 
 namespace ArchiveMaster.Services
@@ -100,7 +101,7 @@ namespace ArchiveMaster.Services
         {
             if (!string.IsNullOrWhiteSpace(Config.Password))
             {
-                aes = Services.AesExtension.GetDefault(Config.Password);
+                aes = AesHelper.GetDefaultAes(Config.Password);
             }
 
             long totalLength = 0;
@@ -210,6 +211,7 @@ namespace ArchiveMaster.Services
         {
             return UpdateFiles.Cast<SimpleFileInfo>();
         }
+
         public override async Task InitializeAsync(CancellationToken token = default)
         {
             var patchFile = Path.Combine(Config.PatchDir, "file.os2");
@@ -358,6 +360,7 @@ namespace ArchiveMaster.Services
                     { Path = p, TopDirectory = topDir }));
             }
         }
+
         private async Task CopyFileAsync(string source, string destination,
             DateTime fileTime,
             Progress<FileProcessProgress> progress,
@@ -423,8 +426,9 @@ namespace ArchiveMaster.Services
                     {
                         File.Move(filePath, GetNoDuplicateFile(target));
                     }
+
                     break;
-                
+
                 case DeleteMode.RecycleBinPrefer:
                     FileHelper.DeleteByConfig(filePath);
                     break;

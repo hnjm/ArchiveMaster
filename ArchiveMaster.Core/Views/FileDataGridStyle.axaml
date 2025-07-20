@@ -338,12 +338,9 @@
                             Margin="0,0,8,0"
                             VerticalAlignment="Center"
                             IsVisible="{Binding $parent[DataGrid].ShowCount}">
-                            <ContentControl.Resources>
-                                <cvt:TreeFileDataGridStatisticsConverter x:Key="TreeFileDataGridStatisticsConverter" />
-                            </ContentControl.Resources>
                             <TextBlock
                                 IsVisible="{Binding $parent[DataGrid].ItemsSource, Converter={x:Static cvt:Converters.IsNotNull}}"
-                                Text="{Binding $parent[DataGrid].ItemsSource, Converter={StaticResource TreeFileDataGridStatisticsConverter}}" />
+                                Text="{Binding $parent[DataGrid].ItemsSource, Converter={x:Static cvt:TreeFileDataGridStatisticsConverter.Instance}}" />
                         </ContentControl>
                         <ContentControl
                             Grid.Column="2"

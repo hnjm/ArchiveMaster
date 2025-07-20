@@ -190,9 +190,9 @@
                                     Margin="16,0"
                                     VerticalAlignment="Center"
                                     FontFamily="{StaticResource IconFont}"
-                                    Foreground="{Binding ., Converter={StaticResource DirStructureSyncTypeDescriptionConverter}, ConverterParameter=Foreground}"
-                                    Text="{Binding ., Converter={StaticResource DirStructureSyncTypeDescriptionConverter}, ConverterParameter=Text}"
-                                    ToolTip.Tip="{Binding ., Converter={StaticResource DirStructureSyncTypeDescriptionConverter}, ConverterParameter=ToolTip}" />
+                                    Foreground="{Binding ., Converter={x:Static cvt:DirStructureSyncTypeDescriptionConverter.Instance}, ConverterParameter=Foreground}"
+                                    Text="{Binding ., Converter={x:Static cvt:DirStructureSyncTypeDescriptionConverter.Instance}, ConverterParameter=Text}"
+                                    ToolTip.Tip="{Binding ., Converter={x:Static cvt:DirStructureSyncTypeDescriptionConverter.Instance}, ConverterParameter=ToolTip}" />
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>

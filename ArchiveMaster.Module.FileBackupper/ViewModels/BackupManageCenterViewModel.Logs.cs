@@ -99,6 +99,9 @@ public partial class BackupManageCenterViewModel
     [RelayCommand]
     private Task ShowDetailAsync(BackupLogEntity log)
     {
-        return log == null ? Task.CompletedTask : DialogService.ShowOkDialogAsync(LogLevelConverter.GetDescription(log.Type), log.Message, log.Detail);
+        return log == null
+            ? Task.CompletedTask
+            : DialogService.ShowOkDialogAsync(Converters.Converters.LogMap.Map[log.Type.ToString()], log.Message,
+                log.Detail);
     }
 }

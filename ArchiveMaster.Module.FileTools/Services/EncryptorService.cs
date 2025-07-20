@@ -14,6 +14,7 @@ using ArchiveMaster.Enums;
 using ArchiveMaster.Helpers;
 using EncryptorFileInfo = ArchiveMaster.ViewModels.FileSystem.EncryptorFileInfo;
 using ArchiveMaster.ViewModels.FileSystem;
+using FzLib.Cryptography;
 using FzLib.IO;
 
 namespace ArchiveMaster.Services

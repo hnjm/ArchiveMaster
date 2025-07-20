@@ -14,6 +14,7 @@ using ArchiveMaster.Enums;
 using ArchiveMaster.Helpers;
 using ArchiveMaster.Services;
 using ArchiveMaster.ViewModels.FileSystem;
+using FzLib.Cryptography;
 using FzLib.IO;
 using LocalAndOffsiteDir = ArchiveMaster.ViewModels.FileSystem.LocalAndOffsiteDir;
 using SyncFileInfo = ArchiveMaster.ViewModels.FileSystem.SyncFileInfo;
@@ -65,7 +66,7 @@ namespace ArchiveMaster.Services
 
             if (Config.EnableEncryption)
             {
-                aes = Services.AesExtension.GetDefault(Config.EncryptionPassword);
+                aes = AesHelper.GetDefaultAes(Config.EncryptionPassword);
             }
 
             var files = UpdateFiles.Where(p => p.IsChecked).ToList();

@@ -1,6 +1,7 @@
 ﻿using ArchiveMaster.Configs;
 using ArchiveMaster.Enums;
 using ArchiveMaster.ViewModels.FileSystem;
+using FzLib.Cryptography;
 using FzLib.IO;
 
 namespace ArchiveMaster.Helpers;

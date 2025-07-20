@@ -8,12 +8,15 @@ namespace ArchiveMaster.Converters;
 
 public class TreeFileDataGridStatisticsConverter : IValueConverter
 {
+    public static readonly TreeFileDataGridStatisticsConverter Instance = new();
+
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
         if (value == null)
         {
             return null;
         }
+
         if (value is not IEnumerable e)
         {
             throw new Exception("数据类型必须为IEnumerable<TreeDirInfo>");

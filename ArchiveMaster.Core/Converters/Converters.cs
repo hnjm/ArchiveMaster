@@ -20,7 +20,8 @@ public static class Converters
 
     public static readonly DescriptionConverter Description = FzLib.Avalonia.Converters.Converters.Description;
 
-    public static readonly Equal2BoolConverter EqualWithParameter = FzLib.Avalonia.Converters.Converters.EqualWithParameter;
+    public static readonly Equal2BoolConverter EqualWithParameter =
+        FzLib.Avalonia.Converters.Converters.EqualWithParameter;
 
     public static readonly FileLengthConverter FileLength = FzLib.Avalonia.Converters.Converters.FileLength;
 
@@ -39,7 +40,8 @@ public static class Converters
     public static readonly Bool2FontWeightConverter LightFontWeight =
         FzLib.Avalonia.Converters.Converters.LightFontWeight;
 
-    public static readonly Equal2BoolConverter NotEqualWithParameter = FzLib.Avalonia.Converters.Converters.NotEqualWithParameter;
+    public static readonly Equal2BoolConverter NotEqualWithParameter =
+        FzLib.Avalonia.Converters.Converters.NotEqualWithParameter;
 
     public static readonly BoolLogicConverter OrLogic = FzLib.Avalonia.Converters.Converters.OrLogic;
 
@@ -62,4 +64,18 @@ public static class Converters
     public static readonly BitmapAssetValueConverter BitmapAssetValue = new();
 
     public static readonly DateTimeConverter DateTime = new();
+
+    public static readonly ValueMappingConverter LogMap = new ValueMappingConverter()
+    {
+        Map = new Dictionary<string, string>()
+        {
+            { "Trace", "细节" },
+            { "Debug", "调试" },
+            { "Information", "信息" },
+            { "Warning", "警告" },
+            { "Error", "错误" },
+            { "Critical", "关键" },
+            { "None", "全部" }
+        }
+    };
 }
