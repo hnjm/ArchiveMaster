@@ -1,7 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using FzLib.Avalonia.Messages;
 using ArchiveMaster.Configs;
 using ArchiveMaster.Services;
 using System;
@@ -11,11 +10,15 @@ using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using ArchiveMaster.Enums;
+using FzLib.Avalonia.Dialogs;
+using FzLib.Avalonia.Services;
 
 namespace ArchiveMaster.ViewModels;
 
 public partial class EncryptorViewModel : TwoStepViewModelBase<EncryptorService, EncryptorConfig>
 {
+    public IClipboardService Clipboard { get; }
+
     [ObservableProperty]
     private bool isEncrypting = true;
 
@@ -26,8 +29,10 @@ public partial class EncryptorViewModel : TwoStepViewModelBase<EncryptorService,
 
     public PaddingMode[] PaddingModes => Enum.GetValues<PaddingMode>();
 
-    public EncryptorViewModel(  AppConfig appConfig) : base( appConfig)
+    public EncryptorViewModel(AppConfig appConfig, IDialogService dialogService, IClipboardService clipboard) : base(
+        appConfig, dialogService)
     {
+        Clipboard = clipboard;
         appConfig.BeforeSaving += (s, e) =>
         {
             if (!Config.RememberPassword)
@@ -37,28 +42,10 @@ public partial class EncryptorViewModel : TwoStepViewModelBase<EncryptorService,
         };
     }
 
-
-    protected override async Task OnExecutedAsync(CancellationToken token)
-    {
-        if (ProcessingFiles.Any(p => p.Status == ProcessStatus.Error))
-        {
-            string typeDesc = IsEncrypting ? "加密" : "解密";
-
-            await WeakReferenceMessenger.Default.Send(new CommonDialogMessage()
-            {
-                Type = CommonDialogMessage.CommonDialogType.Error,
-                Title = $"{typeDesc}存在错误",
-                Message = $"{typeDesc}过程已结束，部分文件{typeDesc}失败，请检查",
-            }).Task;
-        }
-    }
-
     [RelayCommand]
     private async Task CopyErrorAsync(Exception exception)
     {
-        await WeakReferenceMessenger.Default.Send(new GetClipboardMessage())
-            .Clipboard
-            .SetTextAsync(exception.ToString());
+        await WeakReferenceMessenger.Default.Send(Clipboard.SetTextAsync(exception.ToString()));
     }
 
     protected override Task OnInitializingAsync()

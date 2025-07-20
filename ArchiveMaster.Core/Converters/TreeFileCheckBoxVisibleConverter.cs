@@ -9,6 +9,10 @@ public class TreeFileCheckBoxVisibleConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
+        if (value == null)
+        {
+            return false;
+        }
         if (parameter is not TreeFileDataGrid td)
         {
             throw new Exception($"参数应当为{nameof(TreeFileDataGrid)}");

@@ -6,12 +6,14 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using FzLib.Avalonia.Converters;
-using FzLib.Avalonia.Platforms;
+using FzLib.IO;
 
 namespace ArchiveMaster.Views;
 
 public partial class FilePickerTextBox : UserControl
 {
+    public static string AndroidExternalFilesDir { get; set; }
+    
     public static readonly StyledProperty<object> ButtonContentProperty =
         AvaloniaProperty.Register<FilePickerTextBox, object>(nameof(ButtonContent), "浏览..");
 
@@ -65,6 +67,7 @@ public partial class FilePickerTextBox : UserControl
     private string saveFileSuggestedFileName = default;
 
     private string suggestedStartLocation = default;
+
 
     public FilePickerTextBox()
     {
@@ -291,9 +294,16 @@ public partial class FilePickerTextBox : UserControl
     {
         if (OperatingSystem.IsAndroid())
         {
-            var root = PlatformServices.StorageService.GetExternalFilesDir();
+            if (AndroidExternalFilesDir == null)
+            {
+                throw new ArgumentException(
+                    "在Android中使用时，应当设置AndroidExternalFilesDir。" +
+                    "值可以从Android项目中使用GetExternalFilesDir(string.Empty)" +
+                    ".AbsolutePath.Split([\"Android\"], StringSplitOptions.None)[0]赋值");
+            }
+
             var path = file.Path.LocalPath;
-            return Path.Combine(root, path.Split(':')[^1]);
+            return Path.Combine(AndroidExternalFilesDir, path.Split(':')[^1]);
         }
 
         return file.TryGetLocalPath();

@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using ArchiveMaster.Helpers;
+using FzLib.IO;
 
 namespace ArchiveMaster.Services
 {
@@ -76,7 +77,7 @@ namespace ArchiveMaster.Services
                         SourceFilePath = sourcePath,
                         DestinationFilePath = targetPath,
                         TotalBytes = encryptedDataLength,
-                        BytesCopied = totalRead
+                        ProcessedBytes = totalRead
                     });
                 }
 
@@ -159,7 +160,7 @@ namespace ArchiveMaster.Services
                         SourceFilePath = sourcePath,
                         DestinationFilePath = targetPath,
                         TotalBytes = fileLength,
-                        BytesCopied = totalRead
+                        ProcessedBytes = totalRead
                     });
                 }
 

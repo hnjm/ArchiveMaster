@@ -12,6 +12,7 @@ using ArchiveMaster.Helpers;
 using ArchiveMaster.Services;
 using ArchiveMaster.ViewModels;
 using ArchiveMaster.ViewModels.FileSystem;
+using FzLib.Programming;
 using MatchingFileInfo = ArchiveMaster.ViewModels.FileSystem.MatchingFileInfo;
 
 namespace ArchiveMaster.Services

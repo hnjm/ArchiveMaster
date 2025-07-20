@@ -52,7 +52,7 @@
                 Grid.Column="16"
                 Margin="32,0,0,0"
                 DisplayMemberBinding="{Binding ., StringFormat='第{0}页'}"
-                IsVisible="{Binding LogPages, Converter={StaticResource NotNullConverter}}"
+                IsVisible="{Binding LogPages, Converter={x:Static cvt:Converters.IsNotNull}}"
                 ItemsSource="{Binding LogPages}"
                 SelectedIndex="{Binding LogPage, Mode=TwoWay}">
                 <Interaction.Behaviors>
@@ -90,7 +90,7 @@
                                     Command="{Binding $parent[DataGrid].DataContext.ShowDetailCommand}"
                                     CommandParameter="{Binding .}"
                                     Content="详情"
-                                    IsVisible="{Binding Detail, Converter={StaticResource NotNullConverter}}" />
+                                    IsVisible="{Binding Detail, Converter={x:Static cvt:Converters.IsNotNull}}" />
                             </StackPanel>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>

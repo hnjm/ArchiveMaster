@@ -3,6 +3,7 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:ct="using:FzLib.Avalonia.Controls"
+    xmlns:cvt="using:ArchiveMaster.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:gb="clr-namespace:GroupBox.Avalonia.Controls;assembly=GroupBox.Avalonia"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -24,7 +25,7 @@
                     FormatString="0"
                     Maximum="1440"
                     Minimum="1"
-                    Value="{Binding Config.MinTimeInterval, Converter={StaticResource TimeSpanNumberConverter}, ConverterParameter=m}" />
+                    Value="{Binding Config.MinTimeInterval, Converter={x:Static cvt:Converters.TimeSpanNumber}, ConverterParameter=m}" />
             </ct:FormItem>
         </ct:StackFormItemGroup>
     </v:TwoStepPanelBase.ConfigsContent>

@@ -1,7 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using FzLib.Avalonia.Messages;
 using ArchiveMaster.Configs;
 using ArchiveMaster.Services;
 using System;
@@ -12,11 +11,12 @@ using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using ArchiveMaster.Enums;
+using FzLib.Avalonia.Dialogs;
 
 namespace ArchiveMaster.ViewModels;
 
-public partial class RenameViewModel(AppConfig appConfig)
-    : TwoStepViewModelBase<RenameService, RenameConfig>(appConfig)
+public partial class RenameViewModel(AppConfig appConfig, IDialogService dialogService)
+    : TwoStepViewModelBase<RenameService, RenameConfig>(appConfig, dialogService)
 {
     [ObservableProperty]
     private ObservableCollection<FileSystem.RenameFileInfo> files;
@@ -54,14 +54,9 @@ public partial class RenameViewModel(AppConfig appConfig)
             return;
         }
 
-        if (true.Equals(await this.SendMessage(new CommonDialogMessage
-            {
-                Type = CommonDialogMessage.CommonDialogType.YesNo,
-                Title = "重命名完成，请检查结果",
-                Message =
-                    $"共重命名{Files.Count(p => p.IsCompleted)}项，失败{Files.Count(p => p.Status == ProcessStatus.Error)}项。{Environment.NewLine}" +
-                    $"请检查结果，若不符合预期，可以进行撤销。是否撤销？"
-            }).Task))
+        if (true.Equals(await DialogService.ShowYesNoDialogAsync("重命名完成，请检查结果",
+                $"共重命名{Files.Count(p => p.IsCompleted)}项，失败{Files.Count(p => p.Status == ProcessStatus.Error)}项。{Environment.NewLine}" +
+                $"请检查结果，若不符合预期，可以进行撤销。是否撤销？")))
         {
             Config.Manual = true;
             Config.ManualMaps = string.Join(Environment.NewLine, Files

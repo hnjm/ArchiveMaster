@@ -8,6 +8,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:enums="using:ArchiveMaster.Enums"
     xmlns:h="using:ArchiveMaster.Helpers"
+    xmlns:io="clr-namespace:FzLib.IO;assembly=FzLib"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:me="using:FzLib.Avalonia.MarkupExtensions"
     xmlns:sys="clr-namespace:System;assembly=mscorlib"
@@ -31,7 +32,7 @@
                 <ct:WrapFormItemGroup>
                     <ct:FormItem Label="Hash类型：">
                         <ComboBox
-                            ItemsSource="{me:EnumValues h:FileHashHelper+HashAlgorithmType}"
+                            ItemsSource="{me:EnumValues io:FileHashHelper+HashAlgorithmType}"
                             SelectedItem="{Binding Config.HashType}" />
                     </ct:FormItem>
                     <CheckBox

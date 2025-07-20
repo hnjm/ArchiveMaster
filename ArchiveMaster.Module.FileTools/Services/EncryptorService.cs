@@ -14,6 +14,7 @@ using ArchiveMaster.Enums;
 using ArchiveMaster.Helpers;
 using EncryptorFileInfo = ArchiveMaster.ViewModels.FileSystem.EncryptorFileInfo;
 using ArchiveMaster.ViewModels.FileSystem;
+using FzLib.IO;
 
 namespace ArchiveMaster.Services
 {
@@ -49,7 +50,7 @@ namespace ArchiveMaster.Services
                     {
                         string baseMessage = isEncrypting ? "正在加密文件" : "正在解密文件";
                         NotifyMessage(baseMessage +
-                                      $"（{numMsg}，当前文件{1.0 * p.BytesCopied / 1024 / 1024:0}MB/{1.0 * p.TotalBytes / 1024 / 1024:0}MB）：{Path.GetFileName(p.SourceFilePath)}");
+                                      $"（{numMsg}，当前文件{1.0 * p.ProcessedBytes / 1024 / 1024:0}MB/{1.0 * p.TotalBytes / 1024 / 1024:0}MB）：{Path.GetFileName(p.SourceFilePath)}");
                     });
 
                 await TryForFilesAsync(files, async (file, s) =>
@@ -86,7 +87,7 @@ namespace ArchiveMaster.Services
                             File.SetAttributes(file.Path, FileAttributes.Normal);
                         }
 
-                        FileDeleteHelper.DeleteByConfig(file.Path);
+                        FileHelper.DeleteByConfig(file.Path);
                     }
                 }, token, FilesLoopOptions.Builder().AutoApplyStatus().AutoApplyFileLengthProgress().Build());
             }, token);
@@ -183,7 +184,7 @@ namespace ArchiveMaster.Services
                             File.SetAttributes(path, FileAttributes.Normal);
                         }
 
-                        FileDeleteHelper.DeleteByConfig(path);
+                        FileHelper.DeleteByConfig(path);
                         break;
 
                     case FilenameDuplicationPolicy.Skip:

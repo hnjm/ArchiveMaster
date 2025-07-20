@@ -1,12 +1,10 @@
 <ResourceDictionary
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:c="using:FzLib.Avalonia.Converters"
-    xmlns:c2="using:ArchiveMaster.Converters"
     xmlns:ctrl="using:FzLib.Avalonia.Controls"
+    xmlns:cvt="using:ArchiveMaster.Converters"
     xmlns:fs="clr-namespace:ArchiveMaster.ViewModels.FileSystem"
-    xmlns:v="using:ArchiveMaster.Views"
-    x:CompileBindings="False">
+    xmlns:v="using:ArchiveMaster.Views">
     <SolidColorBrush
         x:Key="DataGridCellFocusVisualPrimaryBrush"
         Color="Transparent" />
@@ -229,7 +227,7 @@
                                 Orientation="Horizontal"
                                 Spacing="8">
                                 <TextBlock
-                                    IsVisible="{Binding $parent[DataGrid].ItemsSource, Converter={StaticResource NotNullConverter}}"
+                                    IsVisible="{Binding $parent[DataGrid].ItemsSource, Converter={x:Static cvt:Converters.IsNotNull}}"
                                     Text="{Binding $parent[DataGrid].ItemsSource.Count, StringFormat='共 {0} 项'}" />
                             </StackPanel>
                         </ContentControl>
@@ -341,10 +339,10 @@
                             VerticalAlignment="Center"
                             IsVisible="{Binding $parent[DataGrid].ShowCount}">
                             <ContentControl.Resources>
-                                <c2:TreeFileDataGridStatisticsConverter x:Key="TreeFileDataGridStatisticsConverter" />
+                                <cvt:TreeFileDataGridStatisticsConverter x:Key="TreeFileDataGridStatisticsConverter" />
                             </ContentControl.Resources>
                             <TextBlock
-                                IsVisible="{Binding $parent[DataGrid].ItemsSource, Converter={StaticResource NotNullConverter}}"
+                                IsVisible="{Binding $parent[DataGrid].ItemsSource, Converter={x:Static cvt:Converters.IsNotNull}}"
                                 Text="{Binding $parent[DataGrid].ItemsSource, Converter={StaticResource TreeFileDataGridStatisticsConverter}}" />
                         </ContentControl>
                         <ContentControl

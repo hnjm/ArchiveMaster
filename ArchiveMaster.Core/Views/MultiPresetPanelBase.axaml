@@ -7,7 +7,6 @@
     xmlns:v="using:ArchiveMaster.Views"
     d:DesignHeight="450"
     d:DesignWidth="800"
-    x:CompileBindings="False"
     mc:Ignorable="d">
     <v:PanelBase.RightTopContent>
         <StackPanel

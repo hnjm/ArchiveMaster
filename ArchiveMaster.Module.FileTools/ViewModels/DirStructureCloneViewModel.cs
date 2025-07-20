@@ -4,12 +4,13 @@ using ArchiveMaster.Configs;
 using ArchiveMaster.Services;
 using ArchiveMaster.ViewModels.FileSystem;
 using CommunityToolkit.Mvvm.ComponentModel;
+using FzLib.Avalonia.Dialogs;
 
 namespace ArchiveMaster.ViewModels;
 
 public partial class
-    DirStructureCloneViewModel(AppConfig appConfig)
-    : TwoStepViewModelBase<DirStructureCloneService, DirStructureCloneConfig>(appConfig)
+    DirStructureCloneViewModel(AppConfig appConfig, IDialogService dialogService)
+    : TwoStepViewModelBase<DirStructureCloneService, DirStructureCloneConfig>(appConfig, dialogService)
 {
     [ObservableProperty]
     private BulkObservableCollection<SimpleFileInfo> treeFiles;

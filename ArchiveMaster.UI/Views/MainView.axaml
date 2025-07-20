@@ -5,6 +5,7 @@
     xmlns:cfg="using:ArchiveMaster.Configs"
     xmlns:ctrl="using:FzLib.Avalonia.Controls"
     xmlns:cvm="clr-namespace:ArchiveMaster.ViewModels;assembly=ArchiveMaster.Core"
+    xmlns:cvt="using:ArchiveMaster.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:gb="using:GroupBox.Avalonia.Controls"
     xmlns:local="clr-namespace:ArchiveMaster.Views"
@@ -89,7 +90,7 @@
                                             Padding="4"
                                             HorizontalAlignment="Left"
                                             Background="Transparent"
-                                            IsVisible="{Binding MenuItems, Converter={StaticResource CountGreaterThan0Converter}}">
+                                            IsVisible="{Binding MenuItems, Converter={x:Static cvt:Converters.CountGreaterThanZero}}">
                                             <TextBlock
                                                 FontFamily="{StaticResource IconFont}"
                                                 FontSize="16"

@@ -49,7 +49,7 @@
                     Classes="Icon"
                     Command="{Binding RemoveSelectedCommand}"
                     Content="{StaticResource Remove}"
-                    IsEnabled="{Binding SelectedSyncDir, Converter={StaticResource NotNullConverter}}"
+                    IsEnabled="{Binding SelectedSyncDir, Converter={x:Static cvt:Converters.IsNotNull}}"
                     ToolTip.Tip="移除选中项" />
                 <Button
                     Classes="Icon"

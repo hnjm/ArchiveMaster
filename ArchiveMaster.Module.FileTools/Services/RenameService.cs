@@ -10,7 +10,7 @@ using ArchiveMaster.ViewModels;
 using ArchiveMaster.ViewModels.FileSystem;
 using Avalonia.Media;
 using FzLib.Avalonia.Converters;
-using FzLib.Program;
+using FzLib.IO;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
 using RenameFileInfo = ArchiveMaster.ViewModels.FileSystem.RenameFileInfo;
@@ -86,7 +86,7 @@ public class RenameService(AppConfig appConfig)
 
         await Task.Run(async () =>
         {
-            HashSet<string> usedPaths = new HashSet<string>(FileNameHelper.GetStringComparer());
+            HashSet<string> usedPaths = new HashSet<string>(FileHelper.GetStringComparer());
             List<RenameFileInfo> renameFiles = null;
 
             if (Config.Manual)

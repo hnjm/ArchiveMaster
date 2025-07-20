@@ -85,7 +85,7 @@
                     <ct:FormItem Label="当目标文件存在时：">
                         <ComboBox
                             Width="128"
-                            DisplayMemberBinding="{Binding ., Converter={StaticResource DescriptionConverter}}"
+                            DisplayMemberBinding="{Binding ., Converter={x:Static c:Converters.Description}}"
                             ItemsSource="{me:EnumValues e:FilenameDuplicationPolicy}"
                             SelectedItem="{Binding Config.FilenameDuplicationPolicy}" />
                     </ct:FormItem>

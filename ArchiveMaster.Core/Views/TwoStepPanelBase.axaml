@@ -2,6 +2,7 @@
     x:Class="ArchiveMaster.Views.TwoStepPanelBase"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:cvt="clr-namespace:ArchiveMaster.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:ArchiveMaster.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -10,7 +11,6 @@
     x:Name="Root"
     d:DesignHeight="450"
     d:DesignWidth="800"
-    x:CompileBindings="False"
     mc:Ignorable="d">
 
     <local:MultiPresetPanelBase.Resources>
@@ -47,7 +47,7 @@
             <Grid
                 Grid.Row="6"
                 ColumnDefinitions="4*,8,*,16,Auto,8,Auto,8,Auto,8,Auto"
-                IsEnabled="{Binding Config, Converter={StaticResource NotNullConverter}}"
+                IsEnabled="{Binding Config, Converter={x:Static cvt:Converters.IsNotNull}}"
                 IsVisible="{DynamicResource ShowSingleLine}">
 
 
@@ -98,7 +98,7 @@
             <Grid
                 Grid.Row="6"
                 ColumnDefinitions="*,16,Auto,8,Auto"
-                IsEnabled="{Binding Config, Converter={StaticResource NotNullConverter}}"
+                IsEnabled="{Binding Config, Converter={x:Static cvt:Converters.IsNotNull}}"
                 IsVisible="{DynamicResource ShowTwoLines}"
                 RowDefinitions="Auto,8,Auto">
 

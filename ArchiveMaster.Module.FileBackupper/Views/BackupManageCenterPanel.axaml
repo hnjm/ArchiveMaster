@@ -31,7 +31,7 @@
         <Grid RowDefinitions="*,8,*">
             <Grid
                 Grid.RowSpan="3"
-                IsVisible="{Binding SelectedTask, Converter={StaticResource NotNullConverter}, ConverterParameter=i}"
+                IsVisible="{Binding SelectedTask, Converter={x:Static cvt:Converters.IsNotNull}, ConverterParameter=i}"
                 RowDefinitions="*,8,Auto">
                 <v:BackupTaskDataGrid
                     ItemsSource="{Binding Tasks}"
