@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Svg.Skia;
+using FzLib.Application;
 using Serilog;
 
 namespace ArchiveMaster.UI.Desktop;
@@ -35,32 +36,17 @@ class Program
             .WriteTo.File("logs/logs.txt", rollingInterval: RollingInterval.Day)
             .CreateLogger();
         Log.Information("程序启动");
-#if !DEBUG
-        TaskScheduler.UnobservedTaskException += (s, e) =>
-        {
-            Log.Fatal(e.Exception, "未捕获的Task错误");
-            Log.CloseAndFlush();
-        };
-        AppDomain.CurrentDomain.UnhandledException += (s, e) =>
-        {
-            Log.Fatal(e.ExceptionObject as Exception, "未捕获的AppDomain异常");
-            Log.CloseAndFlush();
-        };
-        try
-        {
-#endif
-        BuildAvaloniaApp()
-            .StartWithClassicDesktopLifetime(args);
-#if !DEBUG
-        }
-        catch (Exception ex)
-        {
-            Log.Fatal(ex, "未捕获的主线程错误");
-        }
-        finally
-        {
-            Log.CloseAndFlush();
-        }
-#endif
+
+        UnhandledExceptionCatcher.WithCatcher(() =>
+            {
+                BuildAvaloniaApp()
+                    .StartWithClassicDesktopLifetime(args);
+            }).Catch((ex, s) =>
+            {
+                Log.Fatal(ex, "未捕获的异常，来源：{ExceptionSource}", s);
+                Log.CloseAndFlush();
+            })
+            .Finally(() => { Log.Information("程序结束"); })
+            .Run();
     }
 }

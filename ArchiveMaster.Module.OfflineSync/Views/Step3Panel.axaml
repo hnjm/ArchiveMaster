@@ -51,16 +51,9 @@
                 </ComboBox>
             </ctrl:FormItem>
 
-            <ctrl:FormItem Label="回收站目录名:">
-                <ctrl:FormItem.IsVisible>
-                    <Binding
-                        Converter="{x:Static cvt:Converters.EqualWithParameter}"
-                        Path="Config.DeleteMode">
-                        <Binding.ConverterParameter>
-                            <enums:DeleteMode>MoveToDeletedFolder</enums:DeleteMode>
-                        </Binding.ConverterParameter>
-                    </Binding>
-                </ctrl:FormItem.IsVisible>
+            <ctrl:FormItem
+                IsVisible="{Binding Config.DeleteMode, Converter={x:Static cvt:Converters.EqualWithParameter}, ConverterParameter=MoveToDeletedFolder}"
+                Label="回收站目录名:">
                 <StackPanel Orientation="Vertical">
                     <TextBox Text="{Binding Config.DeleteDir}" />
                     <TextBlock

@@ -340,7 +340,7 @@ public abstract partial class TwoStepViewModelBase<TService, TConfig> : MultiPre
             await action();
             return true;
         }
-        catch (OperationCanceledException ex)
+        catch (OperationCanceledException)
         {
             await DialogService.ShowOkDialogAsync("操作已取消", "操作已被用户取消");
             return false;

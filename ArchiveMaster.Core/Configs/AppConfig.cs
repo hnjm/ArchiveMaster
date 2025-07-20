@@ -240,6 +240,7 @@ namespace ArchiveMaster.Configs
             }
             catch (Exception ex)
             {
+                Log.Error(ex, "保存配置失败");
             }
         }
 
