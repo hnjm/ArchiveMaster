@@ -5,12 +5,12 @@ using ArchiveMaster.Helpers;
 using ArchiveMaster.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using FzLib.Avalonia.Messages;
+using FzLib.Avalonia.Dialogs;
 
 namespace ArchiveMaster.ViewModels;
 
-public partial class PackingViewModel(AppConfig appConfig)
-    : TwoStepViewModelBase<PackingService, PackingConfig>(appConfig, DiscArchiveModuleInfo.CONFIG_GRROUP)
+public partial class PackingViewModel(AppConfig appConfig, IDialogService dialogService)
+    : TwoStepViewModelBase<PackingService, PackingConfig>(appConfig, dialogService, DiscArchiveModuleInfo.CONFIG_GRROUP)
 {
     [ObservableProperty]
     private List<FileSystem.DiscFilePackage> discFilePackages;
@@ -54,12 +54,8 @@ public partial class PackingViewModel(AppConfig appConfig)
 
         if (Directory.Exists(Config.TargetDir) && Directory.EnumerateFileSystemEntries(Config.TargetDir).Any())
         {
-            var result = await this.SendMessage(new CommonDialogMessage()
-            {
-                Type = CommonDialogMessage.CommonDialogType.YesNo,
-                Title = "清空目录",
-                Message = $"目录{Config.TargetDir}不为空，{Environment.NewLine}导出前将清空部分目录。{Environment.NewLine}是否继续？"
-            }).Task;
+            var result = await DialogService.ShowYesNoDialogAsync("清空目录",
+                $"目录{Config.TargetDir}不为空，{Environment.NewLine}导出前将清空部分目录。{Environment.NewLine}是否继续？");
             if (true.Equals(result))
             {
                 try
@@ -70,7 +66,7 @@ public partial class PackingViewModel(AppConfig appConfig)
                         var dir = Path.Combine(Config.TargetDir, index.ToString());
                         if (Directory.Exists(dir))
                         {
-                            FileDeleteHelper.DeleteByConfig(dir);
+                            FileHelper.DeleteByConfig(dir);
                         }
                     }
                 }

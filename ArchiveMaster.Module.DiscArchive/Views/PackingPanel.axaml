@@ -3,6 +3,7 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:ctrl="clr-namespace:FzLib.Avalonia.Controls;assembly=FzLib.Avalonia"
+    xmlns:cvt="using:ArchiveMaster.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:enums="using:ArchiveMaster.Enums"
     xmlns:gb="using:GroupBox.Avalonia.Controls"
@@ -51,7 +52,7 @@
                             SelectedItem="{Binding Config.PackingType}">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding ., Converter={StaticResource DescriptionConverter}}" />
+                                    <TextBlock Text="{Binding ., Converter={x:Static cvt:Converters.Description}}" />
                                 </DataTemplate>
                             </ComboBox.ItemTemplate>
                         </ComboBox>
@@ -137,7 +138,7 @@
                                         <TextBlock
                                             Grid.Column="4"
                                             VerticalAlignment="Center"
-                                            Text="{Binding TotalLength, Converter={StaticResource FileLengthConverter}}" />
+                                            Text="{Binding TotalLength, Converter={x:Static cvt:Converters.FileLength}}" />
 
                                     </Grid>
 

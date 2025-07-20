@@ -6,7 +6,6 @@ using Avalonia;
 using Avalonia.Controls;
 using CommunityToolkit.Mvvm.Messaging;
 using FzLib.Avalonia.Dialogs;
-using FzLib.Avalonia.Messages;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -20,6 +19,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Platform.Storage;
 using Avalonia.Styling;
 using CommunityToolkit.Mvvm.Input;
+using FzLib.Avalonia.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace ArchiveMaster
@@ -61,8 +61,7 @@ namespace ArchiveMaster
             {
                 new ModuleMenuItemInfo("生成测试数据", new AsyncRelayCommand(async () =>
                 {
-                    var folders = await WeakReferenceMessenger.Default.Send(new GetStorageProviderMessage())
-                        .StorageProvider
+                    var folders = await HostServices.GetRequiredService<IStorageProviderService>()
                         .OpenFolderPickerAsync(new FolderPickerOpenOptions());
                     if (folders.Count > 0)
                     {
@@ -92,21 +91,11 @@ namespace ArchiveMaster
                             WeakReferenceMessenger.Default.Send(new LoadingMessage(false));
                         }
 
-                        await WeakReferenceMessenger.Default.Send(new CommonDialogMessage()
-                        {
-                            Type = CommonDialogMessage.CommonDialogType.Ok,
-                            Title = "自动化测试",
-                            Message = "通过测试",
-                        }).Task;
+                        await HostServices.GetRequiredService<IDialogService>().ShowOkDialogAsync("自动化测试", "通过测试");
                     }
                     catch (Exception ex)
                     {
-                        await WeakReferenceMessenger.Default.Send(new CommonDialogMessage()
-                        {
-                            Type = CommonDialogMessage.CommonDialogType.Error,
-                            Title = "测试未通过",
-                            Exception = ex
-                        }).Task;
+                        await HostServices.GetRequiredService<IDialogService>().ShowErrorDialogAsync("自动化测试",  ex);
                     }
                 }))
             }

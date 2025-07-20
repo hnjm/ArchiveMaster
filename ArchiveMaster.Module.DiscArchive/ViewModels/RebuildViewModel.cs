@@ -5,11 +5,12 @@ using ArchiveMaster.Services;
 using ArchiveMaster.ViewModels.FileSystem;
 using CommunityToolkit.Mvvm.ComponentModel;
 using FzLib;
+using FzLib.Avalonia.Dialogs;
 
 namespace ArchiveMaster.ViewModels;
 
-public partial class RebuildViewModel(AppConfig appConfig)
-    : TwoStepViewModelBase<RebuildService, RebuildConfig>(appConfig, DiscArchiveModuleInfo.CONFIG_GRROUP)
+public partial class RebuildViewModel(AppConfig appConfig,IDialogService dialogService)
+    : TwoStepViewModelBase<RebuildService, RebuildConfig>(appConfig,dialogService, DiscArchiveModuleInfo.CONFIG_GRROUP)
 {
     [ObservableProperty]
     private FileSystemTree fileTree;

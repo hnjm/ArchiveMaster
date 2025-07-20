@@ -18,6 +18,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using FzLib.IO;
 
 namespace ArchiveMaster.Services
 {

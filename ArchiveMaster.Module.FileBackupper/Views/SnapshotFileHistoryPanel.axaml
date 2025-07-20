@@ -2,6 +2,7 @@
     x:Class="ArchiveMaster.Views.SnapshotFileHistoryPanel"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:cvt="using:ArchiveMaster.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:v="using:ArchiveMaster.Views"
@@ -15,7 +16,7 @@
         RowDetailsTemplate="{x:Null}">
         <v:SimpleFileDataGrid.Columns>
             <DataGridTextColumn
-                Binding="{Binding Entity.Snapshot.BeginTime, Mode=OneWay, Converter={StaticResource DateTimeConverter}}"
+                Binding="{Binding Entity.Snapshot.BeginTime, Mode=OneWay, Converter={x:Static cvt:Converters.DateTime}}"
                 Header="快照时间" />
             <DataGridTemplateColumn
                 CanUserResize="False"

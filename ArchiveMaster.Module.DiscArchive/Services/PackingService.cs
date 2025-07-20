@@ -6,6 +6,7 @@ using ArchiveMaster.Helpers;
 using ArchiveMaster.ViewModels;
 using ArchiveMaster.ViewModels.FileSystem;
 using DiscUtils.Iso9660;
+using FzLib.IO;
 using DiscFile = ArchiveMaster.ViewModels.FileSystem.DiscFile;
 using DiscFilePackage = ArchiveMaster.ViewModels.FileSystem.DiscFilePackage;
 

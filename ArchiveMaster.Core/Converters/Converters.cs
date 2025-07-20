@@ -20,7 +20,7 @@ public static class Converters
 
     public static readonly DescriptionConverter Description = FzLib.Avalonia.Converters.Converters.Description;
 
-    public static readonly Equal2BoolConverter Equal = FzLib.Avalonia.Converters.Converters.Equal;
+    public static readonly Equal2BoolConverter EqualWithParameter = FzLib.Avalonia.Converters.Converters.EqualWithParameter;
 
     public static readonly FileLengthConverter FileLength = FzLib.Avalonia.Converters.Converters.FileLength;
 
@@ -39,7 +39,7 @@ public static class Converters
     public static readonly Bool2FontWeightConverter LightFontWeight =
         FzLib.Avalonia.Converters.Converters.LightFontWeight;
 
-    public static readonly Equal2BoolConverter NotEqual = FzLib.Avalonia.Converters.Converters.NotEqual;
+    public static readonly Equal2BoolConverter NotEqualWithParameter = FzLib.Avalonia.Converters.Converters.NotEqualWithParameter;
 
     public static readonly BoolLogicConverter OrLogic = FzLib.Avalonia.Converters.Converters.OrLogic;
 

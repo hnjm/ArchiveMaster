@@ -42,13 +42,13 @@ public static class Initializer
     public static IModuleInfo[] ModuleInitializers { get; } =
     [
 #if DEBUG
-        // new TestModuleInfo(),
+        new TestModuleInfo(),
 #endif
         new FileToolsModuleInfo(),
-        // new PhotoToolsModuleInfo(),
-        // new OfflineSyncModuleInfo(),
-        // new DiscArchiveModuleInfo(),
-        // new FileBackupperModuleInfo(),
+        new PhotoToolsModuleInfo(),
+        new OfflineSyncModuleInfo(),
+        new DiscArchiveModuleInfo(),
+        new FileBackupperModuleInfo(),
     ];
 #endif
 

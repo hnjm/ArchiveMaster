@@ -6,7 +6,7 @@ using Avalonia;
 using Avalonia.Controls;
 using CommunityToolkit.Mvvm.Messaging;
 using FzLib.Avalonia.Dialogs;
-using FzLib.Avalonia.Messages;
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;

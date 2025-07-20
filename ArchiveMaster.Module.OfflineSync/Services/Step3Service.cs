@@ -141,9 +141,9 @@ namespace ArchiveMaster.Services
                     {
                         progress = new Progress<FileProcessProgress>(p =>
                         {
-                            NotifyProgress(1.0 * (length + p.BytesCopied) / totalLength);
+                            NotifyProgress(1.0 * (length + p.ProcessedBytes) / totalLength);
                             NotifyMessage(
-                                $"正在复制（{numMsg}，本文件{1.0 * p.BytesCopied / 1024 / 1024:0}MB/{1.0 * p.TotalBytes / 1024 / 1024:0}MB）：{file.RelativePath}");
+                                $"正在复制（{numMsg}，本文件{1.0 * p.ProcessedBytes / 1024 / 1024:0}MB/{1.0 * p.TotalBytes / 1024 / 1024:0}MB）：{file.RelativePath}");
                         });
                         await CopyFileAsync(patch, target, file.Time, progress, token);
                     }
@@ -426,7 +426,7 @@ namespace ArchiveMaster.Services
                     break;
                 
                 case DeleteMode.RecycleBinPrefer:
-                    FileDeleteHelper.DeleteByConfig(filePath);
+                    FileHelper.DeleteByConfig(filePath);
                     break;
                 default:
                     throw new InvalidEnumArgumentException();

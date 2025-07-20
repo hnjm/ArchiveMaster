@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Text.Json.Serialization;
 using ArchiveMaster.Enums;
 using ArchiveMaster.ViewModels;
+using FzLib.IO;
 
 namespace ArchiveMaster.Configs;
 

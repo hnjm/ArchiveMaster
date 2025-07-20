@@ -7,23 +7,30 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FzLib;
-using FzLib.Avalonia.Messages;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Text.Json.Serialization;
 using ArchiveMaster.ViewModels.FileSystem;
+using FzLib.Avalonia.Dialogs;
+using FzLib.Avalonia.Services;
+using FzLib.Programming;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace ArchiveMaster.ViewModels
 {
     public abstract partial class
-        OfflineSyncViewModelBase<TService, TConfig, TFile>(AppConfig appConfig)
-        : TwoStepViewModelBase<TService, TConfig>(appConfig, OfflineSyncModuleInfo.CONFIG_GRROUP)
+        OfflineSyncViewModelBase<TService, TConfig, TFile>(
+            AppConfig appConfig,
+            IDialogService dialogService,
+            IStorageProviderService storage)
+        : TwoStepViewModelBase<TService, TConfig>(appConfig, dialogService, OfflineSyncModuleInfo.CONFIG_GRROUP)
         where TService : TwoStepServiceBase<TConfig>
         where TConfig : ConfigBase, new()
         where TFile : SimpleFileInfo
     {
+        public IStorageProviderService Storage { get; } = storage;
+
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(AddedFileLength),
             nameof(AddedFileCount),
@@ -66,7 +73,7 @@ namespace ArchiveMaster.ViewModels
                     return;
                 }
 
-                this.Notify(nameof(CheckedFileCount));
+                OnPropertyChanged(nameof(CheckedFileCount));
                 if (s is not FileSystem.SyncFileInfo syncFile)
                 {
                     return;
@@ -75,19 +82,21 @@ namespace ArchiveMaster.ViewModels
                 switch (syncFile.UpdateType)
                 {
                     case FileUpdateType.Add:
-                        this.Notify(nameof(AddedFileCount), nameof(AddedFileLength));
+                        OnPropertyChanged(nameof(AddedFileCount));
+                        OnPropertyChanged(nameof(AddedFileLength));
                         break;
 
                     case FileUpdateType.Modify:
-                        this.Notify(nameof(ModifiedFileCount), nameof(ModifiedFileLength));
+                        OnPropertyChanged(nameof(ModifiedFileCount));
+                        OnPropertyChanged(nameof(ModifiedFileLength));
                         break;
 
                     case FileUpdateType.Delete:
-                        this.Notify(nameof(DeletedFileCount));
+                        OnPropertyChanged(nameof(DeletedFileCount));
                         break;
 
                     case FileUpdateType.Move:
-                        this.Notify(nameof(MovedFileCount));
+                        OnPropertyChanged(nameof(MovedFileCount));
                         break;
 
                     case FileUpdateType.None:

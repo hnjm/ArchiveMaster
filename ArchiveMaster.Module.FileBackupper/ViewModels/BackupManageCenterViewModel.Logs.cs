@@ -8,7 +8,6 @@ using ArchiveMaster.Models;
 using ArchiveMaster.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using FzLib.Avalonia.Messages;
 using Microsoft.Extensions.Logging;
 
 namespace ArchiveMaster.ViewModels;
@@ -100,12 +99,6 @@ public partial class BackupManageCenterViewModel
     [RelayCommand]
     private Task ShowDetailAsync(BackupLogEntity log)
     {
-        return this.SendMessage(new CommonDialogMessage()
-        {
-            Type = CommonDialogMessage.CommonDialogType.Ok,
-            Message = log.Message,
-            Title = LogLevelConverter.GetDescription(log.Type),
-            Detail = log.Detail
-        }).Task;
+        return log == null ? Task.CompletedTask : DialogService.ShowOkDialogAsync(LogLevelConverter.GetDescription(log.Type), log.Message, log.Detail);
     }
 }

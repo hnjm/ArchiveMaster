@@ -7,6 +7,28 @@ namespace ArchiveMaster.Helpers;
 
 public static class FileHelper
 {
+    public static FileFilterRule ImageFileFilterRule => new FileFilterRule()
+    {
+        IncludeFiles = """
+                       *.heic
+                       *.heif
+                       *.jpg
+                       *.jpeg
+                       *.dng
+                       *.arw
+                       """
+    };
+
+    public static FileFilterRule NoRawImageFileFilterRule => new FileFilterRule()
+    {
+        IncludeFiles = """
+                       *.heic
+                       *.heif
+                       *.jpg
+                       *.jpeg
+                       """
+    };
+
     public static void DeleteByConfig(string path)
     {
         if (GlobalConfigs.Instance.PreferDeleteToRecycleBin)

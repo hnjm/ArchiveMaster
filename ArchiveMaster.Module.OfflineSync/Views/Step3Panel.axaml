@@ -3,6 +3,7 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:ctrl="using:FzLib.Avalonia.Controls"
+    xmlns:cvt="using:ArchiveMaster.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:enums="using:ArchiveMaster.Enums"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -44,7 +45,7 @@
                         <DataTemplate>
                             <TextBlock
                                 VerticalAlignment="Center"
-                                Text="{Binding ., Converter={StaticResource DescriptionConverter}}" />
+                                Text="{Binding ., Converter={x:Static cvt:Converters.Description}}" />
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
                 </ComboBox>
@@ -53,7 +54,7 @@
             <ctrl:FormItem Label="回收站目录名:">
                 <ctrl:FormItem.IsVisible>
                     <Binding
-                        Converter="{StaticResource Equal2BoolConverter}"
+                        Converter="{x:Static cvt:Converters.EqualWithParameter}"
                         Path="Config.DeleteMode">
                         <Binding.ConverterParameter>
                             <enums:DeleteMode>MoveToDeletedFolder</enums:DeleteMode>

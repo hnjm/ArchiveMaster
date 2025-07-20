@@ -1,6 +1,5 @@
 ﻿using ArchiveMaster.Models;
 using ArchiveMaster.ViewModels;
-using FzLib.Collection;
 using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -15,6 +14,7 @@ using ArchiveMaster.Enums;
 using ArchiveMaster.Helpers;
 using ArchiveMaster.Services;
 using ArchiveMaster.ViewModels.FileSystem;
+using FzLib.IO;
 using LocalAndOffsiteDir = ArchiveMaster.ViewModels.FileSystem.LocalAndOffsiteDir;
 using SyncFileInfo = ArchiveMaster.ViewModels.FileSystem.SyncFileInfo;
 
@@ -28,7 +28,8 @@ namespace ArchiveMaster.Services
 
         public List<SyncFileInfo> UpdateFiles { get; } = new List<SyncFileInfo>();
 
-        public static async Task<IList<LocalAndOffsiteDir>> MatchLocalAndOffsiteDirsAsync(string snapshotPath, string[] localSearchingDirs)
+        public static async Task<IList<LocalAndOffsiteDir>> MatchLocalAndOffsiteDirsAsync(string snapshotPath,
+            string[] localSearchingDirs)
         {
             List<LocalAndOffsiteDir> matchingDirs = null;
             await Task.Run(() =>
@@ -123,14 +124,14 @@ namespace ArchiveMaster.Services
 
                             break;
                         case ExportMode.Copy:
-                        copy:
+                            copy:
                             int tryCount = 10;
 
                             Progress<FileProcessProgress> progress = new Progress<FileProcessProgress>(p =>
                             {
-                                NotifyProgress(1.0 * (length + p.BytesCopied) / totalLength);
+                                NotifyProgress(1.0 * (length + p.ProcessedBytes) / totalLength);
                                 NotifyMessage(
-                                    $"正在复制（{numMsg}，本文件{1.0 * p.BytesCopied / 1024 / 1024:0}MB/{1.0 * p.TotalBytes / 1024 / 1024:0}MB）：{file.RelativePath}");
+                                    $"正在复制（{numMsg}，本文件{1.0 * p.ProcessedBytes / 1024 / 1024:0}MB/{1.0 * p.TotalBytes / 1024 / 1024:0}MB）：{file.RelativePath}");
                             });
                             while (--tryCount > 0)
                             {
@@ -197,6 +198,7 @@ namespace ArchiveMaster.Services
         {
             return UpdateFiles.Cast<SimpleFileInfo>();
         }
+
         public override async Task InitializeAsync(CancellationToken token = default)
         {
             UpdateFiles.Clear();
@@ -298,6 +300,22 @@ namespace ArchiveMaster.Services
 
                     int index = 0;
                     //开始对比文件
+                    /*
+                        这段代码主要用于比对本地文件与异地快照文件，判断文件的变化类型（新增、修改、移动/重命名或无变化），并将需要同步的文件信息添加到 UpdateFiles 列表中。整体流程如下：
+
+
+                        1. 遍历本地文件：对每个本地文件，首先检查是否被取消操作，然后获取其相对路径，并记录到本地文件哈希表中。
+                        2. 过滤文件：通过自定义的过滤器 filter 判断文件是否需要参与比对，不匹配的文件直接跳过。
+                        3. 路径直接匹配：如果本地文件的相对路径在异地快照中存在，说明文件未移动或重命名。进一步比较文件的修改时间和长度：
+                        - 如果时间和长度都在容忍范围内，认为文件未发生变化，跳过。
+                        - 否则，认为文件被修改，创建一个 SyncFileInfo 对象，标记为 Modify，并添加到 UpdateFiles。
+                        - 如果异地文件时间晚于本地文件，还会添加警告信息。
+                        4. 路径不匹配（新增/移动/重命名）：如果本地文件在异地快照中找不到相同路径，则进一步判断是否为移动/重命名或新增文件：
+                        - 通过文件名、时间和长度等条件，在异地快照中查找唯一匹配的文件（可配置是否忽略文件名）。
+                        - 如果只找到一个匹配文件，并且本地没有相同位置的文件，认为是移动或重命名，创建 SyncFileInfo，标记为 Move，并添加到 UpdateFiles，同时将异地文件路径加入本地哈希表，避免后续被误判为删除。
+                        - 否则，认为是新增文件，创建 SyncFileInfo，标记为 Add，并添加到 UpdateFiles。
+                        5. 最终结果：所有需要同步的文件（新增、修改、移动/重命名）都会被收集到 UpdateFiles，供后续同步或生成脚本使用。
+                    */
                     foreach (var file in localFileList)
                     {
                         token.ThrowIfCancellationRequested();
@@ -342,19 +360,26 @@ namespace ArchiveMaster.Services
                             var time = Config.MaxTimeToleranceSecond > 0
                                 ? file.LastWriteTime.TruncateToSecond()
                                 : file.LastWriteTime;
-                            var sameFiles = Config.CheckMoveIgnoreFileName
-                                ? (offsiteTime2File.GetOrDefault(time) ??
-                                   Enumerable.Empty<SyncFileInfo>())
-                                .Intersect(offsiteLength2File.GetOrDefault(file.Length) ??
-                                           Enumerable.Empty<SyncFileInfo>())
-                                : (offsiteName2File.GetOrDefault(file.Name) ?? Enumerable.Empty<SyncFileInfo>())
-                                .Intersect(offsiteTime2File.GetOrDefault(time) ??
-                                           Enumerable.Empty<SyncFileInfo>())
-                                .Intersect(offsiteLength2File.GetOrDefault(file.Length) ??
-                                           Enumerable.Empty<SyncFileInfo>());
+                            List<SyncFileInfo> sameFiles;
+                            if (Config.CheckMoveIgnoreFileName)
+                            {
+                                //如果忽略文件名，那么只需要根据时间和长度来寻找相同文件
+                                sameFiles = offsiteTime2File.GetValueOrDefault(time, [])
+                                    .Intersect(offsiteLength2File.GetValueOrDefault(file.Length, []))
+                                    .ToList();
+                            }
+                            else
+                            {
+                                //如果不忽略文件名，那么需要根据路径、时间和长度来寻找相同文件
+                                sameFiles = offsiteName2File.GetValueOrDefault(file.Name, [])
+                                    .Intersect(offsiteTime2File.GetValueOrDefault(time, []))
+                                    .Intersect(offsiteLength2File.GetValueOrDefault(file.Length, []))
+                                    .ToList();
+                            }
+
                             bool move = false;
 
-                            if (sameFiles.Count() == 1)
+                            if (sameFiles.Count == 1)
                             {
                                 //满足以下条件时，文件将被移动：
                                 //1、异地磁盘中，满足要求的相同文件仅找到一个
@@ -483,7 +508,8 @@ namespace ArchiveMaster.Services
         {
             if (Config.EnableEncryption)
             {
-                await aes.EncryptFileAsync(source, destination, progress: progress, cancellationToken: cancellationToken);
+                await aes.EncryptFileAsync(source, destination, progress: progress,
+                    cancellationToken: cancellationToken);
                 File.SetLastWriteTimeUtc(destination, File.GetLastWriteTimeUtc(source));
             }
             else

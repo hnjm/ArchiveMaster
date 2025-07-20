@@ -1,4 +1,6 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using ArchiveMaster.Helpers;
+using CommunityToolkit.Mvvm.ComponentModel;
+using FzLib.IO;
 
 namespace ArchiveMaster.Configs
 {
@@ -8,7 +10,7 @@ namespace ArchiveMaster.Configs
         private string dir;
 
         [ObservableProperty]
-        private FileFilterRule filter = FileFilterRule.NoRawImage;
+        private FileFilterRule filter = FileHelper.NoRawImageFileFilterRule;
 
         [ObservableProperty]
         private string gpxFile;

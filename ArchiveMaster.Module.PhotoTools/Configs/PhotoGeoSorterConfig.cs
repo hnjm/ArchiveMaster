@@ -1,4 +1,6 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using ArchiveMaster.Helpers;
+using CommunityToolkit.Mvvm.ComponentModel;
+using FzLib.IO;
 
 namespace ArchiveMaster.Configs;
 
@@ -11,7 +13,7 @@ public partial class PhotoGeoSorterConfig : ConfigBase
     private string vectorFile;
 
     [ObservableProperty]
-    private FileFilterRule filter = FileFilterRule.Image;
+    private FileFilterRule filter = FileHelper.ImageFileFilterRule;
 
     [ObservableProperty]
     private string fieldName;

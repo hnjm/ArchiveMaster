@@ -3,6 +3,7 @@ using System.Xml.Linq;
 using ArchiveMaster.Configs;
 using ArchiveMaster.Helpers;
 using ArchiveMaster.ViewModels.FileSystem;
+using FzLib.IO;
 
 namespace ArchiveMaster.Services
 {

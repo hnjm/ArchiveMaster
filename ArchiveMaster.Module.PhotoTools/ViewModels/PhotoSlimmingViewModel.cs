@@ -1,7 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using FzLib.Avalonia.Messages;
+
 using FzLib.Cryptography;
 using Mapster;
 using ArchiveMaster.Configs;
@@ -13,11 +13,12 @@ using System.Collections.ObjectModel;
 using System.Threading;
 using System.Threading.Tasks;
 using ArchiveMaster.ViewModels.FileSystem;
+using FzLib.Avalonia.Dialogs;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace ArchiveMaster.ViewModels;
-public partial class PhotoSlimmingViewModel(AppConfig appConfig)
-    : TwoStepViewModelBase<PhotoSlimmingService, PhotoSlimmingConfig>(appConfig)
+public partial class PhotoSlimmingViewModel(AppConfig appConfig,IDialogService dialogService)
+    : TwoStepViewModelBase<PhotoSlimmingService, PhotoSlimmingConfig>(appConfig,dialogService)
 {
     [ObservableProperty]
     private bool canCancel;
