@@ -44,7 +44,7 @@ namespace ArchiveMaster.Configs
         /// 筛选
         /// </summary>
         [ObservableProperty]
-        private FileFilterConfig filter = new FileFilterConfig();
+        private FileFilterRule filter = new FileFilterRule();
 
         /// <summary>
         /// 修复文件修改时间时，最大可接受的Exif和修改时间的时间差（秒）

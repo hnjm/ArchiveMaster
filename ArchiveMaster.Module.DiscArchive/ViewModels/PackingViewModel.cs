@@ -91,7 +91,7 @@ public partial class PackingViewModel(AppConfig appConfig)
         if (Enumerable.Where<FileSystem.DiscFilePackage>(DiscFilePackages, p => p.IsChecked)
             .Any(p => p.Files.Any(q => q.Status == ProcessStatus.Error)))
         {
-            await this.ShowErrorAsync("导出可能失败", "部分文件导出失败，请检查");
+            await DialogService.ShowErrorDialogAsync("导出可能失败", "部分文件导出失败，请检查");
         }
     }
 

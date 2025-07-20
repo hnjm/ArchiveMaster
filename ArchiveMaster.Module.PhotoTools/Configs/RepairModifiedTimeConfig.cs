@@ -15,7 +15,7 @@ namespace ArchiveMaster.Configs
         private TimeSpan maxDurationTolerance = TimeSpan.FromSeconds(1);
         
         [ObservableProperty]
-        private FileFilterConfig filter=FileFilterConfig.Image;
+        private FileFilterRule filter=FileFilterRule.Image;
 
         public override void Check()
         {

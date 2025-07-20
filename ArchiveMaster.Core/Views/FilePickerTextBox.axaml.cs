@@ -21,8 +21,8 @@ public partial class FilePickerTextBox : UserControl
     public static readonly StyledProperty<string> LabelProperty =
         AvaloniaProperty.Register<FilePickerTextBox, string>(nameof(Label));
 
-    public static readonly StyledProperty<FileFilterConfig> FilterProperty =
-        AvaloniaProperty.Register<FilePickerTextBox, FileFilterConfig>(nameof(Filter));
+    public static readonly StyledProperty<FileFilterRule> FilterProperty =
+        AvaloniaProperty.Register<FilePickerTextBox, FileFilterRule>(nameof(Filter));
 
     public static readonly DirectProperty<FilePickerTextBox, string> SaveFileDefaultExtensionProperty =
         AvaloniaProperty.RegisterDirect<FilePickerTextBox, string>(nameof(SaveFileDefaultExtension),
@@ -86,7 +86,7 @@ public partial class FilePickerTextBox : UserControl
         set => SetValue(ButtonContentProperty, value);
     }
 
-    public FileFilterConfig Filter
+    public FileFilterRule Filter
     {
         get => GetValue(FilterProperty);
         set => SetValue(FilterProperty, value);

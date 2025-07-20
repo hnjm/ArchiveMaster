@@ -101,7 +101,7 @@ public partial class BackupManageCenterViewModel
     {
         if (backupService.IsBackingUp)
         {
-            await this.ShowErrorAsync("删除快照",$"目前有任务正在备份，无法删除快照");
+            await DialogService.ShowErrorDialogAsync("删除快照",$"目前有任务正在备份，无法删除快照");
             return;
         }
         string message = null;

@@ -1,7 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using FzLib.Avalonia.Messages;
 using ArchiveMaster.Messages;
 using ArchiveMaster.Services;
 using System;
@@ -12,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using ArchiveMaster.Configs;
 using Avalonia.Controls;
+using FzLib.Avalonia.Dialogs;
 using Mapster;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
@@ -55,11 +55,13 @@ public abstract partial class TwoStepViewModelBase<TService, TConfig> : MultiPre
 
     private bool canReceiveServiceMessage = false;
 
-    protected TwoStepViewModelBase(AppConfig appConfig, string configGroupName) : base(appConfig, configGroupName)
+    protected TwoStepViewModelBase(AppConfig appConfig, IDialogService dialogService, string configGroupName)
+        : base(appConfig, dialogService, configGroupName)
     {
     }
 
-    protected TwoStepViewModelBase(AppConfig appConfig) : this(appConfig, typeof(TConfig).Name)
+    protected TwoStepViewModelBase(AppConfig appConfig, IDialogService dialogService)
+        : this(appConfig, dialogService, typeof(TConfig).Name)
     {
     }
 
@@ -250,14 +252,14 @@ public abstract partial class TwoStepViewModelBase<TService, TConfig> : MultiPre
         CancelCommand.NotifyCanExecuteChanged();
 
         if (await TryRunServiceMethodAsync(async () =>
-        {
-            CreateService();
-            await OnInitializingAsync();
-            Config.Check();
-            await Service.InitializeAsync(token);
-            await OnInitializedAsync();
-            await CheckWarningFilesAsync(token);
-        }, "初始化失败"))
+            {
+                CreateService();
+                await OnInitializingAsync();
+                Config.Check();
+                await Service.InitializeAsync(token);
+                await OnInitializedAsync();
+                await CheckWarningFilesAsync(token);
+            }, "初始化失败"))
         {
             CanExecute = true;
             CanReset = true;
@@ -285,14 +287,10 @@ public abstract partial class TwoStepViewModelBase<TService, TConfig> : MultiPre
             {
                 return;
             }
+
             if (files.Any(p => p.Status is Enums.ProcessStatus.Warn or Enums.ProcessStatus.Error))
             {
-                await this.SendMessage(new CommonDialogMessage()
-                {
-                    Type = CommonDialogMessage.CommonDialogType.Ok,
-                    Title = "存在警告",
-                    Message = "初始化完成，但存在警告或错误文件，请仔细检查",
-                }).Task;
+            await    DialogService.ShowWarningDialogAsync("存在警告", "初始化完成，但存在警告或错误文件，请仔细检查");
             }
         }
     }
@@ -322,6 +320,7 @@ public abstract partial class TwoStepViewModelBase<TService, TConfig> : MultiPre
         {
             return;
         }
+
         Message = e.Message;
     }
 
@@ -343,24 +342,13 @@ public abstract partial class TwoStepViewModelBase<TService, TConfig> : MultiPre
         }
         catch (OperationCanceledException ex)
         {
-            WeakReferenceMessenger.Default.Send(new CommonDialogMessage()
-            {
-                Type = CommonDialogMessage.CommonDialogType.Ok,
-                Title = "操作已取消",
-                Message = "操作已取消",
-                Detail = ex.ToString()
-            });
+            await DialogService.ShowOkDialogAsync("操作已取消", "操作已被用户取消");
             return false;
         }
         catch (Exception ex)
         {
             Log.Error(ex, "执行工具失败");
-            WeakReferenceMessenger.Default.Send(new CommonDialogMessage()
-            {
-                Type = CommonDialogMessage.CommonDialogType.Error,
-                Title = errorTitle,
-                Exception = ex
-            });
+            await DialogService.ShowErrorDialogAsync(errorTitle, ex);
             return false;
         }
         finally

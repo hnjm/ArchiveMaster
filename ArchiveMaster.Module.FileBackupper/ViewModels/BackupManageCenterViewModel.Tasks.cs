@@ -50,7 +50,7 @@ public partial class BackupManageCenterViewModel
         }
         catch (Exception ex)
         {
-            await this.ShowErrorAsync("备份失败", ex);
+            await DialogService.ShowErrorDialogAsync("备份失败", ex);
         }
     }
 

@@ -4,14 +4,15 @@ using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
+using FzLib.IO;
 using Mapster;
 
 namespace ArchiveMaster.Views;
 
 public partial class FileFilterPanel : UserControl
 {
-    public static readonly StyledProperty<FileFilterConfig> FilterProperty =
-        AvaloniaProperty.Register<FileFilterControl, FileFilterConfig>(
+    public static readonly StyledProperty<FileFilterRule> FilterProperty =
+        AvaloniaProperty.Register<FileFilterControl, FileFilterRule>(
             nameof(Filter), defaultBindingMode: BindingMode.TwoWay);
 
 
@@ -21,7 +22,7 @@ public partial class FileFilterPanel : UserControl
     }
 
    
-    public FileFilterConfig Filter
+    public FileFilterRule Filter
     {
         get => GetValue(FilterProperty);
         set => SetValue(FilterProperty, value);
@@ -31,11 +32,11 @@ public partial class FileFilterPanel : UserControl
     {
         if (Filter == null)
         {
-            Filter = new FileFilterConfig();
+            Filter = new FileFilterRule();
             return;
         }
         
-        var newObj = new FileFilterConfig();
+        var newObj = new FileFilterRule();
         newObj.UseRegex = Filter.UseRegex;
         newObj.Adapt(Filter);
     }

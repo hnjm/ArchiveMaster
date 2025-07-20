@@ -78,7 +78,7 @@ namespace ArchiveMaster.Services
                     OffsiteSnapshot = c1.OutputFile,
                     PatchDir = Path.Combine(dir, "patch"),
                     ExportMode = ExportMode.Copy,
-                    Filter = new FileFilterConfig()
+                    Filter = new FileFilterRule()
                     {
                         ExcludeFiles = "黑名单文件.+",
                         ExcludeFolders = "黑名单目录",

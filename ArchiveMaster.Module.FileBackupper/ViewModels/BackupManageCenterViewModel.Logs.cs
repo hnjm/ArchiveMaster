@@ -70,7 +70,7 @@ public partial class BackupManageCenterViewModel
         catch (Exception ex)
         {
             LogPages = null;
-            await this.ShowErrorAsync("加载日志失败", ex);
+            await DialogService.ShowErrorDialogAsync("加载日志失败", ex);
         }
     }
 

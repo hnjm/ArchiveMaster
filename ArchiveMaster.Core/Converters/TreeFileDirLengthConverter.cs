@@ -4,6 +4,7 @@ using ArchiveMaster.ViewModels.FileSystem;
 using Avalonia;
 using Avalonia.Data.Converters;
 using FzLib;
+using FzLib.Numeric;
 using TreeFileDirInfo = ArchiveMaster.ViewModels.FileSystem.TreeFileDirInfo;
 
 namespace ArchiveMaster.Converters;

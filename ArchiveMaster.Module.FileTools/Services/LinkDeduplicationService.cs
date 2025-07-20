@@ -54,7 +54,7 @@ public class LinkDeduplicationService(AppConfig appConfig)
             {
                 string numMsg = s.GetFileNumberMessage("{0}/{1}");
 
-                Progress<FileCopyProgress> progress = new Progress<FileCopyProgress>(p =>
+                Progress<FileProcessProgress> progress = new Progress<FileProcessProgress>(p =>
                 {
                     NotifyProgress(1.0 * (length + p.BytesCopied) / totalLength);
                     NotifyMessage(

@@ -14,19 +14,26 @@ using System.Text;
 using System.Threading.Tasks;
 using static ArchiveMaster.ViewModels.MainViewModel;
 using ArchiveMaster.Configs;
+using ArchiveMaster.Messages;
 using ArchiveMaster.Models;
 using ArchiveMaster.Platforms;
 using ArchiveMaster.Services;
 using Avalonia;
 using Avalonia.Input;
-using FzLib.Avalonia.Messages;
-using FzLib.Program.Startup;
+using Avalonia.Threading;
+using FzLib.Avalonia.Dialogs;
 using Microsoft.Extensions.DependencyInjection;
+using Serilog;
 
 namespace ArchiveMaster.ViewModels;
 
 public partial class MainViewModel : ObservableObject
 {
+    private readonly IDialogService dialogService;
+
+    [ObservableProperty]
+    private bool isProgressRingOverlayActive;
+    
     [ObservableProperty]
     private bool isToolOpened;
 
@@ -42,8 +49,9 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private AppConfig appConfig;
 
-    public MainViewModel(AppConfig appConfig, IBackCommandService backCommandService = null)
+    public MainViewModel(AppConfig appConfig,IDialogService dialogService, IBackCommandService backCommandService = null)
     {
+        this.dialogService = dialogService;
         AppConfig = appConfig;
         foreach (var view in Initializer.Views)
         {
@@ -61,6 +69,8 @@ public partial class MainViewModel : ObservableObject
             return false;
         });
         BackCommandService = backCommandService;
+        
+        WeakReferenceMessenger.Default.Register<LoadingMessage>(this, (o, m) => IsProgressRingOverlayActive = m.IsVisible);
     }
 
     public IBackCommandService BackCommandService { get; }
@@ -109,6 +119,6 @@ public partial class MainViewModel : ObservableObject
     private async Task OpenSettingDialogAsync()
     {
         var dialog = HostServices.GetRequiredService<SettingDialog>();
-        await this.SendMessage(new DialogHostMessage(dialog)).Task;
+        await dialogService.ShowCustomDialogAsync(dialog);
     }
 }

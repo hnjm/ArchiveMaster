@@ -34,7 +34,7 @@ namespace ArchiveMaster.Services
 
         public static async Task DecryptFileAsync(this Aes manager, string sourcePath, string targetPath,
             int bufferLength = 0,
-            IProgress<FileCopyProgress> progress = null,
+            IProgress<FileProcessProgress> progress = null,
             CancellationToken cancellationToken = default)
         {
             if (File.Exists(targetPath))
@@ -43,7 +43,7 @@ namespace ArchiveMaster.Services
             if (bufferLength <= 0)
             {
                 var fileInfo = new FileInfo(sourcePath);
-                bufferLength = FileIOHelper.GetOptimalBufferSize(fileInfo.Length);
+                bufferLength = FileHelper.GetOptimalBufferSize(fileInfo.Length);
             }
 
             try
@@ -71,7 +71,7 @@ namespace ArchiveMaster.Services
                     await streamTarget.WriteAsync(buffer.AsMemory(0, read), cancellationToken);
                     totalRead += read;
 
-                    progress?.Report(new FileCopyProgress
+                    progress?.Report(new FileProcessProgress
                     {
                         SourceFilePath = sourcePath,
                         DestinationFilePath = targetPath,
@@ -117,8 +117,8 @@ namespace ArchiveMaster.Services
         }
 
         public static async Task EncryptFileAsync(this Aes manager, string sourcePath, string targetPath,
-                                    int bufferLength = 0,
-            IProgress<FileCopyProgress> progress = null,
+            int bufferLength = 0,
+            IProgress<FileProcessProgress> progress = null,
             CancellationToken cancellationToken = default)
         {
             if (File.Exists(targetPath))
@@ -129,7 +129,7 @@ namespace ArchiveMaster.Services
             if (bufferLength <= 0)
             {
                 var fileInfo = new FileInfo(sourcePath);
-                bufferLength = FileIOHelper.GetOptimalBufferSize(fileInfo.Length);
+                bufferLength = FileHelper.GetOptimalBufferSize(fileInfo.Length);
             }
 
             try
@@ -154,7 +154,7 @@ namespace ArchiveMaster.Services
                     await cryptoStream.WriteAsync(buffer.AsMemory(0, read), cancellationToken);
                     totalRead += read;
 
-                    progress?.Report(new FileCopyProgress
+                    progress?.Report(new FileProcessProgress
                     {
                         SourceFilePath = sourcePath,
                         DestinationFilePath = targetPath,
@@ -189,6 +189,7 @@ namespace ArchiveMaster.Services
             aes.SetStringKey(password);
             return aes;
         }
+
         public static long GetEncryptedFileSize(long originalSize, int blockSizeBytes = 16, int ivSizeBytes = 16,
             PaddingMode padding = PaddingMode.PKCS7)
         {

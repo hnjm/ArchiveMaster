@@ -70,7 +70,7 @@ namespace ArchiveMaster.ViewModels
             catch (Exception ex)
             {
                 this.SendMessage(new LoadingMessage(false));
-                await this.ShowErrorAsync($"{workName}失败", ex);
+                await DialogService.ShowErrorDialogAsync($"{workName}失败", ex);
                 return false;
             }
         }

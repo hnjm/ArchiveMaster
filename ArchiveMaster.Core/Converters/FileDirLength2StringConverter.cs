@@ -2,6 +2,7 @@
 using ArchiveMaster.ViewModels.FileSystem;
 using Avalonia.Data.Converters;
 using FzLib;
+using FzLib.Numeric;
 
 namespace ArchiveMaster.Converters;
 

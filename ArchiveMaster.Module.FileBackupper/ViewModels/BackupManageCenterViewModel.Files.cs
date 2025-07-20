@@ -92,7 +92,7 @@ public partial class BackupManageCenterViewModel
     {
         if (file.Entity.BackupFileName == null)
         {
-            await this.ShowErrorAsync("备份文件不存在", "该文件不存在实际备份文件，可能是由虚拟快照生成");
+            await DialogService.ShowErrorDialogAsync("备份文件不存在", "该文件不存在实际备份文件，可能是由虚拟快照生成");
             return;
         }
 
@@ -116,7 +116,7 @@ public partial class BackupManageCenterViewModel
             string backupFile = Path.Combine(SelectedTask.BackupDir, file.Entity.BackupFileName);
             if (!File.Exists(backupFile))
             {
-                await this.ShowErrorAsync("备份文件不存在", "该文件不存在实际备份文件，可能是文件丢失");
+                await DialogService.ShowErrorDialogAsync("备份文件不存在", "该文件不存在实际备份文件，可能是文件丢失");
                 return;
             }
 

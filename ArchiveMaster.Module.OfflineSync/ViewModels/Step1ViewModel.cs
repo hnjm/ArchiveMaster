@@ -101,7 +101,7 @@ namespace ArchiveMaster.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    await this.ShowErrorAsync("加入失败", ex);
+                    await DialogService.ShowErrorDialogAsync("加入失败", ex);
                 }
             }
         }
@@ -148,7 +148,7 @@ namespace ArchiveMaster.ViewModels
             }
             catch (Exception ex)
             {
-                await this.ShowErrorAsync("加入失败", ex);
+                await DialogService.ShowErrorDialogAsync("加入失败", ex);
             }
         }
 

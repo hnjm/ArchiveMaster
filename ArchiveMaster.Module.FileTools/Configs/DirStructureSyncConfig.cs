@@ -23,7 +23,7 @@ public partial class DirStructureSyncConfig : ConfigBase
     private bool compareName;
 
     [ObservableProperty]
-    private FileFilterConfig filter = new FileFilterConfig();
+    private FileFilterRule filter = new FileFilterRule();
 
     [ObservableProperty]
     private int maxTimeToleranceSecond;

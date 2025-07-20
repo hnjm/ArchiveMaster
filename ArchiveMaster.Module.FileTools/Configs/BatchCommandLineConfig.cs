@@ -19,7 +19,7 @@ namespace ArchiveMaster.Configs
         private int level = 1;
 
         [ObservableProperty]
-        private FileFilterConfig filter = new FileFilterConfig();
+        private FileFilterRule filter = new FileFilterRule();
 
         [ObservableProperty]
         private string program;

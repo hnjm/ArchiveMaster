@@ -88,7 +88,7 @@ namespace ArchiveMaster.ViewModels
         {
             if (Files.Any(p => p.Status == ProcessStatus.Error))
             {
-                await this.ShowErrorAsync("导出失败", "导出完成，但部分文件出现错误");
+                await DialogService.ShowErrorDialogAsync("导出失败", "导出完成，但部分文件出现错误");
             }
         }
 
@@ -106,7 +106,7 @@ namespace ArchiveMaster.ViewModels
             }
             catch (Exception ex)
             {
-                await this.ShowErrorAsync("匹配失败", ex);
+                await DialogService.ShowErrorDialogAsync("匹配失败", ex);
             }
         }
 

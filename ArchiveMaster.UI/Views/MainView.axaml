@@ -4,10 +4,12 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:cfg="using:ArchiveMaster.Configs"
     xmlns:ctrl="using:FzLib.Avalonia.Controls"
+    xmlns:cvm="clr-namespace:ArchiveMaster.ViewModels;assembly=ArchiveMaster.Core"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:gb="using:GroupBox.Avalonia.Controls"
     xmlns:local="clr-namespace:ArchiveMaster.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="clr-namespace:ArchiveMaster.Models;assembly=ArchiveMaster.Core"
     xmlns:sys="using:System"
     xmlns:v="using:ArchiveMaster.Views"
     xmlns:vm="clr-namespace:ArchiveMaster.ViewModels"
@@ -16,7 +18,6 @@
     d:DesignWidth="800"
     x:DataType="vm:MainViewModel"
     Background="{DynamicResource Background1}"
-    IsEnabled="{Binding IsEnable}"
     mc:Ignorable="d">
     <Design.DataContext>
         <vm:MainViewModel />
@@ -97,6 +98,7 @@
                                                 <MenuFlyout ItemsSource="{Binding MenuItems}">
                                                     <MenuFlyout.ItemContainerTheme>
                                                         <ControlTheme
+                                                            x:DataType="cvm:ModuleMenuItemInfo"
                                                             BasedOn="{StaticResource {x:Type MenuItem}}"
                                                             TargetType="MenuItem">
                                                             <Setter Property="Header" Value="{Binding Header}" />
@@ -127,7 +129,7 @@
                                                     Width="{DynamicResource BoxWidth}"
                                                     Height="{DynamicResource BoxHeight}"
                                                     Description="{Binding Description}"
-                                                    Focusable="{Binding !#root.DataContext.IsToolOpened}"
+                                                    Focusable="{Binding !#root.((vm:MainViewModel)DataContext).IsToolOpened}"
                                                     Icon="{Binding IconUri}"
                                                     KeyDown="ToolItem_OnKeyDown"
                                                     ShowDescription="{DynamicResource ShowDescription}">
@@ -136,7 +138,7 @@
                                                             EventName="Tapped"
                                                             SourceObject="tib">
                                                             <InvokeCommandAction
-                                                                Command="{Binding #root.DataContext.EnterToolCommand}"
+                                                                Command="{Binding #root.((vm:MainViewModel)DataContext).EnterToolCommand}"
                                                                 CommandParameter="{Binding .}" />
                                                         </EventTriggerBehavior>
                                                     </Interaction.Behaviors>
@@ -184,5 +186,7 @@
                 </Style>
             </ContentControl.Styles>
         </ContentControl>
+
+        <ctrl:ProgressRingOverlay IsActive="{Binding IsProgressRingOverlayActive}" />
     </Grid>
 </UserControl>

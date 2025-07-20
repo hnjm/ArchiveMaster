@@ -1,6 +1,6 @@
 ﻿namespace ArchiveMaster.Helpers;
 
-public struct FileCopyProgress
+public struct FileProcessProgress
 {
     public string SourceFilePath { get; set; }
     public string DestinationFilePath { get; set; }

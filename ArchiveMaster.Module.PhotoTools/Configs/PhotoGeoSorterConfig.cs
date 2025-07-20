@@ -11,7 +11,7 @@ public partial class PhotoGeoSorterConfig : ConfigBase
     private string vectorFile;
 
     [ObservableProperty]
-    private FileFilterConfig filter = FileFilterConfig.Image;
+    private FileFilterRule filter = FileFilterRule.Image;
 
     [ObservableProperty]
     private string fieldName;

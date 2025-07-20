@@ -10,7 +10,7 @@ namespace ArchiveMaster.ViewModels;
 public partial class FileFilterTestViewModel : ViewModelBase
 {
     [ObservableProperty]
-    private FileFilterConfig filter = new FileFilterConfig();
+    private FileFilterRule filter = new FileFilterRule();
 
     [ObservableProperty]
     private string dir;

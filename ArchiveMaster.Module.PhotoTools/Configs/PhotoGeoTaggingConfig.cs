@@ -8,7 +8,7 @@ namespace ArchiveMaster.Configs
         private string dir;
 
         [ObservableProperty]
-        private FileFilterConfig filter = FileFilterConfig.NoRawImage;
+        private FileFilterRule filter = FileFilterRule.NoRawImage;
 
         [ObservableProperty]
         private string gpxFile;

@@ -126,7 +126,7 @@ namespace ArchiveMaster.Services
                         copy:
                             int tryCount = 10;
 
-                            Progress<FileCopyProgress> progress = new Progress<FileCopyProgress>(p =>
+                            Progress<FileProcessProgress> progress = new Progress<FileProcessProgress>(p =>
                             {
                                 NotifyProgress(1.0 * (length + p.BytesCopied) / totalLength);
                                 NotifyMessage(
@@ -478,7 +478,7 @@ namespace ArchiveMaster.Services
         }
 
         private async Task CopyFileAsync(string source, string destination,
-            Progress<FileCopyProgress> progress,
+            Progress<FileProcessProgress> progress,
             CancellationToken cancellationToken)
         {
             if (Config.EnableEncryption)

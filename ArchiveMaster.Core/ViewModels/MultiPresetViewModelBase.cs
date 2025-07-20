@@ -3,7 +3,7 @@ using System.Diagnostics;
 using ArchiveMaster.Configs;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using FzLib.Avalonia.Messages;
+using FzLib.Avalonia.Dialogs;
 using Mapster;
 
 namespace ArchiveMaster.ViewModels;
@@ -30,7 +30,8 @@ public abstract partial class MultiPresetViewModelBase<TConfig> : ViewModelBase 
 
     private bool processOnPresetNameChanged = true;
 
-    protected MultiPresetViewModelBase(AppConfig appConfig, string configGroupName)
+    protected MultiPresetViewModelBase(AppConfig appConfig, IDialogService dialogService, string configGroupName) :
+        base(dialogService)
     {
         ConfigGroupName = configGroupName;
         AppConfig = appConfig;
@@ -78,24 +79,8 @@ public abstract partial class MultiPresetViewModelBase<TConfig> : ViewModelBase 
     [RelayCommand]
     private async Task AddPresetAsync()
     {
-        if (await this.SendMessage(new InputDialogMessage()
-            {
-                Type = InputDialogMessage.InputDialogType.Text,
-                Title = "新增配置",
-                DefaultValue = "新配置",
-                Validation = t =>
-                {
-                    if (string.IsNullOrWhiteSpace(t))
-                    {
-                        throw new Exception("配置名为空");
-                    }
-
-                    if (PresetNames.Contains(t))
-                    {
-                        throw new Exception("配置名已存在");
-                    }
-                }
-            }).Task is string result)
+        var result = await DialogService.ShowInputTextDialogAsync("新增配置", "", "新配置", "", PresetNameValidation);
+        if (result != null)
         {
             PresetNames.Add(result);
             AppConfig.GetOrCreateConfigWithDefaultKey<TConfig>(result);
@@ -123,6 +108,19 @@ public abstract partial class MultiPresetViewModelBase<TConfig> : ViewModelBase 
         PresetName = newName;
     }
 
+    private void PresetNameValidation(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            throw new Exception("配置名为空");
+        }
+
+        if (PresetNames.Contains(name))
+        {
+            throw new Exception("配置名已存在");
+        }
+    }
+
     /// <summary>
     /// 修改当前配置的版本名称
     /// </summary>
@@ -130,24 +128,8 @@ public abstract partial class MultiPresetViewModelBase<TConfig> : ViewModelBase 
     [RelayCommand]
     private async Task ModifyPresetNameAsync()
     {
-        if (await this.SendMessage(new InputDialogMessage()
-            {
-                Type = InputDialogMessage.InputDialogType.Text,
-                Title = "修改配置名称",
-                DefaultValue = PresetName,
-                Validation = t =>
-                {
-                    if (string.IsNullOrWhiteSpace(t))
-                    {
-                        throw new Exception("配置名为空");
-                    }
-
-                    if (PresetNames.Contains(t))
-                    {
-                        throw new Exception("配置名已存在");
-                    }
-                }
-            }).Task is string result)
+        var result = await DialogService.ShowInputTextDialogAsync("修改配置名称", "", PresetName, "", PresetNameValidation);
+        if (result != null)
         {
             AppConfig.RenamePreset(ConfigGroupName, PresetName, result);
 
@@ -191,13 +173,9 @@ public abstract partial class MultiPresetViewModelBase<TConfig> : ViewModelBase 
     private async Task RemovePresetAsync()
     {
         var name = PresetName;
-        var result = await this.SendMessage(new CommonDialogMessage()
-        {
-            Type = CommonDialogMessage.CommonDialogType.YesNo,
-            Title = "删除配置",
-            Message = $"是否移除配置：{name}？"
-        }).Task;
-        if (result.Equals(true))
+        var result = await DialogService.ShowYesNoDialogAsync("删除配置", $"是否移除配置：{name}？");
+
+        if (true.Equals(result))
         {
             PresetNames.Remove(name);
             AppConfig.RemovePreset<TConfig>(typeof(TConfig).Name, name);

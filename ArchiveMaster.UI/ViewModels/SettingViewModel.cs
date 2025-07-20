@@ -1,7 +1,7 @@
 ﻿using ArchiveMaster.Configs;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using FzLib.Program.Startup;
+using FzLib.Application.Startup;
 
 namespace ArchiveMaster.ViewModels;
 

@@ -15,7 +15,7 @@ public partial class BackupTask : ConfigBase, ICloneable
     private string backupDir;
 
     [ObservableProperty]
-    private FileFilterConfig filter = new FileFilterConfig();
+    private FileFilterRule filter = new FileFilterRule();
 
     [ObservableProperty]
     private bool byTimeInterval = true;
@@ -84,7 +84,7 @@ public partial class BackupTask : ConfigBase, ICloneable
     {
         if(Filter==null)
         {
-            Filter = new FileFilterConfig();
+            Filter = new FileFilterRule();
         }
         CheckDir(SourceDir, "需要备份的目录");
         CheckDir(BackupDir, "备份文件存放目录");

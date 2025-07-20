@@ -148,7 +148,7 @@ public partial class App : Application
             TrayIcon.GetIcons(this)[0].IsVisible = false;
         }
 
-        await DialogExtension.ShowOkDialogAsync(null, "当前位置的程序已启动，无法重复启动多个实例");
+        await HostServices.GetRequiredService<IDialogService>().ShowOkDialogAsync("当前位置的程序已启动，无法重复启动多个实例");
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             desktop.Shutdown();

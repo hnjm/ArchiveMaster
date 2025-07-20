@@ -44,7 +44,7 @@ namespace ArchiveMaster.Services
                 string numMsg = null;
                 //初始化进度通知
                 var files = ProcessingFiles.CheckedOnly().ToList();
-                var progressReport = new Progress<FileCopyProgress>(
+                var progressReport = new Progress<FileProcessProgress>(
                     p =>
                     {
                         string baseMessage = isEncrypting ? "正在加密文件" : "正在解密文件";

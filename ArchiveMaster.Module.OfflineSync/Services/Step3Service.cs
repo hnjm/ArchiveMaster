@@ -135,11 +135,11 @@ namespace ArchiveMaster.Services
                         Directory.CreateDirectory(Path.GetDirectoryName(target));
                     }
 
-                    Progress<FileCopyProgress> progress = null;
+                    Progress<FileProcessProgress> progress = null;
 
                     async Task CopyThisFileAsync()
                     {
-                        progress = new Progress<FileCopyProgress>(p =>
+                        progress = new Progress<FileProcessProgress>(p =>
                         {
                             NotifyProgress(1.0 * (length + p.BytesCopied) / totalLength);
                             NotifyMessage(
@@ -360,7 +360,7 @@ namespace ArchiveMaster.Services
         }
         private async Task CopyFileAsync(string source, string destination,
             DateTime fileTime,
-            Progress<FileCopyProgress> progress,
+            Progress<FileProcessProgress> progress,
             CancellationToken cancellationToken)
         {
             if (source.EndsWith(Step2Service.EncryptionFileSuffix))
