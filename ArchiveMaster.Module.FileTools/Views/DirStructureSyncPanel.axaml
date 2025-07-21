@@ -17,7 +17,7 @@
     d:DesignWidth="800"
     x:DataType="vm:DirStructureSyncViewModel"
     mc:Ignorable="d">
-    <UserControl.Resources>
+    <v:TwoStepPanelBase.Resources>
         <DataTemplate
             x:Key="DataGridDetailTemplate"
             x:DataType="fileSystem:MatchingFileInfo">
@@ -109,7 +109,7 @@
                 </Grid>
             </Grid>
         </DataTemplate>
-    </UserControl.Resources>
+    </v:TwoStepPanelBase.Resources>
 
     <v:TwoStepPanelBase.ConfigsContent>
         <ctrl:StackFormItemGroup>

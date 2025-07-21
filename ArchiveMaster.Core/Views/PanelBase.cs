@@ -2,11 +2,14 @@ using Avalonia;
 using Avalonia.Controls;
 using System;
 using ArchiveMaster.ViewModels;
+using Avalonia.Controls.Primitives;
 
 namespace ArchiveMaster.Views
 {
-    public partial class PanelBase : UserControl
+    public class PanelBase : TemplatedControl
     {
+        protected override Type StyleKeyOverride { get; } = typeof(PanelBase);
+        
         public static readonly StyledProperty<string> DescriptionProperty =
             AvaloniaProperty.Register<PanelBase, string>(nameof(Description));
 
@@ -18,11 +21,7 @@ namespace ArchiveMaster.Views
 
         public static readonly StyledProperty<string> TitleProperty =
                             AvaloniaProperty.Register<PanelBase, string>(nameof(Title));
-
-        public PanelBase()
-        {
-            InitializeComponent();
-        }
+        
         
         public string Description
         {
@@ -45,14 +44,6 @@ namespace ArchiveMaster.Views
         {
             get => GetValue(TitleProperty);
             set => SetValue(TitleProperty, value);
-        }
-
-        private void ReturnButton_Click(object sender, Avalonia.Interactivity.RoutedEventArgs e)
-        {
-            if (DataContext is ViewModelBase vm)
-            {
-                vm.Exit();
-            }
         }
     }
 }

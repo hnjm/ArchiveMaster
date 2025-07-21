@@ -17,7 +17,6 @@
     ExecuteButtonContent="2.更新"
     InitializeButtonContent="1.分析"
     mc:Ignorable="d">
-    <UserControl.Resources />
     <v:TwoStepPanelBase.Styles>
         <StyleInclude Source="Styles.axaml" />
     </v:TwoStepPanelBase.Styles>

@@ -4,6 +4,7 @@ using ArchiveMaster.Messages;
 using ArchiveMaster.Services;
 using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FzLib.Avalonia.Dialogs;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,6 +22,7 @@ public abstract partial class ViewModelBase(IDialogService dialogService) : Obse
 
     public event EventHandler RequestClosing;
 
+    [RelayCommand]
     public void Exit()
     {
         RequestClosing?.Invoke(this, EventArgs.Empty);
