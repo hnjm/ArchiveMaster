@@ -2,6 +2,7 @@
     x:Class="ArchiveMaster.Views.MainView"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:b="clr-namespace:FzLib.Avalonia.Behaviors;assembly=FzLib.Avalonia"
     xmlns:cfg="using:ArchiveMaster.Configs"
     xmlns:ctrl="using:FzLib.Avalonia.Controls"
     xmlns:cvm="clr-namespace:ArchiveMaster.ViewModels;assembly=ArchiveMaster.Core"
@@ -55,7 +56,7 @@
             </Panel.Styles>
             <ScrollViewer
                 x:Name="scr"
-                v:SmoothScrollBehavior.IsEnabled="True"
+                b:SmoothScrollBehavior.IsEnabled="True"
                 BringIntoViewOnFocusChange="{Binding ScrollViewBringIntoViewOnFocusChange}"
                 HorizontalScrollBarVisibility="Disabled"
                 VerticalScrollBarVisibility="Auto">

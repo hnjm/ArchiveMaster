@@ -2,6 +2,7 @@
     x:Class="ArchiveMaster.Views.TwoStepPanelBase"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:b="clr-namespace:FzLib.Avalonia.Behaviors;assembly=FzLib.Avalonia"
     xmlns:cvt="clr-namespace:ArchiveMaster.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:ArchiveMaster.Views"
@@ -25,7 +26,7 @@
 
             <ScrollViewer
                 MaxHeight="{DynamicResource ConfigMaxHeight}"
-                local:SmoothScrollBehavior.IsEnabled="True"
+                b:SmoothScrollBehavior.IsEnabled="True"
                 HorizontalScrollBarVisibility="Disabled"
                 IsEnabled="{Binding CanInitialize}"
                 VerticalScrollBarVisibility="Auto">
