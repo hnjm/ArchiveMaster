@@ -21,18 +21,15 @@
                         Type="OpenFolder" />
                 </ct:FormItem>
                 <ct:FormItem Label="筛选：">
-                    <v:FileFilterControl Filter="{Binding Filter}">
-                        <Interaction.Behaviors>
-                            <EventTriggerBehavior EventName="Closed">
-                                <InvokeCommandAction Command="{Binding UpdateStatusCommand}" />
-                            </EventTriggerBehavior>
-                        </Interaction.Behaviors>
-                    </v:FileFilterControl>
+                    <v:FileFilterControl Filter="{Binding Filter}" />
                 </ct:FormItem>
             </ct:StackFormItemGroup>
             <v:SimpleFileDataGrid
                 Grid.Row="2"
                 ItemsSource="{Binding Files}" />
+            <Button
+                Command="{Binding UpdateStatusCommand}"
+                Content="刷新" />
         </Grid>
     </v:PanelBase.PanelContent>
 </v:PanelBase>

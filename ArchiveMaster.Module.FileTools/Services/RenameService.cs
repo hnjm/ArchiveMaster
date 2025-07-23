@@ -75,6 +75,7 @@ public class RenameService(AppConfig appConfig)
     {
         return Files.Cast<RenameFileInfo>();
     }
+
     public override async Task InitializeAsync(CancellationToken token = default)
     {
         regexOptions = Config.IgnoreCase ? RegexOptions.IgnoreCase : RegexOptions.None;
@@ -91,7 +92,7 @@ public class RenameService(AppConfig appConfig)
 
             if (Config.Manual)
             {
-                renameFiles = await ProcessManualAsync(usedPaths);
+                renameFiles = ProcessManual(usedPaths);
             }
             else
             {
@@ -187,7 +188,7 @@ public class RenameService(AppConfig appConfig)
         return renameFiles;
     }
 
-    private async Task<List<RenameFileInfo>> ProcessManualAsync(HashSet<string> usedPaths)
+    private List<RenameFileInfo> ProcessManual(HashSet<string> usedPaths)
     {
         List<RenameFileInfo> renameFiles = new List<RenameFileInfo>();
         HashSet<string> checkedDirs = new HashSet<string>();
@@ -209,22 +210,23 @@ public class RenameService(AppConfig appConfig)
             }
 
             RenameFileInfo renameFile = null;
-                
+
             var path = parts.Current;
             if (!parts.MoveNext())
             {
                 throw new FormatException($"第{index}行（{line}）不包含分隔符");
             }
+
             var newName = parts.Current;
-            
+
             if (parts.MoveNext())
             {
                 throw new FormatException($"第{index}行（{line}）分隔符数量过多");
             }
-            
+
             if (File.Exists(path))
             {
-                renameFile=new RenameFileInfo(new FileInfo(path), "/")
+                renameFile = new RenameFileInfo(new FileInfo(path), "/")
                 {
                     NewName = newName,
                     IsMatched = true
@@ -232,7 +234,7 @@ public class RenameService(AppConfig appConfig)
             }
             else if (Directory.Exists(path))
             {
-                renameFile=new RenameFileInfo(new DirectoryInfo(path), "/")
+                renameFile = new RenameFileInfo(new DirectoryInfo(path), "/")
                 {
                     NewName = newName,
                     IsMatched = true
@@ -257,6 +259,7 @@ public class RenameService(AppConfig appConfig)
 
         return renameFiles;
     }
+
     private async Task<string> RenameAsync(FilePlaceholderReplacer replacer, RenameFileInfo file)
     {
         string name = file.Name;

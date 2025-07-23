@@ -1,0 +1,1 @@
+dotnet publish ArchiveMaster.UI.Desktop -c Release -r win-x64 -p:PublishSingleFile=true -o ./Publish/win-x64

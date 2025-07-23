@@ -61,11 +61,9 @@
                 HorizontalScrollBarVisibility="Disabled"
                 VerticalScrollBarVisibility="Auto">
                 <Interaction.Behaviors>
-                    <EventTriggerBehavior
-                        EventName="KeyDown"
-                        SourceObject="scr">
+                    <RoutedEventTriggerBehavior RoutedEvent="{x:Static InputElement.KeyDownEvent}">
                         <InvokeCommandAction Command="{Binding ScrollViewKeyDownCommand}" />
-                    </EventTriggerBehavior>
+                    </RoutedEventTriggerBehavior>
                 </Interaction.Behaviors>
                 <Panel>
                     <ItemsControl ItemsSource="{Binding PanelGroups}">
@@ -136,13 +134,11 @@
                                                     KeyDown="ToolItem_OnKeyDown"
                                                     ShowDescription="{DynamicResource ShowDescription}">
                                                     <Interaction.Behaviors>
-                                                        <EventTriggerBehavior
-                                                            EventName="Tapped"
-                                                            SourceObject="tib">
+                                                        <RoutedEventTriggerBehavior RoutedEvent="{x:Static InputElement.TappedEvent}">
                                                             <InvokeCommandAction
                                                                 Command="{Binding #root.((vm:MainViewModel)DataContext).EnterToolCommand}"
                                                                 CommandParameter="{Binding .}" />
-                                                        </EventTriggerBehavior>
+                                                        </RoutedEventTriggerBehavior>
                                                     </Interaction.Behaviors>
                                                 </local:ToolItemBox>
                                             </DataTemplate>

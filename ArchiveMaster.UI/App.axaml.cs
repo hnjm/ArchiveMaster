@@ -17,6 +17,7 @@ using Avalonia.Controls;
 using FzLib;
 using FzLib.Avalonia.Dialogs;
 using Microsoft.Extensions.DependencyInjection;
+using System.Runtime.CompilerServices;
 
 namespace ArchiveMaster;
 
@@ -29,7 +30,10 @@ public partial class App : Application
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
-        ShowSplashScreenIfNeeded();
+        if (RuntimeFeature.IsDynamicCodeSupported)//非AOT，启动速度慢
+        {
+            ShowSplashScreenIfNeeded();
+        }
 
         if (HasAnotherInstance())
         {

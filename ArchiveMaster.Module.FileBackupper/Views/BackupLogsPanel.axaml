@@ -47,11 +47,7 @@
                 DisplayMemberBinding="{Binding ., StringFormat='第{0}页'}"
                 IsVisible="{Binding LogPages, Converter={x:Static cvt:Converters.IsNotNull}}"
                 ItemsSource="{Binding LogPages}"
-                SelectedIndex="{Binding LogPage, Mode=TwoWay}">
-                <Interaction.Behaviors>
-                    <EventTriggerBehavior EventName="" />
-                </Interaction.Behaviors>
-            </ComboBox>
+                SelectedIndex="{Binding LogPage, Mode=TwoWay}" />
         </Grid>
         <DataGrid
             Grid.Row="2"

@@ -32,7 +32,6 @@ public partial class MainView : UserControl
     private readonly AppConfig appConfig;
     private readonly IDialogService dialogService;
     private readonly IPermissionService permissionService;
-    private CancellationTokenSource loadingToken = null;
 
     public MainView(MainViewModel viewModel,
         AppConfig appConfig,

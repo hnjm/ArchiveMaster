@@ -88,7 +88,7 @@ public partial class BackupManageCenterViewModel
                 SelectedFullSnapshot = FullSnapshots[^1];
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             SelectedTask = null;
             throw;
