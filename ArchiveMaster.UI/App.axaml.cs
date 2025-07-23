@@ -151,8 +151,12 @@ public partial class App : Application
         {
             TrayIcon.GetIcons(this)[0].IsVisible = false;
         }
-
-        await HostServices.GetRequiredService<IDialogService>().ShowOkDialogAsync("当前位置的程序已启动，无法重复启动多个实例");
+        MessageDialog dialog = new MessageDialog(new MessageDialogViewModel()
+        {
+            Title = "重复启动应用",
+            Message = "当前位置的程序已启动，无法重复启动多个实例"
+        }, MessageDialog.MessageDialogButtonDefinition.OK);
+        await dialog.ShowModelessWindowDialog();
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             desktop.Shutdown();
