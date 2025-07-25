@@ -141,7 +141,7 @@ public partial class App : Application
                 desktop.Shutdown();
             }
         };
-        desktop.MainWindow.Activated += (s, e) => { SplashWindow.CloseCurrent(); };
+        desktop.MainWindow.Opened += (s, e) => { SplashWindow.CloseCurrent(); };
         return desktop.MainWindow as MainWindow;
     }
 

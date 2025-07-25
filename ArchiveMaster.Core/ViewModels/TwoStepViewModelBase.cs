@@ -164,6 +164,8 @@ public abstract partial class TwoStepViewModelBase<TService, TConfig> : MultiPre
     [RelayCommand(CanExecute = nameof(CanCancel))]
     private void Cancel()
     {
+        CanCancel = false;
+        CancelCommand.NotifyCanExecuteChanged();
         WeakReferenceMessenger.Default.Send(new LoadingMessage(true));
         if (InitializeCommand.IsRunning)
         {
@@ -290,7 +292,7 @@ public abstract partial class TwoStepViewModelBase<TService, TConfig> : MultiPre
 
             if (files.Any(p => p.Status is Enums.ProcessStatus.Warn or Enums.ProcessStatus.Error))
             {
-            await    DialogService.ShowWarningDialogAsync("存在警告", "初始化完成，但存在警告或错误文件，请仔细检查");
+                await DialogService.ShowWarningDialogAsync("存在警告", "初始化完成，但存在警告或错误文件，请仔细检查");
             }
         }
     }

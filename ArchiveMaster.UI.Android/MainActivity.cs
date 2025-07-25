@@ -14,7 +14,6 @@ using ArchiveMaster.Platforms;
 using Avalonia;
 using Avalonia.Android;
 using Avalonia.Controls;
-using FzLib.Avalonia.Platforms;
 using Java.Interop;
 using Java.Lang;
 using System;
@@ -23,6 +22,7 @@ using Microsoft.Extensions.DependencyInjection;
 using static Android.Views.View;
 using Environment = Android.OS.Environment;
 using Uri = Android.Net.Uri;
+using ArchiveMaster.Views;
 
 namespace ArchiveMaster.UI.Android;
 
@@ -40,7 +40,7 @@ namespace ArchiveMaster.UI.Android;
                            | ConfigChanges.KeyboardHidden
                            | ConfigChanges.Navigation
 )]
-public class MainActivity : AvaloniaMainActivity<App>, IPermissionService, IStorageService, IBackCommandService,
+public class MainActivity : AvaloniaMainActivity<App>, IPermissionService, IBackCommandService,
     IViewPadding
 {
     private const int REQUEST_MANAGE_EXTERNAL_STORAGE = 1024;
@@ -63,7 +63,7 @@ public class MainActivity : AvaloniaMainActivity<App>, IPermissionService, IStor
         }
     }
 
-    public string GetExternalFilesDir()
+    private string GetExternalFilesDir()
     {
         var dir = GetExternalFilesDir(string.Empty);
         return dir.AbsolutePath.Split(["Android"], StringSplitOptions.None)[0];
@@ -93,15 +93,12 @@ public class MainActivity : AvaloniaMainActivity<App>, IPermissionService, IStor
         //throw new NotImplementedException();
         Initializer.ServiceInitializing += (sender, e) =>
         {
-            e.Services.AddSingleton<IStorageService>(this);
             e.Services.AddSingleton<IPermissionService>(this);
             e.Services.AddSingleton<IBackCommandService>(this);
             e.Services.AddSingleton<IViewPadding>(this);
         };
-        //Services.Builder.AddSingleton<IPermissionService>(this);
-        //Services.Builder.AddSingleton<IBackCommandService>(this);
-        //Services.Builder.AddSingleton<IViewPadding>(this);
-        PlatformServices.StorageService = this;
+
+        FilePickerTextBox.AndroidExternalFilesDir = GetExternalFilesDir();
 
         return base.CustomizeAppBuilder(builder);
     }
