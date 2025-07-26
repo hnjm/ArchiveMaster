@@ -8,7 +8,6 @@ using ArchiveMaster.Models;
 using ArchiveMaster.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using FzLib.Avalonia.Messages;
 using Microsoft.Extensions.Logging;
 
 namespace ArchiveMaster.ViewModels;
@@ -70,7 +69,7 @@ public partial class BackupManageCenterViewModel
         catch (Exception ex)
         {
             LogPages = null;
-            await this.ShowErrorAsync("加载日志失败", ex);
+            await DialogService.ShowErrorDialogAsync("加载日志失败", ex);
         }
     }
 
@@ -100,12 +99,9 @@ public partial class BackupManageCenterViewModel
     [RelayCommand]
     private Task ShowDetailAsync(BackupLogEntity log)
     {
-        return this.SendMessage(new CommonDialogMessage()
-        {
-            Type = CommonDialogMessage.CommonDialogType.Ok,
-            Message = log.Message,
-            Title = LogLevelConverter.GetDescription(log.Type),
-            Detail = log.Detail
-        }).Task;
+        return log == null
+            ? Task.CompletedTask
+            : DialogService.ShowOkDialogAsync(Converters.Converters.LogMap.Map[log.Type.ToString()], log.Message,
+                log.Detail);
     }
 }

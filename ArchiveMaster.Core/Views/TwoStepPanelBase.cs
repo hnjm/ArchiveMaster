@@ -4,8 +4,10 @@ using System;
 
 namespace ArchiveMaster.Views
 {
-    public partial class TwoStepPanelBase : MultiPresetPanelBase
+    public class TwoStepPanelBase : PanelBase
     {
+        protected override Type StyleKeyOverride { get; } = typeof(TwoStepPanelBase);
+
         public static readonly StyledProperty<object> ConfigsContentProperty =
             AvaloniaProperty.Register<TwoStepPanelBase, object>(nameof(ConfigsContent));
 
@@ -19,15 +21,11 @@ namespace ArchiveMaster.Views
             = AvaloniaProperty.Register<TwoStepPanelBase, object>(nameof(ResetButtonContent), "÷ÿ÷√");
 
         public static readonly StyledProperty<object> ResultsContentProperty =
-                                    AvaloniaProperty.Register<TwoStepPanelBase, object>(nameof(ResultsContent));
+            AvaloniaProperty.Register<TwoStepPanelBase, object>(nameof(ResultsContent));
 
         public static readonly StyledProperty<object> StopButtonContentProperty
             = AvaloniaProperty.Register<TwoStepPanelBase, object>(nameof(StopButtonContent), "»°œ˚");
 
-        public TwoStepPanelBase()
-        {
-            InitializeComponent();
-        }
 
         public object ConfigsContent
         {
@@ -46,6 +44,7 @@ namespace ArchiveMaster.Views
             get => GetValue(InitializeButtonContentProperty);
             set => SetValue(InitializeButtonContentProperty, value);
         }
+
         public object ResetButtonContent
         {
             get => GetValue(ResetButtonContentProperty);

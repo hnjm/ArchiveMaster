@@ -6,12 +6,14 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using FzLib.Avalonia.Converters;
-using FzLib.Avalonia.Platforms;
+using FzLib.IO;
 
 namespace ArchiveMaster.Views;
 
 public partial class FilePickerTextBox : UserControl
 {
+    public static string AndroidExternalFilesDir { get; set; }
+    
     public static readonly StyledProperty<object> ButtonContentProperty =
         AvaloniaProperty.Register<FilePickerTextBox, object>(nameof(ButtonContent), "浏览..");
 
@@ -21,8 +23,8 @@ public partial class FilePickerTextBox : UserControl
     public static readonly StyledProperty<string> LabelProperty =
         AvaloniaProperty.Register<FilePickerTextBox, string>(nameof(Label));
 
-    public static readonly StyledProperty<FileFilterConfig> FilterProperty =
-        AvaloniaProperty.Register<FilePickerTextBox, FileFilterConfig>(nameof(Filter));
+    public static readonly StyledProperty<FileFilterRule> FilterProperty =
+        AvaloniaProperty.Register<FilePickerTextBox, FileFilterRule>(nameof(Filter));
 
     public static readonly DirectProperty<FilePickerTextBox, string> SaveFileDefaultExtensionProperty =
         AvaloniaProperty.RegisterDirect<FilePickerTextBox, string>(nameof(SaveFileDefaultExtension),
@@ -66,6 +68,7 @@ public partial class FilePickerTextBox : UserControl
 
     private string suggestedStartLocation = default;
 
+
     public FilePickerTextBox()
     {
         InitializeComponent();
@@ -86,7 +89,7 @@ public partial class FilePickerTextBox : UserControl
         set => SetValue(ButtonContentProperty, value);
     }
 
-    public FileFilterConfig Filter
+    public FileFilterRule Filter
     {
         get => GetValue(FilterProperty);
         set => SetValue(FilterProperty, value);
@@ -291,9 +294,16 @@ public partial class FilePickerTextBox : UserControl
     {
         if (OperatingSystem.IsAndroid())
         {
-            var root = PlatformServices.StorageService.GetExternalFilesDir();
+            if (AndroidExternalFilesDir == null)
+            {
+                throw new ArgumentException(
+                    "在Android中使用时，应当设置AndroidExternalFilesDir。" +
+                    "值可以从Android项目中使用GetExternalFilesDir(string.Empty)" +
+                    ".AbsolutePath.Split([\"Android\"], StringSplitOptions.None)[0]赋值");
+            }
+
             var path = file.Path.LocalPath;
-            return Path.Combine(root, path.Split(':')[^1]);
+            return Path.Combine(AndroidExternalFilesDir, path.Split(':')[^1]);
         }
 
         return file.TryGetLocalPath();

@@ -10,6 +10,8 @@ namespace ArchiveMaster.Converters;
 
 public class DirStructureSyncTypeDescriptionConverter : IValueConverter
 {
+    public static readonly DirStructureSyncTypeDescriptionConverter Instance = new();
+    
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
         var data = value as MatchingFileInfo;

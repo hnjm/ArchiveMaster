@@ -2,6 +2,7 @@
 using ArchiveMaster.Configs;
 using ArchiveMaster.Helpers;
 using ArchiveMaster.ViewModels;
+using FzLib.IO;
 using DiscFile = ArchiveMaster.ViewModels.FileSystem.DiscFile;
 
 namespace ArchiveMaster.Services

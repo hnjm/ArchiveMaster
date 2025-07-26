@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Unicode;
@@ -74,6 +75,7 @@ namespace ArchiveMaster.Services
             ref NativeOverlapped lpOverlapped
         );
 
+        [SupportedOSPlatform("windows")]
         private static void MarkAsSparseFile(SafeFileHandle fileHandle)
         {
             int bytesReturned = 0;
@@ -92,6 +94,7 @@ namespace ArchiveMaster.Services
                 throw new Win32Exception();
         }
 
+        [SupportedOSPlatform("windows")]
         private void CreateSparseFile(SimpleFileInfo file)
         {
             string newPath = Path.Combine(Config.TargetDir, file.RelativePath);

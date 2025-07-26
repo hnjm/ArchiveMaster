@@ -3,11 +3,12 @@ using ArchiveMaster.Configs;
 using ArchiveMaster.Services;
 using ArchiveMaster.ViewModels.FileSystem;
 using CommunityToolkit.Mvvm.ComponentModel;
+using FzLib.Avalonia.Dialogs;
 
 namespace ArchiveMaster.ViewModels;
 
-public partial class LinkDeduplicationViewModel(AppConfig appConfig)
-    : TwoStepViewModelBase<LinkDeduplicationService, LinkDeduplicationConfig>(appConfig)
+public partial class LinkDeduplicationViewModel(AppConfig appConfig,IDialogService dialogService)
+    : TwoStepViewModelBase<LinkDeduplicationService, LinkDeduplicationConfig>(appConfig,dialogService)
 {
     [ObservableProperty]
     private BulkObservableCollection<SimpleFileInfo> groups;

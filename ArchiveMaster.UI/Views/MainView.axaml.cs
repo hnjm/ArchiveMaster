@@ -2,7 +2,6 @@
 using Avalonia.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FzLib.Avalonia.Dialogs;
-using FzLib.Avalonia.Messages;
 using ArchiveMaster.Messages;
 using ArchiveMaster.ViewModels;
 using System;
@@ -31,15 +30,17 @@ namespace ArchiveMaster.Views;
 public partial class MainView : UserControl
 {
     private readonly AppConfig appConfig;
+    private readonly IDialogService dialogService;
     private readonly IPermissionService permissionService;
-    private CancellationTokenSource loadingToken = null;
 
     public MainView(MainViewModel viewModel,
         AppConfig appConfig,
+        IDialogService dialogService,
         IViewPadding viewPadding = null,
         IPermissionService permissionService = null)
     {
         this.appConfig = appConfig;
+        this.dialogService = dialogService;
         this.permissionService = permissionService;
         DataContext = viewModel;
 
@@ -53,11 +54,10 @@ public partial class MainView : UserControl
     protected override async void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
-        RegisterMessages();
         permissionService?.CheckPermissions();
         if (appConfig.LoadError != null)
         {
-            await this.ShowErrorDialogAsync("加载配置失败", appConfig.LoadError);
+            await dialogService.ShowErrorDialogAsync("加载配置失败", appConfig.LoadError);
         }
     }
 
@@ -85,39 +85,6 @@ public partial class MainView : UserControl
         WeakReferenceMessenger.Default.Cleanup();
     }
 
-    private void RegisterMessages()
-    {
-        this.RegisterDialogHostMessage();
-        this.RegisterInputDialogMessage();
-        this.RegisterGetClipboardMessage();
-        this.RegisterGetStorageProviderMessage();
-        this.RegisterCommonDialogMessage();
-        WeakReferenceMessenger.Default.Register<LoadingMessage>(this, (o, m) =>
-        {
-            Dispatcher.UIThread.Invoke(() =>
-            {
-                if (m.IsVisible && o is Visual v)
-                {
-                    try
-                    {
-                        loadingToken ??= LoadingOverlay.ShowLoading(v);
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Error(ex, "Loading打开失败");
-                    }
-                }
-                else
-                {
-                    if (loadingToken != null)
-                    {
-                        loadingToken.Cancel();
-                        loadingToken = null;
-                    }
-                }
-            });
-        });
-    }
     private void ToolItem_OnKeyDown(object sender, KeyEventArgs e)
     {
         if (e.Key == Key.Enter)

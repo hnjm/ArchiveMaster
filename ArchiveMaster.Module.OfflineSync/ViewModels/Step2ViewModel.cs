@@ -9,20 +9,24 @@ using ArchiveMaster.Configs;
 using ArchiveMaster.Services;
 using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.Input;
-using FzLib.Avalonia.Messages;
+using FzLib.Avalonia.Dialogs;
+using FzLib.Avalonia.Services;
 using Microsoft.Extensions.DependencyInjection;
 using LocalAndOffsiteDir = ArchiveMaster.ViewModels.FileSystem.LocalAndOffsiteDir;
 
 namespace ArchiveMaster.ViewModels
 {
-    public partial class Step2ViewModel(AppConfig appConfig)
-        : OfflineSyncViewModelBase<Step2Service, OfflineSyncStep2Config, FileSystem.SyncFileInfo>(appConfig)
+    public partial class Step2ViewModel(
+        AppConfig appConfig,
+        IDialogService dialogService,
+        IStorageProviderService storage)
+        : OfflineSyncViewModelBase<Step2Service, OfflineSyncStep2Config, FileSystem.SyncFileInfo>(appConfig,
+            dialogService, storage)
     {
         [RelayCommand]
         private async Task BrowseLocalDirAsync()
         {
-            var provider = this.SendMessage(new GetStorageProviderMessage()).StorageProvider;
-            var folders = await provider.OpenFolderPickerAsync(new FolderPickerOpenOptions()
+            var folders = await Storage.OpenFolderPickerAsync(new FolderPickerOpenOptions()
             {
                 AllowMultiple = true,
             });
@@ -44,8 +48,7 @@ namespace ArchiveMaster.ViewModels
         [RelayCommand]
         private async Task BrowseOffsiteSnapshotAsync()
         {
-            var provider = this.SendMessage(new GetStorageProviderMessage()).StorageProvider;
-            var files = await provider.OpenFilePickerAsync(new FilePickerOpenOptions()
+            var file = await Storage.OpenFilePickerAndGetFirstAsync(new FilePickerOpenOptions()
             {
                 FileTypeFilter =
                 [
@@ -53,24 +56,20 @@ namespace ArchiveMaster.ViewModels
                 ]
             });
 
-            if (files.Count > 0)
+            if (file != null)
             {
-                Config.OffsiteSnapshot = files[0].TryGetLocalPath();
+                Config.OffsiteSnapshot = file;
             }
         }
 
         [RelayCommand]
         private async Task BrowsePatchDirAsync()
         {
-            var provider = this.SendMessage(new GetStorageProviderMessage()).StorageProvider;
-            var folders = await provider.OpenFolderPickerAsync(new FolderPickerOpenOptions()
-            {
-                AllowMultiple = false,
-            });
+            var folder = await Storage.OpenFolderPickerAndGetFirstAsync(new FolderPickerOpenOptions());
 
-            if (folders.Count > 0)
+            if (folder != null)
             {
-                Config.PatchDir = folders[0].TryGetLocalPath();
+                Config.PatchDir = folder;
             }
         }
 
@@ -88,7 +87,7 @@ namespace ArchiveMaster.ViewModels
         {
             if (Files.Any(p => p.Status == ProcessStatus.Error))
             {
-                await this.ShowErrorAsync("导出失败", "导出完成，但部分文件出现错误");
+                await DialogService.ShowErrorDialogAsync("导出失败", "导出完成，但部分文件出现错误");
             }
         }
 
@@ -106,7 +105,7 @@ namespace ArchiveMaster.ViewModels
             }
             catch (Exception ex)
             {
-                await this.ShowErrorAsync("匹配失败", ex);
+                await DialogService.ShowErrorDialogAsync("匹配失败", ex);
             }
         }
 

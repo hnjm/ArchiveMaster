@@ -1,5 +1,6 @@
 using ArchiveMaster.Enums;
 using CommunityToolkit.Mvvm.ComponentModel;
+using FzLib.IO;
 
 namespace ArchiveMaster.Configs;
 
@@ -15,7 +16,7 @@ public partial class PackingConfig : ConfigBase
     private DateTime earliestTime = DateTime.MinValue;
 
     [ObservableProperty]
-    private FileFilterConfig filter=new FileFilterConfig();
+    private FileFilterRule filter=new FileFilterRule();
 
     [ObservableProperty]
     private PackingType packingType = PackingType.Copy;

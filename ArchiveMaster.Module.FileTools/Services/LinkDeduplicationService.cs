@@ -1,6 +1,7 @@
 ﻿using ArchiveMaster.Configs;
 using ArchiveMaster.Helpers;
 using ArchiveMaster.ViewModels.FileSystem;
+using FzLib.IO;
 
 namespace ArchiveMaster.Services;
 
@@ -25,7 +26,7 @@ public class LinkDeduplicationService(AppConfig appConfig)
                 foreach (var file in group.SubFiles.Skip(1))
                 {
                     NotifyMessage($"正在创建硬链接{s.GetFileNumberMessage()}：{file.RelativePath}");
-                    FileDeleteHelper.DeleteByConfig(file.Path);
+                    FileHelper.DeleteByConfig(file.Path);
                     HardLinkCreator.CreateHardLink(file.Path, sourceFile.Path);
                     file.Complete();
                 }
@@ -54,11 +55,11 @@ public class LinkDeduplicationService(AppConfig appConfig)
             {
                 string numMsg = s.GetFileNumberMessage("{0}/{1}");
 
-                Progress<FileCopyProgress> progress = new Progress<FileCopyProgress>(p =>
+                Progress<FileProcessProgress> progress = new Progress<FileProcessProgress>(p =>
                 {
-                    NotifyProgress(1.0 * (length + p.BytesCopied) / totalLength);
+                    NotifyProgress(1.0 * (length + p.ProcessedBytes) / totalLength);
                     NotifyMessage(
-                        $"正在计算Hash（{numMsg}，本文件{1.0 * p.BytesCopied / 1024 / 1024:0}MB/{1.0 * p.TotalBytes / 1024 / 1024:0}MB）：{f.RelativePath}");
+                        $"正在计算Hash（{numMsg}，本文件{1.0 * p.ProcessedBytes / 1024 / 1024:0}MB/{1.0 * p.TotalBytes / 1024 / 1024:0}MB）：{f.RelativePath}");
                 });
                 string hash = await FileHashHelper.ComputeHashAsync(f.Path, Config.HashType, cancellationToken: token,
                     progress: progress);

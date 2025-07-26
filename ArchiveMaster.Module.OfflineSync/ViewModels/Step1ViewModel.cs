@@ -7,15 +7,20 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FzLib;
-using FzLib.Avalonia.Messages;
 using System.Collections.ObjectModel;
 using ArchiveMaster.ViewModels.FileSystem;
+using FzLib.Avalonia.Dialogs;
+using FzLib.Avalonia.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace ArchiveMaster.ViewModels
 {
-    public partial class Step1ViewModel(AppConfig appConfig)
-        : OfflineSyncViewModelBase<Step1Service, OfflineSyncStep1Config, SimpleFileInfo>(appConfig)
+    public partial class Step1ViewModel(
+        AppConfig appConfig,
+        IDialogService dialogService,
+        IStorageProviderService storage)
+        : OfflineSyncViewModelBase<Step1Service, OfflineSyncStep1Config, SimpleFileInfo>(appConfig, dialogService,
+            storage)
     {
         [ObservableProperty]
         private string selectedSyncDir;
@@ -84,8 +89,7 @@ namespace ArchiveMaster.ViewModels
         [RelayCommand]
         private async Task BrowseDirAsync()
         {
-            var storageProvider = this.SendMessage(new GetStorageProviderMessage()).StorageProvider;
-            var files = await storageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions()
+            var files = await Storage.OpenFolderPickerAsync(new FolderPickerOpenOptions()
             {
                 AllowMultiple = true,
             });
@@ -101,7 +105,7 @@ namespace ArchiveMaster.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    await this.ShowErrorAsync("加入失败", ex);
+                    await DialogService.ShowErrorDialogAsync("加入失败", ex);
                 }
             }
         }
@@ -116,17 +120,16 @@ namespace ArchiveMaster.ViewModels
 
             if (string.IsNullOrWhiteSpace(Config.OutputFile))
             {
-                var result = await this.SendMessage(new GetStorageProviderMessage()).StorageProvider
-                    .SaveFilePickerAsync(new FilePickerSaveOptions()
-                    {
-                        FileTypeChoices =
-                        [
-                            new FilePickerFileType("异地快照文件") { Patterns = ["*.os1"] }
-                        ],
-                    });
+                var result = await Storage.SaveFilePickerAndGetPathAsync(new FilePickerSaveOptions()
+                {
+                    FileTypeChoices =
+                    [
+                        new FilePickerFileType("异地快照文件") { Patterns = ["*.os1"] }
+                    ],
+                });
                 if (result != null)
                 {
-                    Config.OutputFile = result.TryGetLocalPath();
+                    Config.OutputFile = result;
                 }
             }
         }
@@ -136,19 +139,15 @@ namespace ArchiveMaster.ViewModels
         {
             try
             {
-                if (await this.SendMessage(new InputDialogMessage()
-                    {
-                        Type = InputDialogMessage.InputDialogType.Text,
-                        Title = "输入目录",
-                        Message = "请输入欲加入的目录地址"
-                    }).Task is string result)
+                var result = await DialogService.ShowInputTextDialogAsync("输入目录", "请输入欲加入的目录地址");
+                if (!string.IsNullOrWhiteSpace(result))
                 {
                     AddSyncDir(result);
                 }
             }
             catch (Exception ex)
             {
-                await this.ShowErrorAsync("加入失败", ex);
+                await DialogService.ShowErrorDialogAsync("加入失败", ex);
             }
         }
 

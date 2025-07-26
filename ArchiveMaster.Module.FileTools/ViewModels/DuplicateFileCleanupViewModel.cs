@@ -1,7 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using FzLib.Avalonia.Messages;
 using ArchiveMaster.Configs;
 using ArchiveMaster.Services;
 using System;
@@ -13,11 +12,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using ArchiveMaster.Basic;
 using ArchiveMaster.ViewModels.FileSystem;
+using FzLib.Avalonia.Dialogs;
 
 namespace ArchiveMaster.ViewModels;
 
-public partial class DuplicateFileCleanupViewModel(AppConfig appConfig)
-    : TwoStepViewModelBase<DuplicateFileCleanupService, DuplicateFileCleanupConfig>(appConfig)
+public partial class DuplicateFileCleanupViewModel(AppConfig appConfig,IDialogService dialogService)
+    : TwoStepViewModelBase<DuplicateFileCleanupService, DuplicateFileCleanupConfig>(appConfig,dialogService)
 {
     [ObservableProperty]
     private BulkObservableCollection<SimpleFileInfo> groups;

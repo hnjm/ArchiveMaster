@@ -9,11 +9,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using ArchiveMaster.Enums;
 using ArchiveMaster.ViewModels.FileSystem;
+using FzLib.Avalonia.Dialogs;
 
 namespace ArchiveMaster.ViewModels;
 
-public partial class BatchCommandLineViewModel(AppConfig appConfig)
-    : TwoStepViewModelBase<BatchCommandLineService, BatchCommandLineConfig>(appConfig)
+public partial class BatchCommandLineViewModel(AppConfig appConfig, IDialogService dialogService)
+    : TwoStepViewModelBase<BatchCommandLineService, BatchCommandLineConfig>(appConfig, dialogService)
 {
     [ObservableProperty]
     private List<BatchCommandLineFileInfo> files;

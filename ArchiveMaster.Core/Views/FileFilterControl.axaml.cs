@@ -4,13 +4,14 @@ using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
+using FzLib.IO;
 using Mapster;
 
 namespace ArchiveMaster.Views;
 
 public partial class FileFilterControl : UserControl
 {
-    public static readonly StyledProperty<FileFilterConfig> FilterProperty =
+    public static readonly StyledProperty<FileFilterRule> FilterProperty =
         FileFilterPanel.FilterProperty.AddOwner<FileFilterControl>();
 
     public static readonly StyledProperty<object> ButtonContentProperty = AvaloniaProperty.Register<FileFilterControl, object>(
@@ -38,7 +39,7 @@ public partial class FileFilterControl : UserControl
         remove => (btn.Flyout as PopupFlyout).Opened -= value;
     }
 
-    public FileFilterConfig Filter
+    public FileFilterRule Filter
     {
         get => GetValue(FilterProperty);
         set => SetValue(FilterProperty, value);

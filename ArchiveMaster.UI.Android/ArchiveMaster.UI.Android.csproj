@@ -10,8 +10,9 @@
     <OutputPath>$(Temp)\$(SolutionName)\$(Configuration)\$(AssemblyName)</OutputPath>
     <BaseIntermediateOutputPath>$(Temp)\$(SolutionName)\obj\$(Configuration)\$(AssemblyName)</BaseIntermediateOutputPath>
 
-    <RunAOTCompilation>false</RunAOTCompilation>
-    <PublishTrimmed>false</PublishTrimmed>
+    <!--<RunAOTCompilation>false</RunAOTCompilation>
+    <PublishTrimmed>false</PublishTrimmed>-->
+    <TrimMode>partial</TrimMode>
   </PropertyGroup>
   <ItemGroup>
     <AndroidJavaSource Remove="obj\**" />

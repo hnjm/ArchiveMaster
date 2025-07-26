@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using FzLib.IO;
 
 namespace ArchiveMaster.Configs;
 
@@ -23,7 +24,7 @@ public partial class DirStructureSyncConfig : ConfigBase
     private bool compareName;
 
     [ObservableProperty]
-    private FileFilterConfig filter = new FileFilterConfig();
+    private FileFilterRule filter = new FileFilterRule();
 
     [ObservableProperty]
     private int maxTimeToleranceSecond;

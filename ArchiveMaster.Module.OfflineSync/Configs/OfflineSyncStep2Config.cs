@@ -2,6 +2,7 @@
 using System.Text.Json.Serialization;
 using ArchiveMaster.Enums;
 using CommunityToolkit.Mvvm.ComponentModel;
+using FzLib.IO;
 using LocalAndOffsiteDir = ArchiveMaster.ViewModels.FileSystem.LocalAndOffsiteDir;
 
 namespace ArchiveMaster.Configs
@@ -9,7 +10,7 @@ namespace ArchiveMaster.Configs
     public partial class OfflineSyncStep2Config : ConfigBase
     {
         [ObservableProperty]
-        private FileFilterConfig filter = new FileFilterConfig();
+        private FileFilterRule filter = new FileFilterRule();
 
         [ObservableProperty]
         private ExportMode exportMode = ExportMode.Copy;

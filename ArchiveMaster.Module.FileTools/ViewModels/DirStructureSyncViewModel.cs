@@ -5,11 +5,13 @@ using ArchiveMaster.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FzLib;
+using FzLib.Avalonia.Dialogs;
+using FzLib.Programming;
 
 namespace ArchiveMaster.ViewModels;
 
-public partial class DirStructureSyncViewModel(AppConfig appConfig)
-    : TwoStepViewModelBase<DirStructureSyncService, DirStructureSyncConfig>(appConfig)
+public partial class DirStructureSyncViewModel(AppConfig appConfig, IDialogService dialogService)
+    : TwoStepViewModelBase<DirStructureSyncService, DirStructureSyncConfig>(appConfig, dialogService)
 {
     [ObservableProperty]
     private int checkedFilesCount = 0;

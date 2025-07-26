@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:c="using:ArchiveMaster.Configs"
     xmlns:ctrl="clr-namespace:FzLib.Avalonia.Controls;assembly=FzLib.Avalonia"
+    xmlns:cvt="using:ArchiveMaster.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:g="clr-namespace:GroupBox.Avalonia.Controls;assembly=GroupBox.Avalonia"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -41,7 +42,7 @@
                         Command="{Binding DeleteSelectedTaskCommand}"
                         Content="{StaticResource Delete}"
                         FontFamily="{StaticResource IconFont}"
-                        IsEnabled="{Binding SelectedTask, Converter={StaticResource NotNullConverter}}"
+                        IsEnabled="{Binding SelectedTask, Converter={x:Static cvt:Converters.IsNotNull}}"
                         ToolTip.Tip="删除" />
                 </StackPanel>
 
@@ -50,7 +51,7 @@
             <ScrollViewer
                 Grid.Column="2"
                 HorizontalScrollBarVisibility="Disabled">
-                <ctrl:StackFormItemGroup IsEnabled="{Binding SelectedTask, Converter={StaticResource NotNullConverter}}">
+                <ctrl:StackFormItemGroup IsEnabled="{Binding SelectedTask, Converter={x:Static cvt:Converters.IsNotNull}}">
                     <ctrl:StackFormItemGroup.Styles>
                         <Style Selector="TextBlock.Title">
                             <Setter Property="Margin" Value="0,16,0,0" />

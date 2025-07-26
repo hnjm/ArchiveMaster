@@ -2,17 +2,18 @@
     x:Class="ArchiveMaster.App"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:s="clr-namespace:FzLib.Avalonia.Styles;assembly=FzLib.Avalonia"
     RequestedThemeVariant="Default">
 
     <Application.Styles>
         <FluentTheme />
         <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml" />
         <StyleInclude Source="avares://ArchiveMaster.Core/GlobalStyles.axaml" />
+        <s:FzLibAvaloniaStyles />
     </Application.Styles>
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceInclude Source="avares://FzLib.Avalonia/Resources.axaml" />
                 <ResourceInclude Source="avares://ArchiveMaster.Core/GlobalResources.axaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>

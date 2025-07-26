@@ -2,6 +2,7 @@
     x:Class="ArchiveMaster.Views.SnapshotPanel"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:cvt="using:ArchiveMaster.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     d:DesignHeight="450"
@@ -25,7 +26,7 @@
             SelectedItem="{Binding SelectedSnapshot}">
             <DataGrid.Columns>
                 <DataGridTextColumn
-                    Binding="{Binding Type, Converter={StaticResource DescriptionConverter}}"
+                    Binding="{Binding Type, Converter={x:Static cvt:Converters.Description}}"
                     Header="类型" />
 
                 <DataGridTextColumn
@@ -39,10 +40,10 @@
                     Header="修改" />
 
                 <DataGridTextColumn
-                    Binding="{Binding BeginTime, Converter={StaticResource DateTimeConverter}, Mode=OneWay}"
+                    Binding="{Binding BeginTime, Converter={x:Static cvt:Converters.DateTime}, Mode=OneWay}"
                     Header="开始时间" />
                 <DataGridTextColumn
-                    Binding="{Binding EndTime, Converter={StaticResource DateTimeConverter}, Mode=OneWay}"
+                    Binding="{Binding EndTime, Converter={x:Static cvt:Converters.DateTime}, Mode=OneWay}"
                     Header="完成时间" />
 
                 <DataGridTemplateColumn Header="操作">

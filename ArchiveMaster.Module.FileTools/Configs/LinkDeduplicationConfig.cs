@@ -1,5 +1,6 @@
 ﻿using ArchiveMaster.Helpers;
 using CommunityToolkit.Mvvm.ComponentModel;
+using FzLib.IO;
 
 namespace ArchiveMaster.Configs;
 
@@ -9,7 +10,7 @@ public partial class LinkDeduplicationConfig : ConfigBase
     private string dir;
 
     [ObservableProperty]
-    private FileFilterConfig filter = new FileFilterConfig();
+    private FileFilterRule filter = new FileFilterRule();
 
     [ObservableProperty]
     private bool allowDifferentTime = true;

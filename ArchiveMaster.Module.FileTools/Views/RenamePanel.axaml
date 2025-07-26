@@ -2,9 +2,9 @@
     x:Class="ArchiveMaster.Views.RenamePanel"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:c="using:ArchiveMaster.Converters"
     xmlns:cr="clr-namespace:System.Security.Cryptography;assembly=mscorlib"
     xmlns:ct="clr-namespace:FzLib.Avalonia.Controls;assembly=FzLib.Avalonia"
+    xmlns:cvt="using:ArchiveMaster.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:enums="using:ArchiveMaster.Enums"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -72,14 +72,14 @@
                     <ct:FormItem Label="类型：">
                         <ComboBox
                             Width="128"
-                            DisplayMemberBinding="{Binding ., Converter={StaticResource DescriptionConverter}}"
+                            DisplayMemberBinding="{Binding ., Converter={x:Static cvt:Converters.Description}}"
                             ItemsSource="{me:EnumValues enums:RenameTargetType}"
                             SelectedItem="{Binding Config.RenameTarget}" />
                     </ct:FormItem>
                     <ct:FormItem Label="搜索模式：">
                         <ComboBox
                             Width="128"
-                            DisplayMemberBinding="{Binding ., Converter={StaticResource DescriptionConverter}}"
+                            DisplayMemberBinding="{Binding ., Converter={x:Static cvt:Converters.Description}}"
                             ItemsSource="{me:EnumValues enums:SearchMode}"
                             SelectedItem="{Binding Config.SearchMode}" />
                     </ct:FormItem>
@@ -100,7 +100,7 @@
                 <ct:FormItem Label="重命名模式：">
                     <ComboBox
                         Width="192"
-                        DisplayMemberBinding="{Binding ., Converter={StaticResource DescriptionConverter}}"
+                        DisplayMemberBinding="{Binding ., Converter={x:Static cvt:Converters.Description}}"
                         ItemsSource="{me:EnumValues enums:RenameMode}"
                         SelectedItem="{Binding Config.RenameMode}" />
                 </ct:FormItem>

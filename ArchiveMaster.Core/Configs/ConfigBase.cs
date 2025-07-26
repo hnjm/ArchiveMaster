@@ -1,5 +1,6 @@
 ﻿using ArchiveMaster.Helpers;
 using CommunityToolkit.Mvvm.ComponentModel;
+using FzLib.IO;
 
 namespace ArchiveMaster.Configs
 {
@@ -18,12 +19,9 @@ namespace ArchiveMaster.Configs
         protected static void CheckFile(string filePath, string name)
         {
             CheckEmpty(filePath, name);
-            foreach (var f in FileNameHelper.GetFileNames(filePath,false))
+            if (FileNameHelper.GetFileNames(filePath,false).Any(f => !File.Exists(f)))
             {
-                if (!File.Exists(f))
-                {
-                    throw new Exception($"{name}不存在");
-                }
+                throw new Exception($"{name}不存在");
             }
         }
         protected static void CheckDir(string dirPath, string name)

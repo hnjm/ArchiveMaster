@@ -9,7 +9,7 @@ public class BackupBackgroundService(BackupService backupService,AppConfig confi
 {
     public AppConfig Config { get; } = config;
 
-    public bool IsEnabled => config.GetOrCreateConfigWithDefaultKey<FileBackupperConfig>().EnableBackgroundBackup;
+    public bool IsEnabled => Config.GetOrCreateConfigWithDefaultKey<FileBackupperConfig>().EnableBackgroundBackup;
 
     public Task StartAsync(CancellationToken _)
     {

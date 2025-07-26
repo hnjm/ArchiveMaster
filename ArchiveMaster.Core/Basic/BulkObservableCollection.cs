@@ -349,24 +349,34 @@ public class BulkObservableCollection<T> : Collection<T>, INotifyCollectionChang
             EndBulkOperation();
         }
     }
+    
     public void RemoveRange(int index, int count)
     {
-        if (index < 0 || index >= Count)
+        if (index < 0 || count < 0 || index + count > Count)
         {
-            throw new ArgumentOutOfRangeException(nameof(index));
+            throw new ArgumentOutOfRangeException();
         }
 
-        if (count < 0 || index + count > Count)
+        if (count == 0)
         {
-            throw new ArgumentOutOfRangeException(nameof(count));
+            return;
         }
 
         BeginBulkOperation();
         try
         {
-            for (int i = 0; i < count; i++)
+            // 使用 List<T>.RemoveRange 提高性能（注意 Items 只是 IList<T>，需要转换）
+            if (Items is List<T> list)
             {
-                RemoveAt(index);
+                list.RemoveRange(index, count);
+            }
+            else
+            {
+                // 回退：如果不是 List<T>，就倒序删除（避免移位）
+                for (int i = count - 1; i >= 0; i--)
+                {
+                    Items.RemoveAt(index + i);
+                }
             }
         }
         finally
@@ -374,6 +384,7 @@ public class BulkObservableCollection<T> : Collection<T>, INotifyCollectionChang
             EndBulkOperation();
         }
     }
+
 
     public ReadOnlyBulkObservableCollection<T> AsReadOnly()
     {

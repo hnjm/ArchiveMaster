@@ -3,6 +3,7 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:c="clr-namespace:ArchiveMaster.Converters"
+    xmlns:cvt="using:ArchiveMaster.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:enums="clr-namespace:ArchiveMaster.Enums"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -86,7 +87,7 @@
                     <SelectableTextBlock
                         Grid.Row="10"
                         Grid.Column="2"
-                        Text="{Binding UpdateType, Converter={StaticResource DescriptionConverter}}"
+                        Text="{Binding UpdateType, Converter={x:Static cvt:Converters.Description}}"
                         TextWrapping="Wrap" />
 
                     <TextBlock
@@ -113,7 +114,7 @@
                     <TextBlock
                         Margin="16,0"
                         VerticalAlignment="Center"
-                        Text="{Binding UpdateType, Converter={StaticResource DescriptionConverter}}">
+                        Text="{Binding UpdateType, Converter={x:Static cvt:Converters.Description}}">
                         <Interaction.Behaviors>
                             <DataTriggerBehavior
                                 Binding="{Binding UpdateType}"
@@ -158,11 +159,11 @@
             <Run Text="共新增文件" />
             <Run Text="{Binding AddedFileCount, Mode=OneWay}" />
             <Run Text="个（" />
-            <Run Text="{Binding AddedFileLength, Mode=OneWay, Converter={StaticResource FileLengthConverter}}" />
+            <Run Text="{Binding AddedFileLength, Mode=OneWay, Converter={x:Static cvt:Converters.FileLength}}" />
             <Run Text="），修改文件" />
             <Run Text="{Binding ModifiedFileCount, Mode=OneWay}" />
             <Run Text="个（" />
-            <Run Text="{Binding ModifiedFileLength, Mode=OneWay, Converter={StaticResource FileLengthConverter}}" />
+            <Run Text="{Binding ModifiedFileLength, Mode=OneWay, Converter={x:Static cvt:Converters.FileLength}}" />
             <Run Text="），移动文件" />
             <Run Text="{Binding MovedFileCount, Mode=OneWay}" />
             <Run Text="个，删除文件" />

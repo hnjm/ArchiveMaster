@@ -3,6 +3,7 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:ctrl="clr-namespace:FzLib.Avalonia.Controls;assembly=FzLib.Avalonia"
+    xmlns:cvt="clr-namespace:ArchiveMaster.Converters;assembly=ArchiveMaster.Core"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:g="clr-namespace:GroupBox.Avalonia.Controls;assembly=GroupBox.Avalonia"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -84,7 +85,7 @@
                                                 <InlineCollection>
                                                     <Run Text="{Binding Name, Mode=OneWay}" />
                                                     <Run Text="（" />
-                                                    <Run Text="{Binding File.Length, Mode=OneWay, Converter={StaticResource FileLengthConverter}}" />
+                                                    <Run Text="{Binding File.Length, Mode=OneWay, Converter={x:Static cvt:Converters.FileLength}}" />
                                                     <Run Text="，" />
                                                     <Run Text="{Binding File.Time, Mode=OneWay, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}'}" />
                                                     <Run Text="）" />

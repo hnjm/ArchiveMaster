@@ -170,7 +170,7 @@ namespace ArchiveMaster.ViewModels.FileSystem
                 {
                     EnumerateDirsAndFiles(childDir, cancellationToken);
                 }
-                catch (UnauthorizedAccessException ex)
+                catch (UnauthorizedAccessException)
                 {
                     childDir.Warn("没有访问权限");
                 }

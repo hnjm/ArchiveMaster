@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:c="using:ArchiveMaster.Converters"
     xmlns:ctrl="clr-namespace:FzLib.Avalonia.Controls;assembly=FzLib.Avalonia"
+    xmlns:cvt="using:ArchiveMaster.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:fileSystem="clr-namespace:ArchiveMaster.ViewModels.FileSystem"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -16,7 +17,7 @@
     d:DesignWidth="800"
     x:DataType="vm:DirStructureSyncViewModel"
     mc:Ignorable="d">
-    <UserControl.Resources>
+    <v:TwoStepPanelBase.Resources>
         <DataTemplate
             x:Key="DataGridDetailTemplate"
             x:DataType="fileSystem:MatchingFileInfo">
@@ -54,7 +55,7 @@
                     <SelectableTextBlock
                         Grid.Row="6"
                         Grid.Column="2"
-                        Text="{Binding Template.Length, Converter={StaticResource FileLengthConverter}}" />
+                        Text="{Binding Template.Length, Converter={x:Static cvt:Converters.FileLength}}" />
 
                     <TextBlock
                         Grid.Row="8"
@@ -96,7 +97,7 @@
                     <SelectableTextBlock
                         Grid.Row="6"
                         Grid.Column="2"
-                        Text="{Binding Length, Mode=OneWay, Converter={StaticResource FileLengthConverter}}" />
+                        Text="{Binding Length, Mode=OneWay, Converter={x:Static c:Converters.FileLength}}" />
 
                     <TextBlock
                         Grid.Row="8"
@@ -108,7 +109,7 @@
                 </Grid>
             </Grid>
         </DataTemplate>
-    </UserControl.Resources>
+    </v:TwoStepPanelBase.Resources>
 
     <v:TwoStepPanelBase.ConfigsContent>
         <ctrl:StackFormItemGroup>
@@ -189,9 +190,9 @@
                                     Margin="16,0"
                                     VerticalAlignment="Center"
                                     FontFamily="{StaticResource IconFont}"
-                                    Foreground="{Binding ., Converter={StaticResource DirStructureSyncTypeDescriptionConverter}, ConverterParameter=Foreground}"
-                                    Text="{Binding ., Converter={StaticResource DirStructureSyncTypeDescriptionConverter}, ConverterParameter=Text}"
-                                    ToolTip.Tip="{Binding ., Converter={StaticResource DirStructureSyncTypeDescriptionConverter}, ConverterParameter=ToolTip}" />
+                                    Foreground="{Binding ., Converter={x:Static cvt:DirStructureSyncTypeDescriptionConverter.Instance}, ConverterParameter=Foreground}"
+                                    Text="{Binding ., Converter={x:Static cvt:DirStructureSyncTypeDescriptionConverter.Instance}, ConverterParameter=Text}"
+                                    ToolTip.Tip="{Binding ., Converter={x:Static cvt:DirStructureSyncTypeDescriptionConverter.Instance}, ConverterParameter=ToolTip}" />
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>

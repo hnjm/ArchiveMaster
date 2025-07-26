@@ -3,6 +3,7 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:ct="using:FzLib.Avalonia.Controls"
+    xmlns:cvt="using:ArchiveMaster.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:gb="using:GroupBox.Avalonia.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -63,14 +64,14 @@
                             Filter="{Binding Config.Filter}" />
                     </ct:FormItem>
                     <ct:FormItem Label="复制后缀名：">
-                        <TextBox Text="{Binding Config.CopyDirectlyExtensions, Converter={StaticResource StringListConverter}}" />
+                        <TextBox Text="{Binding Config.CopyDirectlyExtensions, Converter={x:Static cvt:Converters.StringList}}" />
                     </ct:FormItem>
                     <TextBlock
                         Opacity="0.7"
                         Text="直接复制的文件的后缀名。使用逗号分隔。"
                         TextWrapping="Wrap" />
                     <ct:FormItem Label="压缩后缀名：">
-                        <TextBox Text="{Binding Config.CompressExtensions, Converter={StaticResource StringListConverter}}" />
+                        <TextBox Text="{Binding Config.CompressExtensions, Converter={x:Static cvt:Converters.StringList}}" />
                     </ct:FormItem>
                     <TextBlock
                         Opacity="0.7"
@@ -143,7 +144,7 @@
                     <ListBox ItemsSource="{Binding CopyFiles.ProcessingFilesRelativePaths}" />
                     <TextBlock
                         Grid.Row="2"
-                        IsVisible="{Binding CopyFiles, Converter={StaticResource NotNullConverter}}">
+                        IsVisible="{Binding CopyFiles, Converter={x:Static cvt:Converters.IsNotNull}}">
                         <Run Text="共" />
                         <Run Text="{Binding CopyFiles.ProcessingFiles.Count}" />
                         <Run Text="个文件，跳过" />
@@ -159,7 +160,7 @@
                     <ListBox ItemsSource="{Binding CompressFiles.ProcessingFilesRelativePaths}" />
                     <TextBlock
                         Grid.Row="2"
-                        IsVisible="{Binding CompressFiles, Converter={StaticResource NotNullConverter}}">
+                        IsVisible="{Binding CompressFiles, Converter={x:Static cvt:Converters.IsNotNull}}">
                         <Run Text="共" />
                         <Run Text="{Binding CompressFiles.ProcessingFiles.Count}" />
                         <Run Text="个文件，跳过" />
@@ -175,7 +176,7 @@
                     <ListBox ItemsSource="{Binding DeleteFiles.ProcessingFilesRelativePaths}" />
                     <TextBlock
                         Grid.Row="2"
-                        IsVisible="{Binding DeleteFiles, Converter={StaticResource NotNullConverter}}">
+                        IsVisible="{Binding DeleteFiles, Converter={x:Static cvt:Converters.IsNotNull}}">
                         <Run Text="共" />
                         <Run Text="{Binding DeleteFiles.ProcessingFiles.Count}" />
                         <Run Text="个文件，跳过" />
@@ -191,7 +192,7 @@
                     <ListBox ItemsSource="{Binding ErrorMessages}" />
                     <TextBlock
                         Grid.Row="2"
-                        IsVisible="{Binding ErrorMessages, Converter={StaticResource NotNullConverter}}">
+                        IsVisible="{Binding ErrorMessages, Converter={x:Static cvt:Converters.IsNotNull}}">
                         <Run Text="共" />
                         <Run Text="{Binding ErrorMessages.Count}" />
                         <Run Text="条信息" />

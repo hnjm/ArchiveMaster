@@ -145,6 +145,7 @@ public class TreeFileDataGrid : SimpleFileDataGrid
         }
         catch (Exception ex)
         {
+            Log.Logger.Error(ex, "搜索文件失败");
             Debug.Assert(false);
         }
     }

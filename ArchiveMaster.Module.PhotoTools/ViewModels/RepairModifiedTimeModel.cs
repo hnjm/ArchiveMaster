@@ -9,15 +9,16 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using ArchiveMaster.ViewModels.FileSystem;
+using FzLib.Avalonia.Dialogs;
 
 namespace ArchiveMaster.ViewModels;
 
-public partial class RepairModifiedTimeViewModel(AppConfig appConfig)
-    : TwoStepViewModelBase<RepairModifiedTimeService, RepairModifiedTimeConfig>(appConfig)
+public partial class RepairModifiedTimeViewModel(AppConfig appConfig, IDialogService dialogService)
+    : TwoStepViewModelBase<RepairModifiedTimeService, RepairModifiedTimeConfig>(appConfig, dialogService)
 {
     [ObservableProperty]
     private List<ExifTimeFileInfo> files = new List<ExifTimeFileInfo>();
-    
+
     protected override Task OnInitializedAsync()
     {
         Files = Service.Files.ToList();

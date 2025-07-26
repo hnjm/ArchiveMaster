@@ -4,13 +4,15 @@ using ArchiveMaster.Helpers;
 using ArchiveMaster.ViewModels.FileSystem;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using FzLib.Avalonia.Dialogs;
+using FzLib.IO;
 
 namespace ArchiveMaster.ViewModels;
 
-public partial class FileFilterTestViewModel : ViewModelBase
+public partial class FileFilterTestViewModel(IDialogService dialogService) : ViewModelBase(dialogService)
 {
     [ObservableProperty]
-    private FileFilterConfig filter = new FileFilterConfig();
+    private FileFilterRule filter = new FileFilterRule();
 
     [ObservableProperty]
     private string dir;

@@ -14,6 +14,7 @@
     <ApplicationIcon>../ArchiveMaster.UI/Assets/icon_light.ico</ApplicationIcon>
     <BaseIntermediateOutputPath>$(Temp)\$(SolutionName)\obj\$(Configuration)\$(AssemblyName)</BaseIntermediateOutputPath>
   </PropertyGroup>
+
   <ItemGroup>
     <AvaloniaXaml Remove="obj\**" />
     <Compile Remove="obj\**" />

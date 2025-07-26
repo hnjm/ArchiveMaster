@@ -17,6 +17,7 @@ using Avalonia.Controls;
 using FzLib;
 using FzLib.Avalonia.Dialogs;
 using Microsoft.Extensions.DependencyInjection;
+using System.Runtime.CompilerServices;
 
 namespace ArchiveMaster;
 
@@ -29,7 +30,10 @@ public partial class App : Application
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
-        ShowSplashScreenIfNeeded();
+        if (RuntimeFeature.IsDynamicCodeSupported)//非AOT，启动速度慢
+        {
+            ShowSplashScreenIfNeeded();
+        }
 
         if (HasAnotherInstance())
         {
@@ -137,7 +141,7 @@ public partial class App : Application
                 desktop.Shutdown();
             }
         };
-        desktop.MainWindow.Activated += (s, e) => { SplashWindow.CloseCurrent(); };
+        desktop.MainWindow.Opened += (s, e) => { SplashWindow.CloseCurrent(); };
         return desktop.MainWindow as MainWindow;
     }
 
@@ -147,8 +151,12 @@ public partial class App : Application
         {
             TrayIcon.GetIcons(this)[0].IsVisible = false;
         }
-
-        await DialogExtension.ShowOkDialogAsync(null, "当前位置的程序已启动，无法重复启动多个实例");
+        MessageDialog dialog = new MessageDialog(new MessageDialogViewModel()
+        {
+            Title = "重复启动应用",
+            Message = "当前位置的程序已启动，无法重复启动多个实例"
+        }, MessageDialog.MessageDialogButtonDefinition.OK);
+        await dialog.ShowModelessWindowDialog();
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             desktop.Shutdown();

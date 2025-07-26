@@ -41,26 +41,5 @@ public class DateTimeConverter : IValueConverter
 太坑爹了。
          */
         throw new InvalidOperationException($"不支持{nameof(ConvertBack)}");
-        if (value is string str)
-        {
-            if (string.IsNullOrWhiteSpace(str))
-            {
-                if (targetType == typeof(DateTime))
-                {
-                    return default(DateTime);
-                }
-
-                if (targetType == typeof(DateTime?))
-                {
-                    return null;
-                }
-
-                throw new ArgumentException("不支持的类型", nameof(targetType));
-            }
-
-            return DateTime.Parse(str);
-        }
-
-        throw new ArgumentException("非String欲转DateTime", nameof(value));
     }
 }

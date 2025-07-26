@@ -2,6 +2,7 @@
     x:Class="ArchiveMaster.Views.BackupTaskDataGrid"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:cvt="using:ArchiveMaster.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     CanUserReorderColumns="True"
@@ -16,7 +17,7 @@
                 <DataTemplate>
                     <TextBlock
                         Margin="4,0"
-                        Text="{Binding Status, Converter={StaticResource DescriptionConverter}}" />
+                        Text="{Binding Status, Converter={x:Static cvt:Converters.Description}}" />
                 </DataTemplate>
             </DataGridTemplateColumn.CellTemplate>
         </DataGridTemplateColumn>
@@ -27,10 +28,10 @@
             Binding="{Binding ValidSnapshotCount}"
             Header="有效快照" />
         <DataGridTextColumn
-            Binding="{Binding LastBackupTime, Converter={StaticResource DateTimeConverter}, Mode=OneWay}"
+            Binding="{Binding LastBackupTime, Converter={x:Static cvt:Converters.DateTime}, Mode=OneWay}"
             Header="上一次备份时间" />
         <DataGridTextColumn
-            Binding="{Binding LastFullBackupTime, Converter={StaticResource DateTimeConverter}, Mode=OneWay}"
+            Binding="{Binding LastFullBackupTime, Converter={x:Static cvt:Converters.DateTime}, Mode=OneWay}"
             Header="上一次全量备份时间" />
         <DataGridTextColumn
             Binding="{Binding Message}"

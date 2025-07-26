@@ -9,7 +9,6 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Unicode;
 using System.Threading.Tasks;
-using FzLib.Collection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
@@ -241,6 +240,7 @@ namespace ArchiveMaster.Configs
             }
             catch (Exception ex)
             {
+                Log.Error(ex, "保存配置失败");
             }
         }
 

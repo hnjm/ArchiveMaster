@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:c="clr-namespace:ArchiveMaster.Converters"
     xmlns:ctrl="clr-namespace:FzLib.Avalonia.Controls;assembly=FzLib.Avalonia"
+    xmlns:cvt="using:ArchiveMaster.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:e="using:ArchiveMaster.Enums"
     xmlns:enums="clr-namespace:ArchiveMaster.Enums"
@@ -96,7 +97,7 @@
                                     <DataTemplate>
                                         <TextBlock
                                             VerticalAlignment="Center"
-                                            Text="{Binding ., Converter={StaticResource DescriptionConverter}}" />
+                                            Text="{Binding ., Converter={x:Static cvt:Converters.Description}}" />
                                     </DataTemplate>
                                 </ComboBox.ItemTemplate>
                                 <ToolTip.Tip>

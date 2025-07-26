@@ -20,6 +20,7 @@ using Avalonia.Media;
 using Avalonia.VisualTree;
 using FzLib.Avalonia.Converters;
 using FzLib.Avalonia.Dialogs;
+using FzLib.IO;
 using Serilog;
 using SimpleFileInfo = ArchiveMaster.ViewModels.FileSystem.SimpleFileInfo;
 
@@ -32,7 +33,7 @@ public class SimpleFileDataGrid : DataGrid
             nameof(DoubleTappedToOpenFile), true);
 
     public static readonly StyledProperty<object> FooterProperty =
-            AvaloniaProperty.Register<SimpleFileDataGrid, object>(
+        AvaloniaProperty.Register<SimpleFileDataGrid, object>(
             nameof(Footer));
 
     public static readonly StyledProperty<bool> ShowCountProperty = AvaloniaProperty.Register<SimpleFileDataGrid, bool>(
@@ -42,6 +43,7 @@ public class SimpleFileDataGrid : DataGrid
 
     protected static readonly FileDirLength2StringConverter FileDirLength2StringConverter =
         new FileDirLength2StringConverter();
+
     protected static readonly InverseBoolConverter InverseBoolConverter = new InverseBoolConverter();
 
     protected static readonly ProcessStatusColorConverter ProcessStatusColorConverter =
@@ -89,6 +91,7 @@ public class SimpleFileDataGrid : DataGrid
         get => GetValue(DoubleTappedToOpenFileProperty);
         set => SetValue(DoubleTappedToOpenFileProperty, value);
     }
+
     public object Footer
     {
         get => GetValue(FooterProperty);
@@ -134,7 +137,7 @@ public class SimpleFileDataGrid : DataGrid
                     HorizontalAlignment = HorizontalAlignment.Center,
                     [!ToggleButton.IsCheckedProperty] = new Binding(nameof(SimpleFileInfo.IsChecked)),
                     [!IsEnabledProperty] = new Binding("DataContext.IsWorking") //执行命令时，这CheckBox不可以Enable
-                    { Source = rootPanel, Converter = InverseBoolConverter },
+                        { Source = rootPanel, Converter = InverseBoolConverter },
                 },
                 [!IsEnabledProperty] = new Binding(nameof(SimpleFileInfo.CanCheck)) //套两层控件，实现任一禁止选择则不允许选择
             };
@@ -150,7 +153,7 @@ public class SimpleFileDataGrid : DataGrid
         {
             Header = ColumnLengthHeader,
             Binding = new Binding(".")
-            { Converter = FileDirLength2StringConverter, Mode = BindingMode.OneWay },
+                { Converter = FileDirLength2StringConverter, Mode = BindingMode.OneWay },
             SortMemberPath = nameof(SimpleFileInfo.Length),
             IsReadOnly = true,
             MaxWidth = 120,
@@ -207,7 +210,7 @@ public class SimpleFileDataGrid : DataGrid
             Width = 8,
             Height = 8,
             [!Shape.FillProperty] = new Binding(nameof(SimpleFileInfo.Status))
-            { Converter = ProcessStatusColorConverter }
+                { Converter = ProcessStatusColorConverter }
         });
 
         column.CellTemplate = cellTemplate;
@@ -301,7 +304,7 @@ public class SimpleFileDataGrid : DataGrid
                 }
             };
 
-            void Search()
+            async void Search()
             {
                 var text = searchTextBox.Text;
                 if (string.IsNullOrWhiteSpace(text))
@@ -309,7 +312,7 @@ public class SimpleFileDataGrid : DataGrid
                     return;
                 }
 
-                var helper = new FileFilterHelper(new FileFilterConfig
+                var helper = new FileFilterHelper(new FileFilterRule
                 {
                     IncludeFiles = $"*{text}*"
                 });
@@ -322,11 +325,12 @@ public class SimpleFileDataGrid : DataGrid
                 if (SelectedItems.Count > 0)
                 {
                     ScrollIntoView(SelectedItems[0], Columns[0]);
-                    this.ShowOkDialogAsync("搜索", $"搜索到{SelectedItems.Count}条记录，已全部选中");
+                    await HostServices.GetRequiredService<IDialogService>()
+                        .ShowOkDialogAsync("搜索", $"搜索到{SelectedItems.Count}条记录，已全部选中");
                 }
                 else
                 {
-                    this.ShowWarningDialogAsync("搜索", $"没有搜索到任何记录");
+                    await HostServices.GetRequiredService<IDialogService>().ShowWarningDialogAsync("搜索", $"没有搜索到任何记录");
                 }
             }
 
@@ -335,12 +339,12 @@ public class SimpleFileDataGrid : DataGrid
             Debug.Assert(filterGrid != null);
             var filterPanel = filterGrid.Children[0] as FileFilterPanel;
             Debug.Assert(filterPanel != null);
-            filterPanel.Filter = new FileFilterConfig();
+            filterPanel.Filter = new FileFilterRule();
             var filterButton = filterGrid.Children[1] as Button;
             Debug.Assert(filterButton != null);
             filterButton.Click += (_, _) => Filter();
 
-            void Filter()
+            async void Filter()
             {
                 var helper = new FileFilterHelper(filterPanel.Filter);
                 int count = 0;
@@ -359,11 +363,12 @@ public class SimpleFileDataGrid : DataGrid
 
                 if (count > 0)
                 {
-                    this.ShowOkDialogAsync("筛选", $"筛选到{count}条记录，已全部勾选");
+                    await HostServices.GetRequiredService<IDialogService>()
+                        .ShowOkDialogAsync("筛选", $"筛选到{count}条记录，已全部勾选");
                 }
                 else
                 {
-                    this.ShowWarningDialogAsync("筛选", $"没有筛选到任何记录");
+                    await HostServices.GetRequiredService<IDialogService>().ShowWarningDialogAsync("筛选", $"没有筛选到任何记录");
                 }
             }
         }

@@ -6,7 +6,6 @@ using ArchiveMaster.Models;
 using ArchiveMaster.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using FzLib.Avalonia.Messages;
 using Microsoft.Extensions.Logging;
 
 namespace ArchiveMaster.ViewModels;
@@ -89,7 +88,7 @@ public partial class BackupManageCenterViewModel
                 SelectedFullSnapshot = FullSnapshots[^1];
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             SelectedTask = null;
             throw;
@@ -101,9 +100,10 @@ public partial class BackupManageCenterViewModel
     {
         if (backupService.IsBackingUp)
         {
-            await this.ShowErrorAsync("删除快照",$"目前有任务正在备份，无法删除快照");
+            await DialogService.ShowErrorDialogAsync("删除快照", $"目前有任务正在备份，无法删除快照");
             return;
         }
+
         string message = null;
         int index = SelectedFullSnapshot.Snapshots.IndexOf(snapshot);
         if (SelectedFullSnapshot.Snapshots.Count <= 1 || index == SelectedFullSnapshot.Snapshots.Count - 1) //最后一个，可以直接删
@@ -115,12 +115,7 @@ public partial class BackupManageCenterViewModel
             message = "删除此快照，将同步删除后续的增量快照，是否删除此快照？";
         }
 
-        bool confirm = true.Equals(await this.SendMessage(new CommonDialogMessage()
-        {
-            Type = CommonDialogMessage.CommonDialogType.YesNo,
-            Title = "删除快照",
-            Message = message
-        }).Task);
+        bool confirm = true.Equals(await DialogService.ShowYesNoDialogAsync("删除快照", message));
 
         if (confirm)
         {

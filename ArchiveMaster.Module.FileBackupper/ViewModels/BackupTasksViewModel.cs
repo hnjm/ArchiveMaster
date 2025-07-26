@@ -6,7 +6,8 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using ArchiveMaster.Enums;
-using FzLib.Avalonia.Messages;
+using FzLib.Avalonia.Dialogs;
+
 
 namespace ArchiveMaster.ViewModels
 {
@@ -23,7 +24,8 @@ namespace ArchiveMaster.ViewModels
         [ObservableProperty]
         private ObservableCollection<BackupTask> tasks;
 
-        public BackupTasksViewModel(AppConfig appConfig, BackupService backupService)
+        public BackupTasksViewModel(AppConfig appConfig, BackupService backupService, IDialogService dialogService) :
+            base(dialogService)
         {
             this.backupService = backupService;
             Config = appConfig.GetOrCreateConfigWithDefaultKey<FileBackupperConfig>();
@@ -53,12 +55,10 @@ namespace ArchiveMaster.ViewModels
 
             while (backupService.IsBackingUp)
             {
-                var result = await this.SendMessage(new CommonDialogMessage()
-                {
-                    Type = CommonDialogMessage.CommonDialogType.ErrorRetry,
-                    Title = "正在备份",
-                    Message = "有任务正在备份，无法进行任务配置，请前往管理中心停止备份或重试"
-                }).Task;
+                var result =
+                    await DialogService.ShowErrorDialogAsync("正在备份", "有任务正在备份，无法进行任务配置，请前往管理中心停止备份或重试",
+                        retryButton: true);
+
                 if (false.Equals(result))
                 {
                     Exit();
@@ -78,12 +78,8 @@ namespace ArchiveMaster.ViewModels
                 return;
             }
 
-            if ((await this.SendMessage(new CommonDialogMessage()
-                {
-                    Type = CommonDialogMessage.CommonDialogType.YesNo,
-                    Title = "保存配置",
-                    Message = "有未保存的配置，是否保存？"
-                }).Task).Equals(true))
+            var result = await DialogService.ShowYesNoDialogAsync("保存配置", "有未保存的配置，是否保存？");
+            if (true.Equals(result))
             {
                 Save();
             }

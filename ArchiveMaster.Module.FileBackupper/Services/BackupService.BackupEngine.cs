@@ -5,6 +5,7 @@ using ArchiveMaster.Enums;
 using ArchiveMaster.Helpers;
 using ArchiveMaster.Models;
 using FzLib.Avalonia.Converters;
+using FzLib.IO;
 using Microsoft.Extensions.Logging;
 
 namespace ArchiveMaster.Services;

@@ -9,6 +9,7 @@ using ArchiveMaster.Configs;
 using ArchiveMaster.Helpers;
 using ArchiveMaster.Services;
 using ArchiveMaster.ViewModels.FileSystem;
+using FzLib.Cryptography;
 using SyncFileInfo = ArchiveMaster.ViewModels.FileSystem.SyncFileInfo;
 
 namespace ArchiveMaster.Services
@@ -100,7 +101,7 @@ namespace ArchiveMaster.Services
         {
             if (!string.IsNullOrWhiteSpace(Config.Password))
             {
-                aes = Services.AesExtension.GetDefault(Config.Password);
+                aes = AesHelper.GetDefaultAes(Config.Password);
             }
 
             long totalLength = 0;
@@ -135,15 +136,15 @@ namespace ArchiveMaster.Services
                         Directory.CreateDirectory(Path.GetDirectoryName(target));
                     }
 
-                    Progress<FileCopyProgress> progress = null;
+                    Progress<FileProcessProgress> progress = null;
 
                     async Task CopyThisFileAsync()
                     {
-                        progress = new Progress<FileCopyProgress>(p =>
+                        progress = new Progress<FileProcessProgress>(p =>
                         {
-                            NotifyProgress(1.0 * (length + p.BytesCopied) / totalLength);
+                            NotifyProgress(1.0 * (length + p.ProcessedBytes) / totalLength);
                             NotifyMessage(
-                                $"正在复制（{numMsg}，本文件{1.0 * p.BytesCopied / 1024 / 1024:0}MB/{1.0 * p.TotalBytes / 1024 / 1024:0}MB）：{file.RelativePath}");
+                                $"正在复制（{numMsg}，本文件{1.0 * p.ProcessedBytes / 1024 / 1024:0}MB/{1.0 * p.TotalBytes / 1024 / 1024:0}MB）：{file.RelativePath}");
                         });
                         await CopyFileAsync(patch, target, file.Time, progress, token);
                     }
@@ -210,6 +211,7 @@ namespace ArchiveMaster.Services
         {
             return UpdateFiles.Cast<SimpleFileInfo>();
         }
+
         public override async Task InitializeAsync(CancellationToken token = default)
         {
             var patchFile = Path.Combine(Config.PatchDir, "file.os2");
@@ -358,9 +360,10 @@ namespace ArchiveMaster.Services
                     { Path = p, TopDirectory = topDir }));
             }
         }
+
         private async Task CopyFileAsync(string source, string destination,
             DateTime fileTime,
-            Progress<FileCopyProgress> progress,
+            Progress<FileProcessProgress> progress,
             CancellationToken cancellationToken)
         {
             if (source.EndsWith(Step2Service.EncryptionFileSuffix))
@@ -423,10 +426,11 @@ namespace ArchiveMaster.Services
                     {
                         File.Move(filePath, GetNoDuplicateFile(target));
                     }
+
                     break;
-                
+
                 case DeleteMode.RecycleBinPrefer:
-                    FileDeleteHelper.DeleteByConfig(filePath);
+                    FileHelper.DeleteByConfig(filePath);
                     break;
                 default:
                     throw new InvalidEnumArgumentException();

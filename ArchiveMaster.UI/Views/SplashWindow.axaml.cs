@@ -35,12 +35,14 @@ public partial class SplashWindow : Window
         splashWindow.Show();
     }
 
-    public static async void CloseCurrent()
+    public static void CloseCurrent()
     {
-        if (splashWindow == null ) return;
+        if (splashWindow == null)
+        {
+            return;
+        }
         var temp = splashWindow;
         splashWindow = null;
-        await Task.Delay(500);
         temp.Close();
     }
 }

@@ -1,5 +1,7 @@
 ﻿using System;
+using ArchiveMaster.Helpers;
 using CommunityToolkit.Mvvm.ComponentModel;
+using FzLib.IO;
 
 namespace ArchiveMaster.Configs
 {
@@ -13,13 +15,13 @@ namespace ArchiveMaster.Configs
 
         [ObservableProperty]
         private TimeSpan maxDurationTolerance = TimeSpan.FromSeconds(1);
-        
+
         [ObservableProperty]
-        private FileFilterConfig filter=FileFilterConfig.Image;
+        private FileFilterRule filter = FileHelper.ImageFileFilterRule;
 
         public override void Check()
         {
-            CheckDir(Dir,"目录");
+            CheckDir(Dir, "目录");
         }
     }
 }

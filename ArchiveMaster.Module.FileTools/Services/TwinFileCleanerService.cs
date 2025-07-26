@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using ArchiveMaster.Helpers;
 using ArchiveMaster.ViewModels.FileSystem;
+using FzLib.IO;
 
 namespace ArchiveMaster.Services
 {
@@ -24,7 +25,7 @@ namespace ArchiveMaster.Services
             return TryForFilesAsync(files, (file, s) =>
             {
                 NotifyMessage($"正在删除{s.GetFileNumberMessage()}：{file.Name}");
-                FileDeleteHelper.DeleteByConfig(file.Path);
+                FileHelper.DeleteByConfig(file.Path);
             }, token, FilesLoopOptions.Builder().AutoApplyStatus().AutoApplyFileNumberProgress().Build());
         }
 

@@ -4,6 +4,7 @@ using ArchiveMaster.Configs;
 using ArchiveMaster.Helpers;
 using ArchiveMaster.ViewModels;
 using ArchiveMaster.ViewModels.FileSystem;
+using FzLib.IO;
 
 namespace ArchiveMaster.Services
 {
@@ -24,13 +25,13 @@ namespace ArchiveMaster.Services
                     NotifyMessage($"正在复制（{index}/{count}），当前文件：{Path.GetFileName(file.Name)}");
 
                     await FileCopyHelper.CopyFileAsync(file.Path, file.DestinationPath,
-                        progress: new Progress<FileCopyProgress>(
+                        progress: new Progress<FileProcessProgress>(
                             p =>
                             {
                                 NotifyMessage(
-                                    $"正在复制（{index}/{count}，当前文件{1.0 * p.BytesCopied / 1024 / 1024:0}MB/{1.0 * p.TotalBytes / 1024 / 1024:0}MB），当前文件：{Path.GetFileName(p.SourceFilePath)}");
+                                    $"正在复制（{index}/{count}，当前文件{1.0 * p.ProcessedBytes / 1024 / 1024:0}MB/{1.0 * p.TotalBytes / 1024 / 1024:0}MB），当前文件：{Path.GetFileName(p.SourceFilePath)}");
                               
-                                NotifyProgress(1.0 * (currentLength + p.BytesCopied) / totalLength);
+                                NotifyProgress(1.0 * (currentLength + p.ProcessedBytes) / totalLength);
                             }),
                         cancellationToken: token);
                     File.SetLastWriteTimeUtc(file.DestinationPath, file.Time);
